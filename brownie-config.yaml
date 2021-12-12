@@ -1,0 +1,4 @@
+compiler:
+  solc:
+    remappings:
+      - "@openzeppelin-contracts=OpenZeppelin/openzeppelin-contracts@4.4.0"
