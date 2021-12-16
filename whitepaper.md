@@ -31,8 +31,6 @@ Final result is as if everyone who participated swapped half of their deposited 
 1. All this brings a decentralized spirit in, the initial liquidity will come from DAO itself and will be owned by DAO, and act with it based on community decisions.
 
 2. Neglecting common price patern of "pump and dump". When token price is initially priced too low, the price correction builds up a momentum, community members fear missing out and they continue to buy the coin until it is dramatically overpiced; This creates a bubble which eventually ends and those who sell at the top make profits of the many more who brought on the rise.
-   In APDA model unhealthy price discovery happens in sandboxed enviroment everyone shares the net result to establish initial coin price.
+   In APDA model unhealthy price discovery happens in sandboxed enviroment where everyone shares the net result to establish initial coin price.
 
 3. Finally, this allows us to fund rise money more efficiently, because we avoid initially underpricing token.
-
-
