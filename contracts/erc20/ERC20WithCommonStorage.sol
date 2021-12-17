@@ -32,7 +32,10 @@ contract ERC20WithCommonStorage is Context, IERC20, IERC20Metadata {
      * All two of these values are immutable: they can only be set once during
      * construction.
      */
-    constructor(string memory name_, string memory symbol_) {
+    function setERC20Metadata(string memory name_, string memory symbol_)
+        external
+    {
+        LibERC20.enforceIsController();
         LibERC20.ERC20Storage storage es = LibERC20.erc20Storage();
         es.name = name_;
         es.symbol = symbol_;

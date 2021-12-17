@@ -3,7 +3,9 @@ Generic diamond functionality for Moonstream contracts.
 """
 
 import argparse
+import json
 import os
+import sys
 from typing import Any, Dict, List, Optional, Set
 
 from brownie import network
@@ -14,6 +16,7 @@ from . import (
     DiamondCutFacet,
     DiamondLoupeFacet,
     ERC20Facet,
+    ERC20Initializer,
     OwnershipFacet,
 )
 
@@ -42,6 +45,7 @@ def facet_cut(
     facet_address: str,
     action: str,
     transaction_config: Dict[str, Any],
+    initializer_address: str = ZERO_ADDRESS,
     ignore_methods: Optional[List[str]] = None,
     ignore_selectors: Optional[List[str]] = None,
 ) -> Any:
@@ -98,11 +102,94 @@ def facet_cut(
         facet_function_selectors,
     ]
 
+    calldata = b""
+    if facet_name == "ERC20Facet":
+        if initializer_address != ZERO_ADDRESS and action != "remove":
+            erc20_initializer = ERC20Initializer.ERC20Initializer(initializer_address)
+            calldata = erc20_initializer.contract.init.encode_input()
+
     diamond = DiamondCutFacet.DiamondCutFacet(diamond_address)
     transaction = diamond.diamond_cut(
-        [diamond_cut_action], ZERO_ADDRESS, b"", transaction_config
+        [diamond_cut_action], initializer_address, calldata, transaction_config
     )
     return transaction
+
+
+def gogogo(owner_address: str, transaction_config: Dict[str, Any]) -> Dict[str, Any]:
+    """
+    Deploy diamond along with all its basic facets and attach those facets to the diamond.
+
+    Returns addresses of all the deployed contracts with the contract names as keys.
+    """
+    result: Dict[str, Any] = {}
+
+    try:
+        diamond_cut_facet = DiamondCutFacet.DiamondCutFacet(None)
+        diamond_cut_facet.deploy(transaction_config)
+    except Exception as e:
+        print(e)
+        result["error"] = "Failed to deploy DiamondCutFacet"
+        return result
+    result["DiamondCutFacet"] = diamond_cut_facet.address
+
+    try:
+        diamond = Diamond.Diamond(None)
+        diamond.deploy(owner_address, diamond_cut_facet.address, transaction_config)
+    except Exception as e:
+        print(e)
+        result["error"] = "Failed to deploy Diamond"
+        return result
+    result["Diamond"] = diamond.address
+
+    try:
+        diamond_loupe_facet = DiamondLoupeFacet.DiamondLoupeFacet(None)
+        diamond_loupe_facet.deploy(transaction_config)
+    except Exception as e:
+        print(e)
+        result["error"] = "Failed to deploy DiamondLoupeFacet"
+        return result
+    result["DiamondLoupeFacet"] = diamond_loupe_facet.address
+
+    try:
+        ownership_facet = OwnershipFacet.OwnershipFacet(None)
+        ownership_facet.deploy(transaction_config)
+    except Exception as e:
+        print(e)
+        result["error"] = "Failed to deploy OwnershipFacet"
+        return result
+    result["OwnershipFacet"] = ownership_facet.address
+
+    result["attached"] = []
+
+    try:
+        facet_cut(
+            diamond.address,
+            "DiamondLoupeFacet",
+            diamond_loupe_facet.address,
+            "add",
+            transaction_config,
+        )
+    except Exception as e:
+        print(e)
+        result["error"] = "Failed to attach DiamondLoupeFacet"
+        return result
+    result["attached"].append("DiamondLoupeFacet")
+
+    try:
+        facet_cut(
+            diamond.address,
+            "OwnershipFacet",
+            ownership_facet.address,
+            "add",
+            transaction_config,
+        )
+    except Exception as e:
+        print(e)
+        result["error"] = "Failed to attach OwnershipFacet"
+        return result
+    result["attached"].append("OwnershipFacet")
+
+    return result
 
 
 def handle_facet_cut(args: argparse.Namespace) -> None:
@@ -118,9 +205,21 @@ def handle_facet_cut(args: argparse.Namespace) -> None:
         facet_address,
         action,
         transaction_config,
+        initializer_address=args.initializer_address,
         ignore_methods=args.ignore_methods,
         ignore_selectors=args.ignore_selectors,
     )
+
+
+def handle_gogogo(args: argparse.Namespace) -> None:
+    network.connect(args.network)
+    owner_address = args.owner
+    transaction_config = Diamond.get_transaction_config(args)
+    result = gogogo(owner_address, transaction_config)
+    if args.outfile is not None:
+        with args.outfile:
+            json.dump(result, args.outfile)
+    json.dump(result, sys.stdout, indent=4)
 
 
 def generate_cli() -> argparse.ArgumentParser:
@@ -154,6 +253,11 @@ def generate_cli() -> argparse.ArgumentParser:
         help="Diamond cut action to take on entire facet",
     )
     facet_cut_parser.add_argument(
+        "--initializer-address",
+        default=ZERO_ADDRESS,
+        help=f"Address of contract to run as initializer after cut (default: {ZERO_ADDRESS})",
+    )
+    facet_cut_parser.add_argument(
         "--ignore-methods",
         nargs="+",
         help="Names of methods to ignore when cutting a facet onto or off of the diamond",
@@ -164,6 +268,20 @@ def generate_cli() -> argparse.ArgumentParser:
         help="Method selectors to ignore when cutting a facet onto or off of the diamond",
     )
     facet_cut_parser.set_defaults(func=handle_facet_cut)
+
+    gogogo_parser = subcommands.add_parser("gogogo")
+    Diamond.add_default_arguments(gogogo_parser, transact=True)
+    gogogo_parser.add_argument(
+        "--owner", required=True, help="Address of owner of diamond proxy"
+    )
+    gogogo_parser.add_argument(
+        "-o",
+        "--outfile",
+        type=argparse.FileType("w"),
+        default=None,
+        help="(Optional) file to write deployed addresses to",
+    )
+    gogogo_parser.set_defaults(func=handle_gogogo)
 
     DiamondCutFacet_parser = DiamondCutFacet.generate_cli()
     subcommands.add_parser(

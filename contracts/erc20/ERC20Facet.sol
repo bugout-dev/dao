@@ -11,9 +11,10 @@ pragma solidity ^0.8.0;
 
 import "./ERC20WithCommonStorage.sol";
 import "./LibERC20.sol";
+import "../diamond/libraries/LibDiamond.sol";
 
 contract ERC20Facet is ERC20WithCommonStorage {
-    constructor() ERC20WithCommonStorage("Moonstream", "MNSTR") {}
+    constructor() {}
 
     function mint(address account, uint256 amount) external {
         LibERC20.enforceIsController();

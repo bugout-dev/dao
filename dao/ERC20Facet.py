@@ -128,6 +128,10 @@ class ERC20Facet:
         self.assert_contract_is_instantiated()
         return self.contract.name.call()
 
+    def set_erc20_metadata(self, name_: str, symbol_: str, transaction_config) -> Any:
+        self.assert_contract_is_instantiated()
+        return self.contract.setERC20Metadata(name_, symbol_, transaction_config)
+
     def symbol(self) -> Any:
         self.assert_contract_is_instantiated()
         return self.contract.symbol.call()
@@ -271,6 +275,18 @@ def handle_name(args: argparse.Namespace) -> None:
     print(result)
 
 
+def handle_set_erc20_metadata(args: argparse.Namespace) -> None:
+    network.connect(args.network)
+    contract = ERC20Facet(args.address)
+    transaction_config = get_transaction_config(args)
+    result = contract.set_erc20_metadata(
+        name_=args.name_arg,
+        symbol_=args.symbol_arg,
+        transaction_config=transaction_config,
+    )
+    print(result)
+
+
 def handle_symbol(args: argparse.Namespace) -> None:
     network.connect(args.network)
     contract = ERC20Facet(args.address)
@@ -371,6 +387,16 @@ def generate_cli() -> argparse.ArgumentParser:
     name_parser = subcommands.add_parser("name")
     add_default_arguments(name_parser, False)
     name_parser.set_defaults(func=handle_name)
+
+    set_erc20_metadata_parser = subcommands.add_parser("set-erc20-metadata")
+    add_default_arguments(set_erc20_metadata_parser, True)
+    set_erc20_metadata_parser.add_argument(
+        "--name-arg", required=True, help="Type: string", type=str
+    )
+    set_erc20_metadata_parser.add_argument(
+        "--symbol-arg", required=True, help="Type: string", type=str
+    )
+    set_erc20_metadata_parser.set_defaults(func=handle_set_erc20_metadata)
 
     symbol_parser = subcommands.add_parser("symbol")
     add_default_arguments(symbol_parser, False)

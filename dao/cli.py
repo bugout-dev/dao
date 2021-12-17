@@ -1,6 +1,6 @@
 import argparse
 
-from . import core, ERC20Facet
+from . import core, ERC20Facet, ERC20Initializer
 
 
 def main():
@@ -15,6 +15,13 @@ def main():
 
     moonstream_parser = ERC20Facet.generate_cli()
     dao_subparsers.add_parser("moonstream", parents=[moonstream_parser], add_help=False)
+
+    moonstream_initializer_parser = ERC20Initializer.generate_cli()
+    dao_subparsers.add_parser(
+        "moonstream-initializer",
+        parents=[moonstream_initializer_parser],
+        add_help=False,
+    )
 
     args = parser.parse_args()
     args.func(args)
