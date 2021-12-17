@@ -1,17 +1,17 @@
 // SPDX-License-Identifier: Apache-2.0
-pragma solidity ^0.8.9;
+pragma solidity ^0.8.0;
 
-library LibDiamond {
+library LibERC20 {
     bytes32 constant ERC20_STORAGE_POSITION =
         keccak256("moonstreamdao.eth.storage.erc20");
 
     struct ERC20Storage {
-        address controller;
-        uint256 totalSupply;
         string name;
         string symbol;
         mapping(address => uint256) balances;
         mapping(address => mapping(address => uint256)) allowances;
+        address controller;
+        uint256 totalSupply;
     }
 
     function erc20Storage() internal pure returns (ERC20Storage storage es) {
@@ -26,19 +26,19 @@ library LibDiamond {
         address indexed newController
     );
 
-    function setController(address _newController) internal {
+    function setController(address newController) internal {
         ERC20Storage storage es = erc20Storage();
         address previousController = es.controller;
-        es.controller = _newController;
-        emit ControlTransferred(previousController, _newController);
+        es.controller = newController;
+        emit ControlTransferred(previousController, newController);
     }
 
     function getController()
         internal
         view
-        returns (address contractController_)
+        returns (address contractController)
     {
-        contractController_ = erc20Storage().controller;
+        contractController = erc20Storage().controller;
     }
 
     function enforceIsController() internal view {
