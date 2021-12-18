@@ -16,6 +16,10 @@ import "../diamond/libraries/LibDiamond.sol";
 contract TerminusFacet is ERC1155WithTerminusStorage {
     constructor() {}
 
+    function controller() external view returns (address) {
+        return LibTerminus.terminusStorage().controller;
+    }
+
     function setURI(uint256 poolID, string memory poolURI) external {
         LibTerminus.enforcePoolIsController(poolID, _msgSender());
         LibTerminus.TerminusStorage storage ts = LibTerminus.terminusStorage();

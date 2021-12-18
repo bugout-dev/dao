@@ -16,6 +16,10 @@ import "../diamond/libraries/LibDiamond.sol";
 contract ERC20Facet is ERC20WithCommonStorage {
     constructor() {}
 
+    function controller() external view returns (address) {
+        return LibERC20.erc20Storage().controller;
+    }
+
     function mint(address account, uint256 amount) external {
         LibERC20.enforceIsController();
         _mint(account, amount);

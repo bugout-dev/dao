@@ -102,6 +102,10 @@ class ERC20Facet:
         self.assert_contract_is_instantiated()
         return self.contract.balanceOf.call(account)
 
+    def controller(self) -> Any:
+        self.assert_contract_is_instantiated()
+        return self.contract.controller.call()
+
     def decimals(self) -> Any:
         self.assert_contract_is_instantiated()
         return self.contract.decimals.call()
@@ -224,6 +228,13 @@ def handle_balance_of(args: argparse.Namespace) -> None:
     network.connect(args.network)
     contract = ERC20Facet(args.address)
     result = contract.balance_of(account=args.account)
+    print(result)
+
+
+def handle_controller(args: argparse.Namespace) -> None:
+    network.connect(args.network)
+    contract = ERC20Facet(args.address)
+    result = contract.controller()
     print(result)
 
 
@@ -353,6 +364,10 @@ def generate_cli() -> argparse.ArgumentParser:
     add_default_arguments(balance_of_parser, False)
     balance_of_parser.add_argument("--account", required=True, help="Type: address")
     balance_of_parser.set_defaults(func=handle_balance_of)
+
+    controller_parser = subcommands.add_parser("controller")
+    add_default_arguments(controller_parser, False)
+    controller_parser.set_defaults(func=handle_controller)
 
     decimals_parser = subcommands.add_parser("decimals")
     add_default_arguments(decimals_parser, False)

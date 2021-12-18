@@ -98,6 +98,10 @@ class TerminusFacet:
         self.assert_contract_is_instantiated()
         return self.contract.balanceOfBatch.call(accounts, ids)
 
+    def controller(self) -> Any:
+        self.assert_contract_is_instantiated()
+        return self.contract.controller.call()
+
     def create_pool(self, transaction_config) -> Any:
         self.assert_contract_is_instantiated()
         return self.contract.createPool(transaction_config)
@@ -238,6 +242,13 @@ def handle_balance_of_batch(args: argparse.Namespace) -> None:
     network.connect(args.network)
     contract = TerminusFacet(args.address)
     result = contract.balance_of_batch(accounts=args.accounts, ids=args.ids)
+    print(result)
+
+
+def handle_controller(args: argparse.Namespace) -> None:
+    network.connect(args.network)
+    contract = TerminusFacet(args.address)
+    result = contract.controller()
     print(result)
 
 
@@ -385,6 +396,10 @@ def generate_cli() -> argparse.ArgumentParser:
         "--ids", required=True, help="Type: uint256[]", nargs="+"
     )
     balance_of_batch_parser.set_defaults(func=handle_balance_of_batch)
+
+    controller_parser = subcommands.add_parser("controller")
+    add_default_arguments(controller_parser, False)
+    controller_parser.set_defaults(func=handle_controller)
 
     create_pool_parser = subcommands.add_parser("create-pool")
     add_default_arguments(create_pool_parser, True)
