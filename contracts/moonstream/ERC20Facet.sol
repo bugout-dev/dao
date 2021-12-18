@@ -16,7 +16,7 @@ import "../diamond/libraries/LibDiamond.sol";
 contract ERC20Facet is ERC20WithCommonStorage {
     constructor() {}
 
-    function controller() external view returns (address) {
+    function moonstreamController() external view returns (address) {
         return LibERC20.erc20Storage().controller;
     }
 

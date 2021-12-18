@@ -102,10 +102,6 @@ class ERC20Facet:
         self.assert_contract_is_instantiated()
         return self.contract.balanceOf.call(account)
 
-    def controller(self) -> Any:
-        self.assert_contract_is_instantiated()
-        return self.contract.controller.call()
-
     def decimals(self) -> Any:
         self.assert_contract_is_instantiated()
         return self.contract.decimals.call()
@@ -127,6 +123,10 @@ class ERC20Facet:
     def mint(self, account: ChecksumAddress, amount: int, transaction_config) -> Any:
         self.assert_contract_is_instantiated()
         return self.contract.mint(account, amount, transaction_config)
+
+    def moonstream_controller(self) -> Any:
+        self.assert_contract_is_instantiated()
+        return self.contract.moonstreamController.call()
 
     def name(self) -> Any:
         self.assert_contract_is_instantiated()
@@ -231,13 +231,6 @@ def handle_balance_of(args: argparse.Namespace) -> None:
     print(result)
 
 
-def handle_controller(args: argparse.Namespace) -> None:
-    network.connect(args.network)
-    contract = ERC20Facet(args.address)
-    result = contract.controller()
-    print(result)
-
-
 def handle_decimals(args: argparse.Namespace) -> None:
     network.connect(args.network)
     contract = ERC20Facet(args.address)
@@ -276,6 +269,13 @@ def handle_mint(args: argparse.Namespace) -> None:
     result = contract.mint(
         account=args.account, amount=args.amount, transaction_config=transaction_config
     )
+    print(result)
+
+
+def handle_moonstream_controller(args: argparse.Namespace) -> None:
+    network.connect(args.network)
+    contract = ERC20Facet(args.address)
+    result = contract.moonstream_controller()
     print(result)
 
 
@@ -365,10 +365,6 @@ def generate_cli() -> argparse.ArgumentParser:
     balance_of_parser.add_argument("--account", required=True, help="Type: address")
     balance_of_parser.set_defaults(func=handle_balance_of)
 
-    controller_parser = subcommands.add_parser("controller")
-    add_default_arguments(controller_parser, False)
-    controller_parser.set_defaults(func=handle_controller)
-
     decimals_parser = subcommands.add_parser("decimals")
     add_default_arguments(decimals_parser, False)
     decimals_parser.set_defaults(func=handle_decimals)
@@ -398,6 +394,10 @@ def generate_cli() -> argparse.ArgumentParser:
     mint_parser.add_argument("--account", required=True, help="Type: address")
     mint_parser.add_argument("--amount", required=True, help="Type: uint256", type=int)
     mint_parser.set_defaults(func=handle_mint)
+
+    moonstream_controller_parser = subcommands.add_parser("moonstream-controller")
+    add_default_arguments(moonstream_controller_parser, False)
+    moonstream_controller_parser.set_defaults(func=handle_moonstream_controller)
 
     name_parser = subcommands.add_parser("name")
     add_default_arguments(name_parser, False)

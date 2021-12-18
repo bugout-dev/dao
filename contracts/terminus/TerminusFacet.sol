@@ -16,7 +16,7 @@ import "../diamond/libraries/LibDiamond.sol";
 contract TerminusFacet is ERC1155WithTerminusStorage {
     constructor() {}
 
-    function controller() external view returns (address) {
+    function terminusController() external view returns (address) {
         return LibTerminus.terminusStorage().controller;
     }
 

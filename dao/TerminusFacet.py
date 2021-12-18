@@ -98,10 +98,6 @@ class TerminusFacet:
         self.assert_contract_is_instantiated()
         return self.contract.balanceOfBatch.call(accounts, ids)
 
-    def controller(self) -> Any:
-        self.assert_contract_is_instantiated()
-        return self.contract.controller.call()
-
     def create_pool(self, transaction_config) -> Any:
         self.assert_contract_is_instantiated()
         return self.contract.createPool(transaction_config)
@@ -176,6 +172,10 @@ class TerminusFacet:
         self.assert_contract_is_instantiated()
         return self.contract.supportsInterface.call(interface_id)
 
+    def terminus_controller(self) -> Any:
+        self.assert_contract_is_instantiated()
+        return self.contract.terminusController.call()
+
     def total_pools(self) -> Any:
         self.assert_contract_is_instantiated()
         return self.contract.totalPools.call()
@@ -242,13 +242,6 @@ def handle_balance_of_batch(args: argparse.Namespace) -> None:
     network.connect(args.network)
     contract = TerminusFacet(args.address)
     result = contract.balance_of_batch(accounts=args.accounts, ids=args.ids)
-    print(result)
-
-
-def handle_controller(args: argparse.Namespace) -> None:
-    network.connect(args.network)
-    contract = TerminusFacet(args.address)
-    result = contract.controller()
     print(result)
 
 
@@ -356,6 +349,13 @@ def handle_supports_interface(args: argparse.Namespace) -> None:
     print(result)
 
 
+def handle_terminus_controller(args: argparse.Namespace) -> None:
+    network.connect(args.network)
+    contract = TerminusFacet(args.address)
+    result = contract.terminus_controller()
+    print(result)
+
+
 def handle_total_pools(args: argparse.Namespace) -> None:
     network.connect(args.network)
     contract = TerminusFacet(args.address)
@@ -396,10 +396,6 @@ def generate_cli() -> argparse.ArgumentParser:
         "--ids", required=True, help="Type: uint256[]", nargs="+"
     )
     balance_of_batch_parser.set_defaults(func=handle_balance_of_batch)
-
-    controller_parser = subcommands.add_parser("controller")
-    add_default_arguments(controller_parser, False)
-    controller_parser.set_defaults(func=handle_controller)
 
     create_pool_parser = subcommands.add_parser("create-pool")
     add_default_arguments(create_pool_parser, True)
@@ -501,6 +497,10 @@ def generate_cli() -> argparse.ArgumentParser:
         "--interface-id", required=True, help="Type: bytes4", type=bytes_argument_type
     )
     supports_interface_parser.set_defaults(func=handle_supports_interface)
+
+    terminus_controller_parser = subcommands.add_parser("terminus-controller")
+    add_default_arguments(terminus_controller_parser, False)
+    terminus_controller_parser.set_defaults(func=handle_terminus_controller)
 
     total_pools_parser = subcommands.add_parser("total-pools")
     add_default_arguments(total_pools_parser, False)
