@@ -5,7 +5,13 @@
 # pip install -e .[dev]
 
 usage() {
-    echo "Usage: $0"
+    echo "Usage: $0" [TEST_SPEC ...]
+    echo
+    echo "Arguments:"
+    echo "----------"
+    echo "TEST_SPEC"
+    echo "\tPython unittest specification of which test to run, following: https://docs.python.org/3/library/unittest.html#command-line-interface"
+    echo "\tFor example: $0 dao.test_moonstream.TestERC20"
 }
 
 if [ "$1" = "-h" ] || [ "$1" = "--help" ]
