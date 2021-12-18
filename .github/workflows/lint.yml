@@ -1,4 +1,4 @@
-name: Run Moonstream DAO tests
+name: Lint Moonstream DAO codebase
 
 on:
   push:
