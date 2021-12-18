@@ -14,5 +14,8 @@ then
     exit 2
 fi
 
+TEST_COMMAND=${@:-discover}
+
 brownie compile
-python -m unittest discover
+set -x
+python -m unittest $TEST_COMMAND
