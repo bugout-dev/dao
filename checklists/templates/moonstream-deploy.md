@@ -28,12 +28,13 @@ export ERC20FACET_ADDRESS=""
 
 ## Environment variables
 
-1. `export DAO_NETWORK=<desired brownie network>`
-2. `export DAO_OWNER=<path to keystore file for owner account>`
-3. `export DAO_OWNER_ADDRESS=$(jq -r .address $DAO_OWNER)`
-4. `export GAS_PRICE="<N> gwei"`
-5. `export CONFIRMATIONS=<M>`
-6. `export MOONSTREAM_ADDRESSES=<path to JSON file in which to store diamond addresses>`
+- [ ] `export DAO_NETWORK=<desired brownie network>`
+- [ ] `export DAO_OWNER=<path to keystore file for owner account>`
+- [ ] `export DAO_OWNER_ADDRESS=$(jq -r .address $DAO_OWNER)`
+- [ ] `export GAS_PRICE="<N> gwei"`
+- [ ] `export CONFIRMATIONS=<M>`
+- [ ] `export MOONSTREAM_ADDRESSES=<path to JSON file in which to store diamond addresses>`
+- [ ] `export MOONSTREAM_TOTAL_SUPPLY=<number of tokens to mint>`
 
 ## Deploy diamond proxy
 
@@ -108,3 +109,26 @@ dao core facet-cut \
 - [ ] Check the ERC20 symbol of the diamond contract: `dao moonstream symbol --network $DAO_NETWORK --address $MOONSTREAM_DIAMOND`
 
 - [ ] Symbol is `MNSTR`
+
+## Mint Moonstream tokens
+
+- [ ] Mint `MOONSTREAM_TOTAL_SUPPLY` worth of tokens to self.
+
+```bash
+dao moonstream mint \
+    --network $DAO_NETWORK \
+    --address $MOONSTREAM_DIAMOND \
+    --sender $DAO_OWNER \
+    --gas-price "$GAS_PRICE" \
+    --confirmations $CONFIRMATIONS \
+    --account $DAO_OWNER_ADDRESS \
+    --amount $MOONSTREAM_TOTAL_SUPPLY
+```
+
+- [ ] Check the total supply of the diamond contract: `dao moonstream total-supply --network $DAO_NETWORK --address $MOONSTREAM_DIAMOND`
+
+- [ ] Total supply should be equal to value of `MOONSTREAM_TOTAL_SUPPLY`
+
+- [ ] Check balance of DAO owner address: `dao moonstream balance-of --network $DAO_NETWORK --address $MOONSTREAM_DIAMOND --account $DAO_OWNER_ADDRESS`
+
+- [ ] Balance should be equal to value of `MOONSTREAM_TOTAL_SUPPLY`
