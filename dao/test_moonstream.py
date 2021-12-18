@@ -2,7 +2,7 @@ from brownie import accounts
 
 from . import ERC20Facet, ERC20Initializer
 from .core import ZERO_ADDRESS, facet_cut
-from .test_core import MoonstreamDAOTestCase
+from .test_core import MoonstreamDAOTestCase, MoonstreamDAOFullTestCase
 
 
 class TestDeployment(MoonstreamDAOTestCase):
@@ -113,3 +113,19 @@ class TestRemoveFacet(MoonstreamDAOTestCase):
 
         with self.assertRaises(Exception):
             symbol = diamond_erc20.symbol()
+
+
+class TestERC20(MoonstreamDAOFullTestCase):
+    def test_mint_fails_if_not_controller(self):
+        diamond_address = self.contracts["Diamond"]
+        diamond = ERC20Facet.ERC20Facet(diamond_address)
+        with self.assertRaises(Exception):
+            diamond.mint(accounts[1].address, 1000, {"from": accounts[1]})
+
+    def test_mint_to_another_address(self):
+        diamond_address = self.contracts["Diamond"]
+        diamond = ERC20Facet.ERC20Facet(diamond_address)
+        initial_balance = diamond.balance_of(accounts[1].address)
+        diamond.mint(accounts[1].address, 1000, {"from": accounts[0]})
+        final_balance = diamond.balance_of(accounts[1].address)
+        self.assertEqual(final_balance, initial_balance + 1000)
