@@ -79,11 +79,12 @@ library LibTerminus {
         emit PoolControlTransferred(poolID, previousController, newController);
     }
 
-    function createPool() internal returns (uint256 poolID) {
+    function createPool() internal returns (uint256) {
         TerminusStorage storage ts = terminusStorage();
-        poolID = ts.currentPoolID + 1;
+        uint256 poolID = ts.currentPoolID + 1;
         setPoolController(poolID, msg.sender);
         ts.currentPoolID++;
+        return poolID;
     }
 
     function enforceIsActive() internal view {
