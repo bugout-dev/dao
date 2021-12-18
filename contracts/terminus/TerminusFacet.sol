@@ -34,6 +34,14 @@ contract TerminusFacet is ERC1155WithTerminusStorage {
         return LibTerminus.createPool();
     }
 
+    function terminusPoolController(uint256 poolID)
+        external
+        view
+        returns (address)
+    {
+        return LibTerminus.terminusStorage().poolController[poolID];
+    }
+
     function mint(
         address to,
         uint256 poolID,

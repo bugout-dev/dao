@@ -176,6 +176,10 @@ class TerminusFacet:
         self.assert_contract_is_instantiated()
         return self.contract.terminusController.call()
 
+    def terminus_pool_controller(self, pool_id: int) -> Any:
+        self.assert_contract_is_instantiated()
+        return self.contract.terminusPoolController.call(pool_id)
+
     def total_pools(self) -> Any:
         self.assert_contract_is_instantiated()
         return self.contract.totalPools.call()
@@ -356,6 +360,13 @@ def handle_terminus_controller(args: argparse.Namespace) -> None:
     print(result)
 
 
+def handle_terminus_pool_controller(args: argparse.Namespace) -> None:
+    network.connect(args.network)
+    contract = TerminusFacet(args.address)
+    result = contract.terminus_pool_controller(pool_id=args.pool_id)
+    print(result)
+
+
 def handle_total_pools(args: argparse.Namespace) -> None:
     network.connect(args.network)
     contract = TerminusFacet(args.address)
@@ -501,6 +512,13 @@ def generate_cli() -> argparse.ArgumentParser:
     terminus_controller_parser = subcommands.add_parser("terminus-controller")
     add_default_arguments(terminus_controller_parser, False)
     terminus_controller_parser.set_defaults(func=handle_terminus_controller)
+
+    terminus_pool_controller_parser = subcommands.add_parser("terminus-pool-controller")
+    add_default_arguments(terminus_pool_controller_parser, False)
+    terminus_pool_controller_parser.add_argument(
+        "--pool-id", required=True, help="Type: uint256", type=int
+    )
+    terminus_pool_controller_parser.set_defaults(func=handle_terminus_pool_controller)
 
     total_pools_parser = subcommands.add_parser("total-pools")
     add_default_arguments(total_pools_parser, False)

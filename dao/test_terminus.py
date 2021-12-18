@@ -1,11 +1,10 @@
 import unittest
 
 from brownie import accounts
-import brownie
 
 from . import TerminusFacet, TerminusInitializer
-from .core import ZERO_ADDRESS, facet_cut
-from .test_core import MoonstreamDAOTestCase, MoonstreamDAOFullTestCase
+from .core import facet_cut
+from .test_core import MoonstreamDAOTestCase, TerminusTestCase
 
 
 class TestDeployment(MoonstreamDAOTestCase):
@@ -30,6 +29,20 @@ class TestDeployment(MoonstreamDAOTestCase):
 
         controller = diamond_terminus.terminus_controller()
         self.assertEqual(controller, accounts[0].address)
+
+
+class TestPoolCreation(TerminusTestCase):
+    def test_create_pool(self):
+        diamond_address = self.contracts["Diamond"]
+        diamond_terminus = TerminusFacet.TerminusFacet(diamond_address)
+
+        initial_total_pools = diamond_terminus.total_pools()
+        diamond_terminus.create_pool({"from": accounts[1]})
+        final_total_pools = diamond_terminus.total_pools()
+        self.assertEqual(final_total_pools, initial_total_pools + 1)
+
+        pool_controller = diamond_terminus.terminus_pool_controller(final_total_pools)
+        self.assertEqual(pool_controller, accounts[1].address)
 
 
 if __name__ == "__main__":
