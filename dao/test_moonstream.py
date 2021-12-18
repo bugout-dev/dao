@@ -129,3 +129,40 @@ class TestERC20(MoonstreamDAOFullTestCase):
         diamond.mint(accounts[1].address, 1000, {"from": accounts[0]})
         final_balance = diamond.balance_of(accounts[1].address)
         self.assertEqual(final_balance, initial_balance + 1000)
+
+    def test_transfer(self):
+        diamond_address = self.contracts["Diamond"]
+        diamond = ERC20Facet.ERC20Facet(diamond_address)
+
+        diamond.mint(accounts[1].address, 1000, {"from": accounts[0]})
+
+        initial_sender_balance = diamond.balance_of(accounts[1].address)
+        initial_receiver_balance = diamond.balance_of(accounts[2].address)
+
+        diamond.transfer(accounts[2].address, 500, {"from": accounts[1]})
+
+        final_sender_balance = diamond.balance_of(accounts[1].address)
+        final_receiver_balance = diamond.balance_of(accounts[2].address)
+
+        self.assertEqual(final_sender_balance, initial_sender_balance - 500)
+        self.assertEqual(final_receiver_balance, initial_receiver_balance + 500)
+
+    def test_transfer_from_with_approval(self):
+        diamond_address = self.contracts["Diamond"]
+        diamond = ERC20Facet.ERC20Facet(diamond_address)
+
+        diamond.mint(accounts[1].address, 1000, {"from": accounts[0]})
+
+        initial_sender_balance = diamond.balance_of(accounts[1].address)
+        initial_receiver_balance = diamond.balance_of(accounts[2].address)
+
+        diamond.approve(accounts[2].address, 500, {"from": accounts[1]})
+        diamond.transfer_from(
+            accounts[1].address, accounts[2].address, 500, {"from": accounts[2]}
+        )
+
+        final_sender_balance = diamond.balance_of(accounts[1].address)
+        final_receiver_balance = diamond.balance_of(accounts[2].address)
+
+        self.assertEqual(final_sender_balance, initial_sender_balance - 500)
+        self.assertEqual(final_receiver_balance, initial_receiver_balance + 500)
