@@ -1,7 +1,7 @@
 from brownie import accounts
 
 from . import ERC20Facet, ERC20Initializer
-from .core import facet_cut
+from .core import ZERO_ADDRESS, facet_cut
 from .test_core import MoonstreamDAOTestCase
 
 
@@ -67,3 +67,49 @@ class TestDeployment(MoonstreamDAOTestCase):
         symbol = diamond_erc20.symbol()
         expected_symbol = "MNSTR"
         self.assertEqual(symbol, expected_symbol)
+
+
+class TestRemoveFacet(MoonstreamDAOTestCase):
+    def test_remove_facet(self):
+        initializer = ERC20Initializer.ERC20Initializer(None)
+        initializer.deploy({"from": accounts[0]})
+
+        erc20_facet = ERC20Facet.ERC20Facet(None)
+        erc20_facet.deploy({"from": accounts[0]})
+
+        diamond_address = self.contracts["Diamond"]
+        facet_cut(
+            diamond_address,
+            "ERC20Facet",
+            erc20_facet.address,
+            "add",
+            {"from": accounts[0]},
+            initializer.address,
+        )
+
+        diamond_erc20 = ERC20Facet.ERC20Facet(diamond_address)
+        name = diamond_erc20.name()
+        expected_name = "Moonstream DAO"
+        self.assertEqual(name, expected_name)
+
+        symbol = diamond_erc20.symbol()
+        expected_symbol = "MNSTR"
+        self.assertEqual(symbol, expected_symbol)
+
+        decimals = diamond_erc20.decimals()
+        expected_decimals = 18
+        self.assertEqual(decimals, expected_decimals)
+
+        facet_cut(
+            diamond_address,
+            "ERC20Facet",
+            ZERO_ADDRESS,
+            "remove",
+            {"from": accounts[0]},
+        )
+
+        with self.assertRaises(Exception):
+            name = diamond_erc20.name()
+
+        with self.assertRaises(Exception):
+            symbol = diamond_erc20.symbol()
