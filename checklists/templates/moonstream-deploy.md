@@ -14,9 +14,17 @@ You will modify this section as you go through the checklist
 ```json
 ```
 
-### ERC20Facet address
+### `ERC20Initializer` address
 
-``
+```
+export ERC20INITIALIZER_ADDRESS=""
+```
+
+### `ERC20Facet` address
+
+```
+export ERC20FACET_ADDRESS=""
+```
 
 ## Environment variables
 
@@ -43,11 +51,28 @@ dao core gogogo \
 
 - [ ] Store JSON output under `Deployed addresses / Diamond addresses` above.
 
-## Attach ERC20 functionality
-
 - [ ] Export diamond proxy address: `export MOONSTREAM_DIAMOND="$(jq -r .Diamond $MOONSTREAM_ADDRESSES)"`
 
-- [ ] Deploy `ERC20Facet` contract.
+## Deploy `ERC20Initializer`
+
+- [ ] Deploy `ERC20Initializer` contract
+
+```bash
+dao moonstream-initializer deploy \
+    --network $DAO_NETWORK \
+    --sender $DAO_OWNER \
+    --gas-price "$GAS_PRICE" \
+    --confirmations $CONFIRMATIONS
+```
+
+- [ ] Export address of deployed contract as `export ERC20INITIALIZER_ADDRESS=<address>`
+
+- [ ] Store address of deployed contract under `Deployed addresses / ERC20Initializer address` above
+
+
+## Deploy `ERC20Facet`
+
+- [ ] Deploy `ERC20Facet` contract
 
 ```bash
 dao moonstream deploy \
@@ -72,7 +97,14 @@ dao core facet-cut \
     --confirmations $CONFIRMATIONS \
     --facet-name ERC20Facet \
     --facet-address $ERC20FACET_ADDRESS \
-    --action add
+    --action add \
+    --initializer-address $ERC20INITIALIZER_ADDRESS
 ```
 
-- [ ] Check the ERC20 name of the diamond contract
+- [ ] Check the ERC20 name of the diamond contract: `dao moonstream name --network $DAO_NETWORK --address $MOONSTREAM_DIAMOND`
+
+- [ ] Name is `Moonstream DAO`
+
+- [ ] Check the ERC20 symbol of the diamond contract: `dao moonstream symbol --network $DAO_NETWORK --address $MOONSTREAM_DIAMOND`
+
+- [ ] Symbol is `MNSTR`
