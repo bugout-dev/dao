@@ -1,6 +1,6 @@
-# Deploy the Moonstream governance token
+# Deploy the Moonstream platform token
 
-The Moonstream DAO governance token is deployed as an EIP2535 Diamond proxy contract with an ERC20
+The Moonstream DAO platform token is deployed as an EIP2535 Diamond proxy contract with an ERC20
 facet attached to it.
 
 This checklist describes how to deploy the token.

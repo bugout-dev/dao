@@ -4,7 +4,7 @@
  * Authors: Moonstream Engineering (engineering@moonstream.to)
  * GitHub: https://github.com/bugout-dev/dao
  *
- * Initializer for Moonstream DAO governance token. Used when mounting a new ERC20Facet onto its
+ * Initializer for Moonstream DAO platform token. Used when mounting a new ERC20Facet onto its
  * diamond proxy.
  */
 

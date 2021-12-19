@@ -4,7 +4,7 @@
  * Authors: Moonstream Engineering (engineering@moonstream.to)
  * GitHub: https://github.com/bugout-dev/dao
  *
- * This is an implementation of the ERC20 governance token for the Moonstream DAO.
+ * This is an implementation of the Terminus decentralized authorization contract.
  */
 
 pragma solidity ^0.8.0;
