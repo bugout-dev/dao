@@ -9,7 +9,7 @@ from . import TerminusFacet
 from . import TerminusInitializer
 
 
-class MoonstreamDAOTestCase(unittest.TestCase):
+class MoonstreamDAOSingleContractTestCase(unittest.TestCase):
     @classmethod
     def setUpClass(cls) -> None:
         try:
@@ -19,7 +19,7 @@ class MoonstreamDAOTestCase(unittest.TestCase):
         cls.contracts = gogogo(accounts[0], {"from": accounts[0]})
 
 
-class MoonstreamTokenTestCase(MoonstreamDAOTestCase):
+class MoonstreamTokenTestCase(MoonstreamDAOSingleContractTestCase):
     @classmethod
     def setUpClass(cls) -> None:
         super().setUpClass()
@@ -45,10 +45,12 @@ class MoonstreamTokenTestCase(MoonstreamDAOTestCase):
         cls.erc20_facet = erc20_facet.address
 
 
-class TerminusTestCase(MoonstreamDAOTestCase):
+class TerminusTestCase(MoonstreamDAOSingleContractTestCase):
     @classmethod
     def setUpClass(cls) -> None:
         super().setUpClass()
+
+        cls.terminus_contracts = gogogo(accounts[0], {"from": accounts[0]})
 
         # Deploy Terminus
         initializer = TerminusInitializer.TerminusInitializer(None)
@@ -57,7 +59,7 @@ class TerminusTestCase(MoonstreamDAOTestCase):
         terminus_facet = TerminusFacet.TerminusFacet(None)
         terminus_facet.deploy({"from": accounts[0]})
 
-        diamond_address = cls.contracts["Diamond"]
+        diamond_address = cls.terminus_contracts["Diamond"]
         facet_cut(
             diamond_address,
             "TerminusFacet",
@@ -71,7 +73,7 @@ class TerminusTestCase(MoonstreamDAOTestCase):
         cls.terminus_facet = terminus_facet.address
 
 
-class TestCoreDeployment(MoonstreamDAOTestCase):
+class TestCoreDeployment(MoonstreamDAOSingleContractTestCase):
     def test_gogogo(self):
         self.assertIn("DiamondCutFacet", self.contracts)
         self.assertIn("Diamond", self.contracts)

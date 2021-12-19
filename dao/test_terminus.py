@@ -4,10 +4,10 @@ from brownie import accounts
 
 from . import TerminusFacet, TerminusInitializer
 from .core import facet_cut
-from .test_core import MoonstreamDAOTestCase, TerminusTestCase
+from .test_core import MoonstreamDAOSingleContractTestCase, TerminusTestCase
 
 
-class TestDeployment(MoonstreamDAOTestCase):
+class TestDeployment(MoonstreamDAOSingleContractTestCase):
     def test_add_and_replace(self):
         initializer = TerminusInitializer.TerminusInitializer(None)
         initializer.deploy({"from": accounts[0]})
@@ -33,7 +33,7 @@ class TestDeployment(MoonstreamDAOTestCase):
 
 class TestPoolCreation(TerminusTestCase):
     def test_create_pool(self):
-        diamond_address = self.contracts["Diamond"]
+        diamond_address = self.terminus_contracts["Diamond"]
         diamond_terminus = TerminusFacet.TerminusFacet(diamond_address)
 
         initial_total_pools = diamond_terminus.total_pools()
