@@ -134,6 +134,10 @@ class TerminusFacet:
         self.assert_contract_is_instantiated()
         return self.contract.paymentToken.call()
 
+    def pool_base_price(self) -> Any:
+        self.assert_contract_is_instantiated()
+        return self.contract.poolBasePrice.call()
+
     def safe_batch_transfer_from(
         self,
         from_: ChecksumAddress,
@@ -174,6 +178,10 @@ class TerminusFacet:
         self.assert_contract_is_instantiated()
         return self.contract.setPaymentToken(new_payment_token, transaction_config)
 
+    def set_pool_base_price(self, new_base_price: int, transaction_config) -> Any:
+        self.assert_contract_is_instantiated()
+        return self.contract.setPoolBasePrice(new_base_price, transaction_config)
+
     def set_uri(self, pool_id: int, pool_uri: str, transaction_config) -> Any:
         self.assert_contract_is_instantiated()
         return self.contract.setURI(pool_id, pool_uri, transaction_config)
@@ -197,6 +205,12 @@ class TerminusFacet:
     def uri(self, pool_id: int) -> Any:
         self.assert_contract_is_instantiated()
         return self.contract.uri.call(pool_id)
+
+    def withdraw_payments(
+        self, to_address: ChecksumAddress, amount: int, transaction_config
+    ) -> Any:
+        self.assert_contract_is_instantiated()
+        return self.contract.withdrawPayments(to_address, amount, transaction_config)
 
 
 def get_transaction_config(args: argparse.Namespace) -> Dict[str, Any]:
@@ -314,6 +328,13 @@ def handle_payment_token(args: argparse.Namespace) -> None:
     print(result)
 
 
+def handle_pool_base_price(args: argparse.Namespace) -> None:
+    network.connect(args.network)
+    contract = TerminusFacet(args.address)
+    result = contract.pool_base_price()
+    print(result)
+
+
 def handle_safe_batch_transfer_from(args: argparse.Namespace) -> None:
     network.connect(args.network)
     contract = TerminusFacet(args.address)
@@ -366,6 +387,16 @@ def handle_set_payment_token(args: argparse.Namespace) -> None:
     print(result)
 
 
+def handle_set_pool_base_price(args: argparse.Namespace) -> None:
+    network.connect(args.network)
+    contract = TerminusFacet(args.address)
+    transaction_config = get_transaction_config(args)
+    result = contract.set_pool_base_price(
+        new_base_price=args.new_base_price, transaction_config=transaction_config
+    )
+    print(result)
+
+
 def handle_set_uri(args: argparse.Namespace) -> None:
     network.connect(args.network)
     contract = TerminusFacet(args.address)
@@ -410,6 +441,18 @@ def handle_uri(args: argparse.Namespace) -> None:
     network.connect(args.network)
     contract = TerminusFacet(args.address)
     result = contract.uri(pool_id=args.pool_id)
+    print(result)
+
+
+def handle_withdraw_payments(args: argparse.Namespace) -> None:
+    network.connect(args.network)
+    contract = TerminusFacet(args.address)
+    transaction_config = get_transaction_config(args)
+    result = contract.withdraw_payments(
+        to_address=args.to_address,
+        amount=args.amount,
+        transaction_config=transaction_config,
+    )
     print(result)
 
 
@@ -482,6 +525,10 @@ def generate_cli() -> argparse.ArgumentParser:
     add_default_arguments(payment_token_parser, False)
     payment_token_parser.set_defaults(func=handle_payment_token)
 
+    pool_base_price_parser = subcommands.add_parser("pool-base-price")
+    add_default_arguments(pool_base_price_parser, False)
+    pool_base_price_parser.set_defaults(func=handle_pool_base_price)
+
     safe_batch_transfer_from_parser = subcommands.add_parser("safe-batch-transfer-from")
     add_default_arguments(safe_batch_transfer_from_parser, True)
     safe_batch_transfer_from_parser.add_argument(
@@ -535,6 +582,13 @@ def generate_cli() -> argparse.ArgumentParser:
     )
     set_payment_token_parser.set_defaults(func=handle_set_payment_token)
 
+    set_pool_base_price_parser = subcommands.add_parser("set-pool-base-price")
+    add_default_arguments(set_pool_base_price_parser, True)
+    set_pool_base_price_parser.add_argument(
+        "--new-base-price", required=True, help="Type: uint256", type=int
+    )
+    set_pool_base_price_parser.set_defaults(func=handle_set_pool_base_price)
+
     set_uri_parser = subcommands.add_parser("set-uri")
     add_default_arguments(set_uri_parser, True)
     set_uri_parser.add_argument(
@@ -571,6 +625,16 @@ def generate_cli() -> argparse.ArgumentParser:
     add_default_arguments(uri_parser, False)
     uri_parser.add_argument("--pool-id", required=True, help="Type: uint256", type=int)
     uri_parser.set_defaults(func=handle_uri)
+
+    withdraw_payments_parser = subcommands.add_parser("withdraw-payments")
+    add_default_arguments(withdraw_payments_parser, True)
+    withdraw_payments_parser.add_argument(
+        "--to-address", required=True, help="Type: address"
+    )
+    withdraw_payments_parser.add_argument(
+        "--amount", required=True, help="Type: uint256", type=int
+    )
+    withdraw_payments_parser.set_defaults(func=handle_withdraw_payments)
 
     return parser
 

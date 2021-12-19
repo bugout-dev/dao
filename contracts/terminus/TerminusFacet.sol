@@ -31,6 +31,16 @@ contract TerminusFacet is ERC1155WithTerminusStorage {
         ts.paymentToken = newPaymentToken;
     }
 
+    function poolBasePrice() external view returns (uint256) {
+        return LibTerminus.terminusStorage().poolBasePrice;
+    }
+
+    function setPoolBasePrice(uint256 newBasePrice) external {
+        LibTerminus.enforceIsController();
+        LibTerminus.TerminusStorage storage ts = LibTerminus.terminusStorage();
+        ts.poolBasePrice = newBasePrice;
+    }
+
     function _paymentTokenContract() internal view returns (IERC20) {
         address paymentTokenAddress = LibTerminus
             .terminusStorage()
@@ -40,6 +50,16 @@ contract TerminusFacet is ERC1155WithTerminusStorage {
             "TerminusFacet: Payment token has not been set"
         );
         return IERC20(paymentTokenAddress);
+    }
+
+    function withdrawPayments(address toAddress, uint256 amount) external {
+        LibTerminus.enforceIsController();
+        require(
+            _msgSender() == toAddress,
+            "TerminusFacet: withdrawPayments -- Controller can only withdraw to self"
+        );
+        IERC20 paymentTokenContract = _paymentTokenContract();
+        paymentTokenContract.transfer(toAddress, amount);
     }
 
     function setURI(uint256 poolID, string memory poolURI) external {

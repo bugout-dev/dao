@@ -45,7 +45,7 @@ class MoonstreamTokenTestCase(MoonstreamDAOSingleContractTestCase):
         cls.erc20_facet = erc20_facet.address
 
 
-class TerminusTestCase(MoonstreamDAOSingleContractTestCase):
+class TerminusTestCase(MoonstreamTokenTestCase):
     @classmethod
     def setUpClass(cls) -> None:
         super().setUpClass()
