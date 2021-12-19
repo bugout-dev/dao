@@ -23,6 +23,8 @@ library LibTerminus {
         address controller;
         bool isTerminusActive;
         uint256 currentPoolID;
+        address paymentToken;
+        uint256 poolBasePrice;
         // Terminus pools
         mapping(uint256 => address) poolController;
         mapping(uint256 => bool) poolActive;
@@ -79,7 +81,7 @@ library LibTerminus {
         emit PoolControlTransferred(poolID, previousController, newController);
     }
 
-    function createPool() internal returns (uint256) {
+    function createSimplePool() internal returns (uint256) {
         TerminusStorage storage ts = terminusStorage();
         uint256 poolID = ts.currentPoolID + 1;
         setPoolController(poolID, msg.sender);
