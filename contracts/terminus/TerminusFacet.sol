@@ -5,6 +5,15 @@
  * GitHub: https://github.com/bugout-dev/dao
  *
  * This is an implementation of the Terminus decentralized authorization contract.
+ *
+ * Terminus users can create authorization pools. Each authorization pool has the following properties:
+ * 1. Controller: The address that controls the pool. Initially set to be the address of the pool creator.
+ * 2. Pool URI: Metadata URI for the authorization pool.
+ * 3. Pool capacity: The total number of tokens that can be minted in that authorization pool.
+ * 4. Pool supply: The number of tokens that have actually been minted in that authorization pool.
+ * 5. Transferable: A boolean value which denotes whether or not tokens from that pool can be transfered
+ *    between addresses.
+ * 6. Burnable: A boolean value which denotes whether or not tokens from that pool can be burned.
  */
 
 pragma solidity ^0.8.0;
@@ -72,7 +81,23 @@ contract TerminusFacet is ERC1155WithTerminusStorage {
         return LibTerminus.terminusStorage().currentPoolID;
     }
 
-    function createSimplePool() external returns (uint256) {
+    function terminusPoolController(uint256 poolID)
+        external
+        view
+        returns (address)
+    {
+        return LibTerminus.terminusStorage().poolController[poolID];
+    }
+
+    function terminusPoolCapacity(uint256 poolID)
+        external
+        view
+        returns (uint256)
+    {
+        return LibTerminus.terminusStorage().poolCapacity[poolID];
+    }
+
+    function createSimplePool(uint256 _capacity) external returns (uint256) {
         LibTerminus.TerminusStorage storage ts = LibTerminus.terminusStorage();
         uint256 requiredPayment = ts.poolBasePrice;
         IERC20 paymentTokenContract = _paymentTokenContract();
@@ -86,15 +111,7 @@ contract TerminusFacet is ERC1155WithTerminusStorage {
             address(this),
             requiredPayment
         );
-        return LibTerminus.createSimplePool();
-    }
-
-    function terminusPoolController(uint256 poolID)
-        external
-        view
-        returns (address)
-    {
-        return LibTerminus.terminusStorage().poolController[poolID];
+        return LibTerminus.createSimplePool(_capacity);
     }
 
     function mint(

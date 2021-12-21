@@ -98,9 +98,9 @@ class TerminusFacet:
         self.assert_contract_is_instantiated()
         return self.contract.balanceOfBatch.call(accounts, ids)
 
-    def create_simple_pool(self, transaction_config) -> Any:
+    def create_simple_pool(self, _capacity: int, transaction_config) -> Any:
         self.assert_contract_is_instantiated()
-        return self.contract.createSimplePool(transaction_config)
+        return self.contract.createSimplePool(_capacity, transaction_config)
 
     def is_approved_for_all(
         self, account: ChecksumAddress, operator: ChecksumAddress
@@ -194,6 +194,10 @@ class TerminusFacet:
         self.assert_contract_is_instantiated()
         return self.contract.terminusController.call()
 
+    def terminus_pool_capacity(self, pool_id: int) -> Any:
+        self.assert_contract_is_instantiated()
+        return self.contract.terminusPoolCapacity.call(pool_id)
+
     def terminus_pool_controller(self, pool_id: int) -> Any:
         self.assert_contract_is_instantiated()
         return self.contract.terminusPoolController.call(pool_id)
@@ -282,7 +286,9 @@ def handle_create_simple_pool(args: argparse.Namespace) -> None:
     network.connect(args.network)
     contract = TerminusFacet(args.address)
     transaction_config = get_transaction_config(args)
-    result = contract.create_simple_pool(transaction_config=transaction_config)
+    result = contract.create_simple_pool(
+        _capacity=args.capacity_arg, transaction_config=transaction_config
+    )
     print(result)
 
 
@@ -423,6 +429,13 @@ def handle_terminus_controller(args: argparse.Namespace) -> None:
     print(result)
 
 
+def handle_terminus_pool_capacity(args: argparse.Namespace) -> None:
+    network.connect(args.network)
+    contract = TerminusFacet(args.address)
+    result = contract.terminus_pool_capacity(pool_id=args.pool_id)
+    print(result)
+
+
 def handle_terminus_pool_controller(args: argparse.Namespace) -> None:
     network.connect(args.network)
     contract = TerminusFacet(args.address)
@@ -485,6 +498,9 @@ def generate_cli() -> argparse.ArgumentParser:
 
     create_simple_pool_parser = subcommands.add_parser("create-simple-pool")
     add_default_arguments(create_simple_pool_parser, True)
+    create_simple_pool_parser.add_argument(
+        "--capacity-arg", required=True, help="Type: uint256", type=int
+    )
     create_simple_pool_parser.set_defaults(func=handle_create_simple_pool)
 
     is_approved_for_all_parser = subcommands.add_parser("is-approved-for-all")
@@ -609,6 +625,13 @@ def generate_cli() -> argparse.ArgumentParser:
     terminus_controller_parser = subcommands.add_parser("terminus-controller")
     add_default_arguments(terminus_controller_parser, False)
     terminus_controller_parser.set_defaults(func=handle_terminus_controller)
+
+    terminus_pool_capacity_parser = subcommands.add_parser("terminus-pool-capacity")
+    add_default_arguments(terminus_pool_capacity_parser, False)
+    terminus_pool_capacity_parser.add_argument(
+        "--pool-id", required=True, help="Type: uint256", type=int
+    )
+    terminus_pool_capacity_parser.set_defaults(func=handle_terminus_pool_capacity)
 
     terminus_pool_controller_parser = subcommands.add_parser("terminus-pool-controller")
     add_default_arguments(terminus_pool_controller_parser, False)

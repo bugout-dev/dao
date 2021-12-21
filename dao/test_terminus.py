@@ -62,7 +62,7 @@ class TestPoolCreation(TerminusTestCase):
 
         initial_total_pools = diamond_terminus.total_pools()
 
-        diamond_terminus.create_simple_pool({"from": accounts[1]})
+        diamond_terminus.create_simple_pool(10, {"from": accounts[1]})
 
         final_total_pools = diamond_terminus.total_pools()
         self.assertEqual(final_total_pools, initial_total_pools + 1)
@@ -113,6 +113,9 @@ class TestPoolCreation(TerminusTestCase):
 
         pool_controller = diamond_terminus.terminus_pool_controller(final_total_pools)
         self.assertEqual(pool_controller, accounts[1].address)
+
+        pool_capacity = diamond_terminus.terminus_pool_capacity(final_total_pools)
+        self.assertEqual(pool_capacity, 10)
 
 
 if __name__ == "__main__":

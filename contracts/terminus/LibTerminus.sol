@@ -27,8 +27,8 @@ library LibTerminus {
         uint256 poolBasePrice;
         // Terminus pools
         mapping(uint256 => address) poolController;
-        mapping(uint256 => bool) poolActive;
         mapping(uint256 => string) poolURI;
+        mapping(uint256 => uint256) poolCapacity;
         mapping(uint256 => uint256) poolSupply;
         mapping(uint256 => mapping(address => uint256)) poolBalances;
         mapping(address => mapping(address => bool)) globalOperatorApprovals;
@@ -81,28 +81,13 @@ library LibTerminus {
         emit PoolControlTransferred(poolID, previousController, newController);
     }
 
-    function createSimplePool() internal returns (uint256) {
+    function createSimplePool(uint256 _capacity) internal returns (uint256) {
         TerminusStorage storage ts = terminusStorage();
         uint256 poolID = ts.currentPoolID + 1;
         setPoolController(poolID, msg.sender);
+        ts.poolCapacity[poolID] = _capacity;
         ts.currentPoolID++;
         return poolID;
-    }
-
-    function enforceIsActive() internal view {
-        TerminusStorage storage ts = terminusStorage();
-        require(
-            ts.isTerminusActive,
-            "LibTerminus: Terminus contract must be active"
-        );
-    }
-
-    function enforcePoolIsActive(uint256 poolID) internal view {
-        TerminusStorage storage ts = terminusStorage();
-        require(
-            ts.poolActive[poolID],
-            "LibTerminus: Terminus pool must be active"
-        );
     }
 
     function enforcePoolIsController(uint256 poolID, address maybeController)

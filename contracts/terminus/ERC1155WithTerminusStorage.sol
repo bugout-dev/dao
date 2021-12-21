@@ -292,6 +292,11 @@ contract ERC1155WithTerminusStorage is
         bytes memory data
     ) internal virtual {
         require(to != address(0), "ERC1155: mint to the zero address");
+        LibTerminus.TerminusStorage storage ts = LibTerminus.terminusStorage();
+        require(
+            ts.poolSupply[id] + amount <= ts.poolCapacity[id],
+            "ERC1155WithTerminusStorage: _mint -- Minted tokens would exceed pool capacity"
+        );
 
         address operator = _msgSender();
 
@@ -304,7 +309,6 @@ contract ERC1155WithTerminusStorage is
             data
         );
 
-        LibTerminus.TerminusStorage storage ts = LibTerminus.terminusStorage();
         ts.poolBalances[id][to] += amount;
         emit TransferSingle(operator, address(0), to, id, amount);
 
@@ -339,11 +343,18 @@ contract ERC1155WithTerminusStorage is
             "ERC1155: ids and amounts length mismatch"
         );
 
+        LibTerminus.TerminusStorage storage ts = LibTerminus.terminusStorage();
+
+        for (uint256 i = 0; i < ids.length; i++) {
+            require(
+                ts.poolSupply[ids[i]] + amounts[i] <= ts.poolCapacity[ids[i]],
+                "ERC1155WithTerminusStorage: _mintBatch -- Minted tokens would exceed pool capacity"
+            );
+        }
+
         address operator = _msgSender();
 
         _beforeTokenTransfer(operator, address(0), to, ids, amounts, data);
-
-        LibTerminus.TerminusStorage storage ts = LibTerminus.terminusStorage();
 
         for (uint256 i = 0; i < ids.length; i++) {
             ts.poolBalances[ids[i]][to] += amounts[i];
