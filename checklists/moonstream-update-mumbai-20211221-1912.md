@@ -17,13 +17,13 @@ export ERC20FACET_ADDRESS="0x973359bC17de4B2A84Fe3151B5B857f12cf423CB"
 
 ## Environment variables
 
-- [ ] `export DAO_NETWORK=<desired brownie network>`
-- [ ] `export DAO_OWNER=<path to keystore file for owner account>`
-- [ ] `export DAO_OWNER_ADDRESS=$(jq -r .address $DAO_OWNER)`
-- [ ] `export GAS_PRICE="<N> gwei"`
-- [ ] `export CONFIRMATIONS=<M>`
-- [ ] `export MOONSTREAM_ADDRESSES=<path to JSON file in which to store diamond addresses>`
-- [ ] `export MOONSTREAM_DIAMOND="$(jq -r .Diamond $MOONSTREAM_ADDRESSES)"`
+- [x] `export DAO_NETWORK=<desired brownie network>`
+- [x] `export DAO_OWNER=<path to keystore file for owner account>`
+- [x] `export DAO_OWNER_ADDRESS=$(jq -r .address $DAO_OWNER)`
+- [x] `export GAS_PRICE="<N> gwei"`
+- [x] `export CONFIRMATIONS=<M>`
+- [x] `export MOONSTREAM_ADDRESSES=<path to JSON file in which to store diamond addresses>`
+- [x] `export MOONSTREAM_DIAMOND="$(jq -r .Diamond $MOONSTREAM_ADDRESSES)"`
 
 ## Deploy `ERC20Facet`
 
