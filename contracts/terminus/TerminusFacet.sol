@@ -12,7 +12,9 @@
  * 3. Pool capacity: The total number of tokens that can be minted in that authorization pool.
  * 4. Pool supply: The number of tokens that have actually been minted in that authorization pool.
  * 5. Transferable: A boolean value which denotes whether or not tokens from that pool can be transfered
- *    between addresses.
+ *    between addresses. (Note: Implemented by TerminusStorage.poolNotTransferable since we expect most
+ *    pools to be transferable. This negation is better for storage + gas since false is default value
+ *    in map to bool.)
  * 6. Burnable: A boolean value which denotes whether or not tokens from that pool can be burned.
  */
 
@@ -97,6 +99,14 @@ contract TerminusFacet is ERC1155WithTerminusStorage {
         return LibTerminus.terminusStorage().poolCapacity[poolID];
     }
 
+    function terminusPoolSupply(uint256 poolID)
+        external
+        view
+        returns (uint256)
+    {
+        return LibTerminus.terminusStorage().poolSupply[poolID];
+    }
+
     function createSimplePool(uint256 _capacity) external returns (uint256) {
         LibTerminus.TerminusStorage storage ts = LibTerminus.terminusStorage();
         uint256 requiredPayment = ts.poolBasePrice;
@@ -112,6 +122,35 @@ contract TerminusFacet is ERC1155WithTerminusStorage {
             requiredPayment
         );
         return LibTerminus.createSimplePool(_capacity);
+    }
+
+    function createPoolV1(
+        uint256 _capacity,
+        bool _transferable,
+        bool _burnable
+    ) external returns (uint256) {
+        LibTerminus.TerminusStorage storage ts = LibTerminus.terminusStorage();
+        // TODO(zomglings): Implement requiredPayment update based on pool features.
+        uint256 requiredPayment = ts.poolBasePrice;
+        IERC20 paymentTokenContract = _paymentTokenContract();
+        require(
+            paymentTokenContract.allowance(_msgSender(), address(this)) >=
+                requiredPayment,
+            "TerminusFacet: createPoolV1 -- Insufficient allowance on payment token"
+        );
+        paymentTokenContract.transferFrom(
+            msg.sender,
+            address(this),
+            requiredPayment
+        );
+        uint256 poolID = LibTerminus.createSimplePool(_capacity);
+        if (!_transferable) {
+            ts.poolNotTransferable[poolID] = true;
+        }
+        if (_burnable) {
+            ts.poolBurnable[poolID] = true;
+        }
+        return poolID;
     }
 
     function mint(
@@ -134,5 +173,13 @@ contract TerminusFacet is ERC1155WithTerminusStorage {
             LibTerminus.enforcePoolIsController(poolIDs[i], _msgSender());
         }
         _mintBatch(to, poolIDs, amounts, data);
+    }
+
+    function burn(
+        address from,
+        uint256 poolID,
+        uint256 amount
+    ) external {
+        _burn(from, poolID, amount);
     }
 }

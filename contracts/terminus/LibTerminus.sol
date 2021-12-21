@@ -31,8 +31,9 @@ library LibTerminus {
         mapping(uint256 => uint256) poolCapacity;
         mapping(uint256 => uint256) poolSupply;
         mapping(uint256 => mapping(address => uint256)) poolBalances;
+        mapping(uint256 => bool) poolNotTransferable;
+        mapping(uint256 => bool) poolBurnable;
         mapping(address => mapping(address => bool)) globalOperatorApprovals;
-        // TODO(zomglings): Add mappings for pool properties. E.g. poolTransferable, poolMintable, etc.
     }
 
     function terminusStorage()

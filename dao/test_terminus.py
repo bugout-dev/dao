@@ -118,5 +118,364 @@ class TestPoolCreation(TerminusTestCase):
         self.assertEqual(pool_capacity, 10)
 
 
+class TestPoolOperations(TerminusTestCase):
+    @classmethod
+    def setUpClass(cls) -> None:
+        super().setUpClass()
+        moonstream_diamond_address = cls.contracts["Diamond"]
+        diamond_moonstream = ERC20Facet.ERC20Facet(moonstream_diamond_address)
+        terminus_diamond_address = cls.terminus_contracts["Diamond"]
+        diamond_terminus = TerminusFacet.TerminusFacet(terminus_diamond_address)
+        diamond_terminus.set_payment_token(
+            moonstream_diamond_address, {"from": accounts[0]}
+        )
+        diamond_terminus.set_pool_base_price(1000, {"from": accounts[0]})
+        diamond_moonstream.mint(accounts[1], 1000000, {"from": accounts[0]})
+        diamond_moonstream.approve(
+            terminus_diamond_address, 1000000, {"from": accounts[1]}
+        )
+        cls.diamond_terminus = diamond_terminus
+        cls.diamond_moonstream = diamond_moonstream
+
+    def setUp(self) -> None:
+        self.diamond_terminus.create_simple_pool(10, {"from": accounts[1]})
+
+    def test_mint(self):
+        pool_id = self.diamond_terminus.total_pools()
+        self.diamond_terminus.mint(accounts[2], pool_id, 1, b"", {"from": accounts[1]})
+
+        balance = self.diamond_terminus.balance_of(accounts[2].address, pool_id)
+        self.assertEqual(balance, 1)
+
+        supply = self.diamond_terminus.terminus_pool_supply(pool_id)
+        self.assertEqual(supply, 1)
+
+    def test_mint_fails_if_it_exceeds_capacity(self):
+        pool_id = self.diamond_terminus.total_pools()
+        with self.assertRaises(Exception):
+            self.diamond_terminus.mint(
+                accounts[2], pool_id, 11, b"", {"from": accounts[1]}
+            )
+
+        balance = self.diamond_terminus.balance_of(accounts[2].address, pool_id)
+        self.assertEqual(balance, 0)
+
+        supply = self.diamond_terminus.terminus_pool_supply(pool_id)
+        self.assertEqual(supply, 0)
+
+    def test_mint_batch(self):
+        pool_id = self.diamond_terminus.total_pools()
+        self.diamond_terminus.mint_batch(
+            accounts[2].address,
+            pool_i_ds=[pool_id],
+            amounts=[1],
+            data=b"",
+            transaction_config={"from": accounts[1]},
+        )
+
+        balance = self.diamond_terminus.balance_of(accounts[2].address, pool_id)
+        self.assertEqual(balance, 1)
+
+        supply = self.diamond_terminus.terminus_pool_supply(pool_id)
+        self.assertEqual(supply, 1)
+
+    def test_mint_batch_fails_if_it_exceeds_capacity(self):
+        pool_id = self.diamond_terminus.total_pools()
+        with self.assertRaises(Exception):
+            self.diamond_terminus.mint_batch(
+                accounts[2].address,
+                pool_i_ds=[pool_id],
+                amounts=[11],
+                data=b"",
+                transaction_config={"from": accounts[1]},
+            )
+
+        balance = self.diamond_terminus.balance_of(accounts[2].address, pool_id)
+        self.assertEqual(balance, 0)
+
+        supply = self.diamond_terminus.terminus_pool_supply(pool_id)
+        self.assertEqual(supply, 0)
+
+    def test_transfer(self):
+        pool_id = self.diamond_terminus.total_pools()
+        self.diamond_terminus.mint(accounts[2], pool_id, 1, b"", {"from": accounts[1]})
+
+        initial_sender_balance = self.diamond_terminus.balance_of(
+            accounts[2].address, pool_id
+        )
+        initial_receiver_balance = self.diamond_terminus.balance_of(
+            accounts[3].address, pool_id
+        )
+
+        self.diamond_terminus.safe_transfer_from(
+            accounts[2].address,
+            accounts[3].address,
+            pool_id,
+            1,
+            b"",
+            {"from": accounts[2]},
+        )
+
+        final_sender_balance = self.diamond_terminus.balance_of(
+            accounts[2].address, pool_id
+        )
+        final_receiver_balance = self.diamond_terminus.balance_of(
+            accounts[3].address, pool_id
+        )
+
+        self.assertEqual(final_sender_balance, initial_sender_balance - 1)
+        self.assertEqual(final_receiver_balance, initial_receiver_balance + 1)
+
+    def test_transfer_as_pool_controller(self):
+        pool_id = self.diamond_terminus.total_pools()
+        self.diamond_terminus.mint(accounts[2], pool_id, 1, b"", {"from": accounts[1]})
+
+        initial_sender_balance = self.diamond_terminus.balance_of(
+            accounts[2].address, pool_id
+        )
+        initial_receiver_balance = self.diamond_terminus.balance_of(
+            accounts[3].address, pool_id
+        )
+
+        self.diamond_terminus.safe_transfer_from(
+            accounts[2].address,
+            accounts[3].address,
+            pool_id,
+            1,
+            b"",
+            {"from": accounts[1]},
+        )
+
+        final_sender_balance = self.diamond_terminus.balance_of(
+            accounts[2].address, pool_id
+        )
+        final_receiver_balance = self.diamond_terminus.balance_of(
+            accounts[3].address, pool_id
+        )
+
+        self.assertEqual(final_sender_balance, initial_sender_balance - 1)
+        self.assertEqual(final_receiver_balance, initial_receiver_balance + 1)
+
+    def test_transfer_as_unauthorized_recipient(self):
+        pool_id = self.diamond_terminus.total_pools()
+        self.diamond_terminus.mint(accounts[2], pool_id, 1, b"", {"from": accounts[1]})
+
+        initial_sender_balance = self.diamond_terminus.balance_of(
+            accounts[2].address, pool_id
+        )
+        initial_receiver_balance = self.diamond_terminus.balance_of(
+            accounts[3].address, pool_id
+        )
+
+        with self.assertRaises(Exception):
+            self.diamond_terminus.safe_transfer_from(
+                accounts[2].address,
+                accounts[3].address,
+                pool_id,
+                1,
+                b"",
+                {"from": accounts[3]},
+            )
+
+        final_sender_balance = self.diamond_terminus.balance_of(
+            accounts[2].address, pool_id
+        )
+        final_receiver_balance = self.diamond_terminus.balance_of(
+            accounts[3].address, pool_id
+        )
+
+        self.assertEqual(final_sender_balance, initial_sender_balance)
+        self.assertEqual(final_receiver_balance, initial_receiver_balance)
+
+    def test_transfer_as_unauthorized_unrelated_party(self):
+        pool_id = self.diamond_terminus.total_pools()
+        self.diamond_terminus.mint(accounts[2], pool_id, 1, b"", {"from": accounts[1]})
+
+        initial_sender_balance = self.diamond_terminus.balance_of(
+            accounts[2].address, pool_id
+        )
+        initial_receiver_balance = self.diamond_terminus.balance_of(
+            accounts[3].address, pool_id
+        )
+
+        with self.assertRaises(Exception):
+            self.diamond_terminus.safe_transfer_from(
+                accounts[2].address,
+                accounts[3].address,
+                pool_id,
+                1,
+                b"",
+                {"from": accounts[4]},
+            )
+
+        final_sender_balance = self.diamond_terminus.balance_of(
+            accounts[2].address, pool_id
+        )
+        final_receiver_balance = self.diamond_terminus.balance_of(
+            accounts[3].address, pool_id
+        )
+
+        self.assertEqual(final_sender_balance, initial_sender_balance)
+        self.assertEqual(final_receiver_balance, initial_receiver_balance)
+
+    def test_burn_fails_as_token_owner(self):
+        pool_id = self.diamond_terminus.total_pools()
+        self.diamond_terminus.mint(accounts[2], pool_id, 1, b"", {"from": accounts[1]})
+
+        initial_pool_supply = self.diamond_terminus.terminus_pool_supply(pool_id)
+        initial_owner_balance = self.diamond_terminus.balance_of(
+            accounts[2].address, pool_id
+        )
+        with self.assertRaises(Exception):
+            self.diamond_terminus.burn(
+                accounts[2].address, pool_id, 1, {"from": accounts[2]}
+            )
+
+        final_pool_supply = self.diamond_terminus.terminus_pool_supply(pool_id)
+        final_owner_balance = self.diamond_terminus.balance_of(
+            accounts[2].address, pool_id
+        )
+        self.assertEqual(final_pool_supply, initial_pool_supply)
+        self.assertEqual(final_owner_balance, initial_owner_balance)
+
+    def test_burn_fails_as_pool_controller(self):
+        pool_id = self.diamond_terminus.total_pools()
+        self.diamond_terminus.mint(accounts[2], pool_id, 1, b"", {"from": accounts[1]})
+
+        initial_pool_supply = self.diamond_terminus.terminus_pool_supply(pool_id)
+        initial_owner_balance = self.diamond_terminus.balance_of(
+            accounts[2].address, pool_id
+        )
+        with self.assertRaises(Exception):
+            self.diamond_terminus.burn(
+                accounts[2].address, pool_id, 1, {"from": accounts[1]}
+            )
+
+        final_pool_supply = self.diamond_terminus.terminus_pool_supply(pool_id)
+        final_owner_balance = self.diamond_terminus.balance_of(
+            accounts[2].address, pool_id
+        )
+        self.assertEqual(final_pool_supply, initial_pool_supply)
+        self.assertEqual(final_owner_balance, initial_owner_balance)
+
+    def test_burn_fails_as_third_party(self):
+        pool_id = self.diamond_terminus.total_pools()
+        self.diamond_terminus.mint(accounts[2], pool_id, 1, b"", {"from": accounts[1]})
+
+        initial_pool_supply = self.diamond_terminus.terminus_pool_supply(pool_id)
+        initial_owner_balance = self.diamond_terminus.balance_of(
+            accounts[2].address, pool_id
+        )
+        with self.assertRaises(Exception):
+            self.diamond_terminus.burn(
+                accounts[2].address, pool_id, 1, {"from": accounts[3]}
+            )
+
+        final_pool_supply = self.diamond_terminus.terminus_pool_supply(pool_id)
+        final_owner_balance = self.diamond_terminus.balance_of(
+            accounts[2].address, pool_id
+        )
+        self.assertEqual(final_pool_supply, initial_pool_supply)
+        self.assertEqual(final_owner_balance, initial_owner_balance)
+
+
+class TestCreatePoolV1(TestPoolOperations):
+    def setUp(self):
+        self.diamond_terminus.create_pool_v1(10, True, False, {"from": accounts[1]})
+
+    def test_nontransferable_pool(self):
+        self.diamond_terminus.create_pool_v1(10, False, False, {"from": accounts[1]})
+        pool_id = self.diamond_terminus.total_pools()
+        self.diamond_terminus.mint(accounts[2], pool_id, 1, b"", {"from": accounts[1]})
+
+        initial_sender_balance = self.diamond_terminus.balance_of(
+            accounts[2].address, pool_id
+        )
+        initial_receiver_balance = self.diamond_terminus.balance_of(
+            accounts[3].address, pool_id
+        )
+
+        with self.assertRaises(Exception):
+            self.diamond_terminus.safe_transfer_from(
+                accounts[2].address,
+                accounts[3].address,
+                pool_id,
+                1,
+                b"",
+                {"from": accounts[2]},
+            )
+
+        final_sender_balance = self.diamond_terminus.balance_of(
+            accounts[2].address, pool_id
+        )
+        final_receiver_balance = self.diamond_terminus.balance_of(
+            accounts[3].address, pool_id
+        )
+
+        self.assertEqual(final_sender_balance, initial_sender_balance)
+        self.assertEqual(final_receiver_balance, initial_receiver_balance)
+
+    def test_burnable_pool_burn_as_token_owner(self):
+        self.diamond_terminus.create_pool_v1(10, True, True, {"from": accounts[1]})
+        pool_id = self.diamond_terminus.total_pools()
+        self.diamond_terminus.mint(accounts[2], pool_id, 1, b"", {"from": accounts[1]})
+
+        initial_pool_supply = self.diamond_terminus.terminus_pool_supply(pool_id)
+        initial_owner_balance = self.diamond_terminus.balance_of(
+            accounts[2].address, pool_id
+        )
+        self.diamond_terminus.burn(
+            accounts[2].address, pool_id, 1, {"from": accounts[2]}
+        )
+
+        final_pool_supply = self.diamond_terminus.terminus_pool_supply(pool_id)
+        final_owner_balance = self.diamond_terminus.balance_of(
+            accounts[2].address, pool_id
+        )
+        self.assertEqual(final_pool_supply, initial_pool_supply - 1)
+        self.assertEqual(final_owner_balance, initial_owner_balance - 1)
+
+    def test_burnable_pool_burn_as_pool_controller(self):
+        self.diamond_terminus.create_pool_v1(10, True, True, {"from": accounts[1]})
+        pool_id = self.diamond_terminus.total_pools()
+        self.diamond_terminus.mint(accounts[2], pool_id, 1, b"", {"from": accounts[1]})
+
+        initial_pool_supply = self.diamond_terminus.terminus_pool_supply(pool_id)
+        initial_owner_balance = self.diamond_terminus.balance_of(
+            accounts[2].address, pool_id
+        )
+        self.diamond_terminus.burn(
+            accounts[2].address, pool_id, 1, {"from": accounts[1]}
+        )
+
+        final_pool_supply = self.diamond_terminus.terminus_pool_supply(pool_id)
+        final_owner_balance = self.diamond_terminus.balance_of(
+            accounts[2].address, pool_id
+        )
+        self.assertEqual(final_pool_supply, initial_pool_supply - 1)
+        self.assertEqual(final_owner_balance, initial_owner_balance - 1)
+
+    def test_burnable_pool_burn_as_unauthorized_third_party(self):
+        self.diamond_terminus.create_pool_v1(10, True, True, {"from": accounts[1]})
+        pool_id = self.diamond_terminus.total_pools()
+        self.diamond_terminus.mint(accounts[2], pool_id, 1, b"", {"from": accounts[1]})
+
+        initial_pool_supply = self.diamond_terminus.terminus_pool_supply(pool_id)
+        initial_owner_balance = self.diamond_terminus.balance_of(
+            accounts[2].address, pool_id
+        )
+        with self.assertRaises(Exception):
+            self.diamond_terminus.burn(
+                accounts[2].address, pool_id, 1, {"from": accounts[3]}
+            )
+
+        final_pool_supply = self.diamond_terminus.terminus_pool_supply(pool_id)
+        final_owner_balance = self.diamond_terminus.balance_of(
+            accounts[2].address, pool_id
+        )
+        self.assertEqual(final_pool_supply, initial_pool_supply)
+        self.assertEqual(final_owner_balance, initial_owner_balance)
+
+
 if __name__ == "__main__":
     unittest.main()

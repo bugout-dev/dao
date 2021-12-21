@@ -98,6 +98,20 @@ class TerminusFacet:
         self.assert_contract_is_instantiated()
         return self.contract.balanceOfBatch.call(accounts, ids)
 
+    def burn(
+        self, from_: ChecksumAddress, pool_id: int, amount: int, transaction_config
+    ) -> Any:
+        self.assert_contract_is_instantiated()
+        return self.contract.burn(from_, pool_id, amount, transaction_config)
+
+    def create_pool_v1(
+        self, _capacity: int, _transferable: bool, _burnable: bool, transaction_config
+    ) -> Any:
+        self.assert_contract_is_instantiated()
+        return self.contract.createPoolV1(
+            _capacity, _transferable, _burnable, transaction_config
+        )
+
     def create_simple_pool(self, _capacity: int, transaction_config) -> Any:
         self.assert_contract_is_instantiated()
         return self.contract.createSimplePool(_capacity, transaction_config)
@@ -107,6 +121,10 @@ class TerminusFacet:
     ) -> Any:
         self.assert_contract_is_instantiated()
         return self.contract.isApprovedForAll.call(account, operator)
+
+    def is_approved_for_pool(self, pool_id: int, operator: ChecksumAddress) -> Any:
+        self.assert_contract_is_instantiated()
+        return self.contract.isApprovedForPool.call(pool_id, operator)
 
     def mint(
         self,
@@ -202,6 +220,10 @@ class TerminusFacet:
         self.assert_contract_is_instantiated()
         return self.contract.terminusPoolController.call(pool_id)
 
+    def terminus_pool_supply(self, pool_id: int) -> Any:
+        self.assert_contract_is_instantiated()
+        return self.contract.terminusPoolSupply.call(pool_id)
+
     def total_pools(self) -> Any:
         self.assert_contract_is_instantiated()
         return self.contract.totalPools.call()
@@ -282,6 +304,32 @@ def handle_balance_of_batch(args: argparse.Namespace) -> None:
     print(result)
 
 
+def handle_burn(args: argparse.Namespace) -> None:
+    network.connect(args.network)
+    contract = TerminusFacet(args.address)
+    transaction_config = get_transaction_config(args)
+    result = contract.burn(
+        from_=args.from_arg,
+        pool_id=args.pool_id,
+        amount=args.amount,
+        transaction_config=transaction_config,
+    )
+    print(result)
+
+
+def handle_create_pool_v1(args: argparse.Namespace) -> None:
+    network.connect(args.network)
+    contract = TerminusFacet(args.address)
+    transaction_config = get_transaction_config(args)
+    result = contract.create_pool_v1(
+        _capacity=args.capacity_arg,
+        _transferable=args.transferable_arg,
+        _burnable=args.burnable_arg,
+        transaction_config=transaction_config,
+    )
+    print(result)
+
+
 def handle_create_simple_pool(args: argparse.Namespace) -> None:
     network.connect(args.network)
     contract = TerminusFacet(args.address)
@@ -296,6 +344,13 @@ def handle_is_approved_for_all(args: argparse.Namespace) -> None:
     network.connect(args.network)
     contract = TerminusFacet(args.address)
     result = contract.is_approved_for_all(account=args.account, operator=args.operator)
+    print(result)
+
+
+def handle_is_approved_for_pool(args: argparse.Namespace) -> None:
+    network.connect(args.network)
+    contract = TerminusFacet(args.address)
+    result = contract.is_approved_for_pool(pool_id=args.pool_id, operator=args.operator)
     print(result)
 
 
@@ -443,6 +498,13 @@ def handle_terminus_pool_controller(args: argparse.Namespace) -> None:
     print(result)
 
 
+def handle_terminus_pool_supply(args: argparse.Namespace) -> None:
+    network.connect(args.network)
+    contract = TerminusFacet(args.address)
+    result = contract.terminus_pool_supply(pool_id=args.pool_id)
+    print(result)
+
+
 def handle_total_pools(args: argparse.Namespace) -> None:
     network.connect(args.network)
     contract = TerminusFacet(args.address)
@@ -496,6 +558,29 @@ def generate_cli() -> argparse.ArgumentParser:
     )
     balance_of_batch_parser.set_defaults(func=handle_balance_of_batch)
 
+    burn_parser = subcommands.add_parser("burn")
+    add_default_arguments(burn_parser, True)
+    burn_parser.add_argument("--from-arg", required=True, help="Type: address")
+    burn_parser.add_argument("--pool-id", required=True, help="Type: uint256", type=int)
+    burn_parser.add_argument("--amount", required=True, help="Type: uint256", type=int)
+    burn_parser.set_defaults(func=handle_burn)
+
+    create_pool_v1_parser = subcommands.add_parser("create-pool-v1")
+    add_default_arguments(create_pool_v1_parser, True)
+    create_pool_v1_parser.add_argument(
+        "--capacity-arg", required=True, help="Type: uint256", type=int
+    )
+    create_pool_v1_parser.add_argument(
+        "--transferable-arg",
+        required=True,
+        help="Type: bool",
+        type=boolean_argument_type,
+    )
+    create_pool_v1_parser.add_argument(
+        "--burnable-arg", required=True, help="Type: bool", type=boolean_argument_type
+    )
+    create_pool_v1_parser.set_defaults(func=handle_create_pool_v1)
+
     create_simple_pool_parser = subcommands.add_parser("create-simple-pool")
     add_default_arguments(create_simple_pool_parser, True)
     create_simple_pool_parser.add_argument(
@@ -512,6 +597,16 @@ def generate_cli() -> argparse.ArgumentParser:
         "--operator", required=True, help="Type: address"
     )
     is_approved_for_all_parser.set_defaults(func=handle_is_approved_for_all)
+
+    is_approved_for_pool_parser = subcommands.add_parser("is-approved-for-pool")
+    add_default_arguments(is_approved_for_pool_parser, False)
+    is_approved_for_pool_parser.add_argument(
+        "--pool-id", required=True, help="Type: uint256", type=int
+    )
+    is_approved_for_pool_parser.add_argument(
+        "--operator", required=True, help="Type: address"
+    )
+    is_approved_for_pool_parser.set_defaults(func=handle_is_approved_for_pool)
 
     mint_parser = subcommands.add_parser("mint")
     add_default_arguments(mint_parser, True)
@@ -639,6 +734,13 @@ def generate_cli() -> argparse.ArgumentParser:
         "--pool-id", required=True, help="Type: uint256", type=int
     )
     terminus_pool_controller_parser.set_defaults(func=handle_terminus_pool_controller)
+
+    terminus_pool_supply_parser = subcommands.add_parser("terminus-pool-supply")
+    add_default_arguments(terminus_pool_supply_parser, False)
+    terminus_pool_supply_parser.add_argument(
+        "--pool-id", required=True, help="Type: uint256", type=int
+    )
+    terminus_pool_supply_parser.set_defaults(func=handle_terminus_pool_supply)
 
     total_pools_parser = subcommands.add_parser("total-pools")
     add_default_arguments(total_pools_parser, False)

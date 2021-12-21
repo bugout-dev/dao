@@ -75,7 +75,7 @@ contract ERC1155WithTerminusStorage is
     {
         require(
             account != address(0),
-            "ERC1155: balance query for the zero address"
+            "ERC1155WithTerminusStorage: balance query for the zero address"
         );
         return LibTerminus.terminusStorage().poolBalances[id][account];
     }
@@ -96,7 +96,7 @@ contract ERC1155WithTerminusStorage is
     {
         require(
             accounts.length == ids.length,
-            "ERC1155: accounts and ids length mismatch"
+            "ERC1155WithTerminusStorage: accounts and ids length mismatch"
         );
 
         uint256[] memory batchBalances = new uint256[](accounts.length);
@@ -135,6 +135,18 @@ contract ERC1155WithTerminusStorage is
             ];
     }
 
+    function isApprovedForPool(uint256 poolID, address operator)
+        public
+        view
+        returns (bool)
+    {
+        LibTerminus.TerminusStorage storage ts = LibTerminus.terminusStorage();
+        if (operator == ts.poolController[poolID]) {
+            return true;
+        }
+        return false;
+    }
+
     /**
      * @dev See {IERC1155-safeTransferFrom}.
      */
@@ -146,8 +158,10 @@ contract ERC1155WithTerminusStorage is
         bytes memory data
     ) public virtual override {
         require(
-            from == _msgSender() || isApprovedForAll(from, _msgSender()),
-            "ERC1155: caller is not owner nor approved"
+            from == _msgSender() ||
+                isApprovedForAll(from, _msgSender()) ||
+                isApprovedForPool(id, _msgSender()),
+            "ERC1155WithTerminusStorage: caller is not owner nor approved"
         );
         _safeTransferFrom(from, to, id, amount, data);
     }
@@ -164,7 +178,7 @@ contract ERC1155WithTerminusStorage is
     ) public virtual override {
         require(
             from == _msgSender() || isApprovedForAll(from, _msgSender()),
-            "ERC1155: transfer caller is not owner nor approved"
+            "ERC1155WithTerminusStorage: transfer caller is not owner nor approved"
         );
         _safeBatchTransferFrom(from, to, ids, amounts, data);
     }
@@ -188,7 +202,15 @@ contract ERC1155WithTerminusStorage is
         uint256 amount,
         bytes memory data
     ) internal virtual {
-        require(to != address(0), "ERC1155: transfer to the zero address");
+        require(
+            to != address(0),
+            "ERC1155WithTerminusStorage: transfer to the zero address"
+        );
+        LibTerminus.TerminusStorage storage ts = LibTerminus.terminusStorage();
+        require(
+            !ts.poolNotTransferable[id],
+            "ERC1155WithTerminusStorage: _safeTransferFrom -- pool is not transferable"
+        );
 
         address operator = _msgSender();
 
@@ -201,12 +223,10 @@ contract ERC1155WithTerminusStorage is
             data
         );
 
-        LibTerminus.TerminusStorage storage ts = LibTerminus.terminusStorage();
-
         uint256 fromBalance = ts.poolBalances[id][from];
         require(
             fromBalance >= amount,
-            "ERC1155: insufficient balance for transfer"
+            "ERC1155WithTerminusStorage: insufficient balance for transfer"
         );
         unchecked {
             ts.poolBalances[id][from] = fromBalance - amount;
@@ -237,9 +257,12 @@ contract ERC1155WithTerminusStorage is
     ) internal virtual {
         require(
             ids.length == amounts.length,
-            "ERC1155: ids and amounts length mismatch"
+            "ERC1155WithTerminusStorage: ids and amounts length mismatch"
         );
-        require(to != address(0), "ERC1155: transfer to the zero address");
+        require(
+            to != address(0),
+            "ERC1155WithTerminusStorage: transfer to the zero address"
+        );
 
         address operator = _msgSender();
 
@@ -254,7 +277,7 @@ contract ERC1155WithTerminusStorage is
             uint256 fromBalance = ts.poolBalances[id][from];
             require(
                 fromBalance >= amount,
-                "ERC1155: insufficient balance for transfer"
+                "ERC1155WithTerminusStorage: insufficient balance for transfer"
             );
             unchecked {
                 ts.poolBalances[id][from] = fromBalance - amount;
@@ -291,7 +314,10 @@ contract ERC1155WithTerminusStorage is
         uint256 amount,
         bytes memory data
     ) internal virtual {
-        require(to != address(0), "ERC1155: mint to the zero address");
+        require(
+            to != address(0),
+            "ERC1155WithTerminusStorage: mint to the zero address"
+        );
         LibTerminus.TerminusStorage storage ts = LibTerminus.terminusStorage();
         require(
             ts.poolSupply[id] + amount <= ts.poolCapacity[id],
@@ -309,6 +335,7 @@ contract ERC1155WithTerminusStorage is
             data
         );
 
+        ts.poolSupply[id] += amount;
         ts.poolBalances[id][to] += amount;
         emit TransferSingle(operator, address(0), to, id, amount);
 
@@ -337,10 +364,13 @@ contract ERC1155WithTerminusStorage is
         uint256[] memory amounts,
         bytes memory data
     ) internal virtual {
-        require(to != address(0), "ERC1155: mint to the zero address");
+        require(
+            to != address(0),
+            "ERC1155WithTerminusStorage: mint to the zero address"
+        );
         require(
             ids.length == amounts.length,
-            "ERC1155: ids and amounts length mismatch"
+            "ERC1155WithTerminusStorage: ids and amounts length mismatch"
         );
 
         LibTerminus.TerminusStorage storage ts = LibTerminus.terminusStorage();
@@ -357,6 +387,7 @@ contract ERC1155WithTerminusStorage is
         _beforeTokenTransfer(operator, address(0), to, ids, amounts, data);
 
         for (uint256 i = 0; i < ids.length; i++) {
+            ts.poolSupply[ids[i]] += amounts[i];
             ts.poolBalances[ids[i]][to] += amounts[i];
         }
 
@@ -385,9 +416,22 @@ contract ERC1155WithTerminusStorage is
         uint256 id,
         uint256 amount
     ) internal virtual {
-        require(from != address(0), "ERC1155: burn from the zero address");
+        require(
+            from != address(0),
+            "ERC1155WithTerminusStorage: burn from the zero address"
+        );
+        LibTerminus.TerminusStorage storage ts = LibTerminus.terminusStorage();
+        require(
+            ts.poolBurnable[id],
+            "ERC1155WithTerminusStorage: _burn -- pool is not burnable"
+        );
 
         address operator = _msgSender();
+
+        require(
+            operator == from || isApprovedForPool(id, operator),
+            "ERC1155WithTerminusStorage: _burn -- caller is neither owner nor approved"
+        );
 
         _beforeTokenTransfer(
             operator,
@@ -398,11 +442,14 @@ contract ERC1155WithTerminusStorage is
             ""
         );
 
-        LibTerminus.TerminusStorage storage ts = LibTerminus.terminusStorage();
         uint256 fromBalance = ts.poolBalances[id][from];
-        require(fromBalance >= amount, "ERC1155: burn amount exceeds balance");
+        require(
+            fromBalance >= amount,
+            "ERC1155WithTerminusStorage: burn amount exceeds balance"
+        );
         unchecked {
             ts.poolBalances[id][from] = fromBalance - amount;
+            ts.poolSupply[id] -= amount;
         }
 
         emit TransferSingle(operator, from, address(0), id, amount);
@@ -420,16 +467,35 @@ contract ERC1155WithTerminusStorage is
         uint256[] memory ids,
         uint256[] memory amounts
     ) internal virtual {
-        require(from != address(0), "ERC1155: burn from the zero address");
+        require(
+            from != address(0),
+            "ERC1155WithTerminusStorage: burn from the zero address"
+        );
         require(
             ids.length == amounts.length,
-            "ERC1155: ids and amounts length mismatch"
+            "ERC1155WithTerminusStorage: ids and amounts length mismatch"
         );
 
         address operator = _msgSender();
 
-        _beforeTokenTransfer(operator, from, address(0), ids, amounts, "");
+        bool approvedForPools = true;
+
         LibTerminus.TerminusStorage storage ts = LibTerminus.terminusStorage();
+        for (uint256 i = 0; i < ids.length; i++) {
+            require(
+                ts.poolBurnable[ids[i]],
+                "ERC1155WithTerminusStorage: _burnBatch -- pool is not burnable"
+            );
+            if (!isApprovedForPool(ids[i], operator)) {
+                approvedForPools = false;
+            }
+        }
+        require(
+            from == _msgSender() || approvedForPools,
+            "ERC1155WithTerminusStorage: _burnBatch -- caller is neither owner nor approved"
+        );
+
+        _beforeTokenTransfer(operator, from, address(0), ids, amounts, "");
 
         for (uint256 i = 0; i < ids.length; i++) {
             uint256 id = ids[i];
@@ -438,10 +504,11 @@ contract ERC1155WithTerminusStorage is
             uint256 fromBalance = ts.poolBalances[id][from];
             require(
                 fromBalance >= amount,
-                "ERC1155: burn amount exceeds balance"
+                "ERC1155WithTerminusStorage: burn amount exceeds balance"
             );
             unchecked {
                 ts.poolBalances[id][from] = fromBalance - amount;
+                ts.poolSupply[id] -= amount;
             }
         }
 
@@ -458,7 +525,10 @@ contract ERC1155WithTerminusStorage is
         address operator,
         bool approved
     ) internal virtual {
-        require(owner != operator, "ERC1155: setting approval status for self");
+        require(
+            owner != operator,
+            "ERC1155WithTerminusStorage: setting approval status for self"
+        );
         LibTerminus.TerminusStorage storage ts = LibTerminus.terminusStorage();
         ts.globalOperatorApprovals[owner][operator] = approved;
         emit ApprovalForAll(owner, operator, approved);
@@ -512,12 +582,16 @@ contract ERC1155WithTerminusStorage is
                 )
             returns (bytes4 response) {
                 if (response != IERC1155Receiver.onERC1155Received.selector) {
-                    revert("ERC1155: ERC1155Receiver rejected tokens");
+                    revert(
+                        "ERC1155WithTerminusStorage: ERC1155Receiver rejected tokens"
+                    );
                 }
             } catch Error(string memory reason) {
                 revert(reason);
             } catch {
-                revert("ERC1155: transfer to non ERC1155Receiver implementer");
+                revert(
+                    "ERC1155WithTerminusStorage: transfer to non ERC1155Receiver implementer"
+                );
             }
         }
     }
@@ -543,12 +617,16 @@ contract ERC1155WithTerminusStorage is
                 if (
                     response != IERC1155Receiver.onERC1155BatchReceived.selector
                 ) {
-                    revert("ERC1155: ERC1155Receiver rejected tokens");
+                    revert(
+                        "ERC1155WithTerminusStorage: ERC1155Receiver rejected tokens"
+                    );
                 }
             } catch Error(string memory reason) {
                 revert(reason);
             } catch {
-                revert("ERC1155: transfer to non ERC1155Receiver implementer");
+                revert(
+                    "ERC1155WithTerminusStorage: transfer to non ERC1155Receiver implementer"
+                );
             }
         }
     }
