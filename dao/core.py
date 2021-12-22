@@ -18,6 +18,8 @@ from . import (
     ERC20Facet,
     ERC20Initializer,
     OwnershipFacet,
+    TerminusFacet,
+    TerminusInitializer,
 )
 
 FACETS: Dict[str, Any] = {
@@ -25,6 +27,7 @@ FACETS: Dict[str, Any] = {
     "DiamondLoupeFacet": DiamondLoupeFacet,
     "ERC20Facet": ERC20Facet,
     "OwnershipFacet": OwnershipFacet,
+    "TerminusFacet": TerminusFacet,
 }
 
 FACET_PRECEDENCE: List[str] = [
@@ -32,6 +35,7 @@ FACET_PRECEDENCE: List[str] = [
     "OwnershipFacet",
     "DiamondLoupeFacet",
     "ERC20Facet",
+    "TerminusFacet",
 ]
 
 FACET_ACTIONS: Dict[str, int] = {"add": 0, "replace": 1, "remove": 2}
@@ -107,6 +111,12 @@ def facet_cut(
         if initializer_address != ZERO_ADDRESS and action != "remove":
             erc20_initializer = ERC20Initializer.ERC20Initializer(initializer_address)
             calldata = erc20_initializer.contract.init.encode_input()
+    elif facet_name == "TerminusFacet":
+        if initializer_address != ZERO_ADDRESS and action != "remove":
+            terminus_initializer = TerminusInitializer.TerminusInitializer(
+                initializer_address
+            )
+            calldata = terminus_initializer.contract.init.encode_input()
 
     diamond = DiamondCutFacet.DiamondCutFacet(diamond_address)
     transaction = diamond.diamond_cut(

@@ -4,6 +4,8 @@
 # You can set up the local copy of `dao` for development using:
 # pip install -e .[dev]
 
+set -e
+
 usage() {
     echo "Usage: $0" [TEST_SPEC ...]
     echo

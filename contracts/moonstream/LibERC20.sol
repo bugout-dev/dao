@@ -1,4 +1,12 @@
 // SPDX-License-Identifier: Apache-2.0
+
+/**
+ * Authors: Moonstream Engineering (engineering@moonstream.to)
+ * GitHub: https://github.com/bugout-dev/dao
+ *
+ * Common storage structure and internal methods for Moonstream DAO ERC20 tokens.
+ */
+
 pragma solidity ^0.8.0;
 
 library LibERC20 {
@@ -31,14 +39,6 @@ library LibERC20 {
         address previousController = es.controller;
         es.controller = newController;
         emit ControlTransferred(previousController, newController);
-    }
-
-    function getController()
-        internal
-        view
-        returns (address contractController)
-    {
-        contractController = erc20Storage().controller;
     }
 
     function enforceIsController() internal view {

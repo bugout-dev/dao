@@ -124,6 +124,10 @@ class ERC20Facet:
         self.assert_contract_is_instantiated()
         return self.contract.mint(account, amount, transaction_config)
 
+    def moonstream_controller(self) -> Any:
+        self.assert_contract_is_instantiated()
+        return self.contract.moonstreamController.call()
+
     def name(self) -> Any:
         self.assert_contract_is_instantiated()
         return self.contract.name.call()
@@ -268,6 +272,13 @@ def handle_mint(args: argparse.Namespace) -> None:
     print(result)
 
 
+def handle_moonstream_controller(args: argparse.Namespace) -> None:
+    network.connect(args.network)
+    contract = ERC20Facet(args.address)
+    result = contract.moonstream_controller()
+    print(result)
+
+
 def handle_name(args: argparse.Namespace) -> None:
     network.connect(args.network)
     contract = ERC20Facet(args.address)
@@ -383,6 +394,10 @@ def generate_cli() -> argparse.ArgumentParser:
     mint_parser.add_argument("--account", required=True, help="Type: address")
     mint_parser.add_argument("--amount", required=True, help="Type: uint256", type=int)
     mint_parser.set_defaults(func=handle_mint)
+
+    moonstream_controller_parser = subcommands.add_parser("moonstream-controller")
+    add_default_arguments(moonstream_controller_parser, False)
+    moonstream_controller_parser.set_defaults(func=handle_moonstream_controller)
 
     name_parser = subcommands.add_parser("name")
     add_default_arguments(name_parser, False)

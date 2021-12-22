@@ -1,6 +1,6 @@
 import argparse
 
-from . import core, ERC20Facet, ERC20Initializer
+from . import core, ERC20Facet, ERC20Initializer, TerminusFacet, TerminusInitializer
 
 
 def main():
@@ -20,6 +20,16 @@ def main():
     dao_subparsers.add_parser(
         "moonstream-initializer",
         parents=[moonstream_initializer_parser],
+        add_help=False,
+    )
+
+    terminus_parser = TerminusFacet.generate_cli()
+    dao_subparsers.add_parser("terminus", parents=[terminus_parser], add_help=False)
+
+    terminus_initializer_parser = TerminusInitializer.generate_cli()
+    dao_subparsers.add_parser(
+        "terminus-initializer",
+        parents=[terminus_initializer_parser],
         add_help=False,
     )
 
