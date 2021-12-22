@@ -20,7 +20,7 @@ contract TerminusInitializer {
         ds.supportedInterfaces[type(IERC1155).interfaceId] = true;
         ds.supportedInterfaces[type(IERC1155MetadataURI).interfaceId] = true;
 
-        LibTerminus.TerminusStorage storage es = LibTerminus.terminusStorage();
-        es.controller = msg.sender;
+        LibTerminus.TerminusStorage storage ts = LibTerminus.terminusStorage();
+        ts.controller = msg.sender;
     }
 }
