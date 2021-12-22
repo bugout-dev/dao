@@ -140,11 +140,12 @@ contract ERC1155WithTerminusStorage is
         view
         returns (bool)
     {
-        LibTerminus.TerminusStorage storage ts = LibTerminus.terminusStorage();
-        if (operator == ts.poolController[poolID]) {
-            return true;
-        }
-        return false;
+        return LibTerminus._isApprovedForPool(poolID, operator);
+    }
+
+    function approveForPool(uint256 poolID, address operator) external {
+        LibTerminus.enforcePoolIsController(poolID, _msgSender());
+        LibTerminus._approveForPool(poolID, operator);
     }
 
     /**
@@ -428,11 +429,6 @@ contract ERC1155WithTerminusStorage is
 
         address operator = _msgSender();
 
-        require(
-            operator == from || isApprovedForPool(id, operator),
-            "ERC1155WithTerminusStorage: _burn -- caller is neither owner nor approved"
-        );
-
         _beforeTokenTransfer(
             operator,
             from,
@@ -478,22 +474,13 @@ contract ERC1155WithTerminusStorage is
 
         address operator = _msgSender();
 
-        bool approvedForPools = true;
-
         LibTerminus.TerminusStorage storage ts = LibTerminus.terminusStorage();
         for (uint256 i = 0; i < ids.length; i++) {
             require(
                 ts.poolBurnable[ids[i]],
                 "ERC1155WithTerminusStorage: _burnBatch -- pool is not burnable"
             );
-            if (!isApprovedForPool(ids[i], operator)) {
-                approvedForPools = false;
-            }
         }
-        require(
-            from == _msgSender() || approvedForPools,
-            "ERC1155WithTerminusStorage: _burnBatch -- caller is neither owner nor approved"
-        );
 
         _beforeTokenTransfer(operator, from, address(0), ids, amounts, "");
 
