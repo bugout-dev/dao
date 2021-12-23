@@ -6,7 +6,7 @@ Moonstream DAO
 [Moonstream](https://moonstream.to) helps you manage all aspects of your decentralized applications,
 from whitelisting to authorization to monitoring to product analytics.
 
-Moonstream infrastructure is currently hosted and managed by the team at Bugout.dev (https://bugout.dev).
+Moonstream's off-chain infrastructure is currently hosted and managed by the team at Bugout.dev (https://bugout.dev).
 We run our own blockchain nodes (currently Ethereum and Polygon), and perform all Moonstream operations
 through these nodes.
 
