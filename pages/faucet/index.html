@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="en">
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<script type="text/javascript" src="./script.js"></script>
+<script src="https://unpkg.com/web3@latest/dist/web3.min.js"></script>
+
+<body>
+    <div class="container">
+        <button id="connect" onclick="setBalance()">Connect Metamask</button>
+        <button onclick="claim()">
+            Claim
+        </button>
+        <button id="add-token" onclick="addTokenToMetamask()">
+            Add Moonstream Token to Metamask
+        </button>
+        <div id="balance">
+            <p>
+                Your MNSTR Balance:
+                <span id="moonstreamTokenBalance"></span>
+            </p>
+
+        </div>
+
+    </div>
+</body>
+
+</html>
