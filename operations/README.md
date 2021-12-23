@@ -1,6 +1,6 @@
-# Moonstream DAO checklists
+# Moonstream DAO operations
 
-These checklists represent operations performed against live Moonstream DAO contracts on public
+These documents and checklists represent operations performed against live Moonstream DAO contracts on public
 blockchains.
 
 Unless otherwise specified, all operations are executed from the `main` branch of this repository.
