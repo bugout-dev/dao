@@ -34,6 +34,7 @@ library LibTerminus {
         mapping(uint256 => bool) poolNotTransferable;
         mapping(uint256 => bool) poolBurnable;
         mapping(address => mapping(address => bool)) globalOperatorApprovals;
+        mapping(uint256 => mapping(address => bool)) globalPoolOperatorApprovals;
     }
 
     function terminusStorage()
@@ -100,5 +101,24 @@ library LibTerminus {
             ts.poolController[poolID] == maybeController,
             "LibTerminus: Must be pool controller"
         );
+    }
+
+    function _isApprovedForPool(uint256 poolID, address operator)
+        internal
+        view
+        returns (bool)
+    {
+        LibTerminus.TerminusStorage storage ts = LibTerminus.terminusStorage();
+        if (operator == ts.poolController[poolID]) {
+            return true;
+        } else if (ts.globalPoolOperatorApprovals[poolID][operator]) {
+            return true;
+        }
+        return false;
+    }
+
+    function _approveForPool(uint256 poolID, address operator) internal {
+        LibTerminus.TerminusStorage storage ts = LibTerminus.terminusStorage();
+        ts.globalPoolOperatorApprovals[poolID][operator] = true;
     }
 }

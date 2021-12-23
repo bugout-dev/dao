@@ -28,6 +28,52 @@ import "../diamond/libraries/LibDiamond.sol";
 contract TerminusFacet is ERC1155WithTerminusStorage {
     constructor() {}
 
+    event PoolMintBatch(
+        uint256 indexed id,
+        address indexed operator,
+        address from,
+        address[] toAddresses,
+        uint256[] amounts
+    );
+
+    function poolMintBatch(
+        uint256 id,
+        address[] memory toAddresses,
+        uint256[] memory amounts
+    ) public {
+        address operator = _msgSender();
+        LibTerminus.enforcePoolIsController(id, operator);
+        require(
+            toAddresses.length == amounts.length,
+            "TerminusFacet: _poolMintBatch -- toAddresses and amounts length mismatch"
+        );
+
+        LibTerminus.TerminusStorage storage ts = LibTerminus.terminusStorage();
+
+        uint256 i = 0;
+        uint256 totalAmount = 0;
+
+        for (i = 0; i < toAddresses.length; i++) {
+            address to = toAddresses[i];
+            uint256 amount = amounts[i];
+            require(
+                to != address(0),
+                "TerminusFacet: _poolMintBatch -- cannot mint to zero address"
+            );
+            totalAmount += amount;
+            ts.poolBalances[id][to] += amount;
+            emit TransferSingle(operator, address(0), to, id, amount);
+        }
+
+        require(
+            ts.poolSupply[id] + totalAmount <= ts.poolCapacity[id],
+            "TerminusFacet: _poolMintBatch -- Minted tokens would exceed pool capacity"
+        );
+        ts.poolSupply[id] += totalAmount;
+
+        emit PoolMintBatch(id, operator, address(0), toAddresses, amounts);
+    }
+
     function terminusController() external view returns (address) {
         return LibTerminus.terminusStorage().controller;
     }
@@ -180,6 +226,11 @@ contract TerminusFacet is ERC1155WithTerminusStorage {
         uint256 poolID,
         uint256 amount
     ) external {
+        address operator = _msgSender();
+        require(
+            operator == from || isApprovedForPool(poolID, operator),
+            "TerminusFacet: burn -- caller is neither owner nor approved"
+        );
         _burn(from, poolID, amount);
     }
 }

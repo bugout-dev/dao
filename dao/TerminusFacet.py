@@ -90,6 +90,12 @@ class TerminusFacet:
         if self.contract is None:
             raise Exception("contract has not been instantiated")
 
+    def approve_for_pool(
+        self, pool_id: int, operator: ChecksumAddress, transaction_config
+    ) -> Any:
+        self.assert_contract_is_instantiated()
+        return self.contract.approveForPool(pool_id, operator, transaction_config)
+
     def balance_of(self, account: ChecksumAddress, id: int) -> Any:
         self.assert_contract_is_instantiated()
         return self.contract.balanceOf.call(account, id)
@@ -155,6 +161,14 @@ class TerminusFacet:
     def pool_base_price(self) -> Any:
         self.assert_contract_is_instantiated()
         return self.contract.poolBasePrice.call()
+
+    def pool_mint_batch(
+        self, id: int, to_addresses: List, amounts: List, transaction_config
+    ) -> Any:
+        self.assert_contract_is_instantiated()
+        return self.contract.poolMintBatch(
+            id, to_addresses, amounts, transaction_config
+        )
 
     def safe_batch_transfer_from(
         self,
@@ -290,6 +304,18 @@ def handle_deploy(args: argparse.Namespace) -> None:
     print(result)
 
 
+def handle_approve_for_pool(args: argparse.Namespace) -> None:
+    network.connect(args.network)
+    contract = TerminusFacet(args.address)
+    transaction_config = get_transaction_config(args)
+    result = contract.approve_for_pool(
+        pool_id=args.pool_id,
+        operator=args.operator,
+        transaction_config=transaction_config,
+    )
+    print(result)
+
+
 def handle_balance_of(args: argparse.Namespace) -> None:
     network.connect(args.network)
     contract = TerminusFacet(args.address)
@@ -393,6 +419,19 @@ def handle_pool_base_price(args: argparse.Namespace) -> None:
     network.connect(args.network)
     contract = TerminusFacet(args.address)
     result = contract.pool_base_price()
+    print(result)
+
+
+def handle_pool_mint_batch(args: argparse.Namespace) -> None:
+    network.connect(args.network)
+    contract = TerminusFacet(args.address)
+    transaction_config = get_transaction_config(args)
+    result = contract.pool_mint_batch(
+        id=args.id,
+        to_addresses=args.to_addresses,
+        amounts=args.amounts,
+        transaction_config=transaction_config,
+    )
     print(result)
 
 
@@ -540,6 +579,16 @@ def generate_cli() -> argparse.ArgumentParser:
     add_default_arguments(deploy_parser, True)
     deploy_parser.set_defaults(func=handle_deploy)
 
+    approve_for_pool_parser = subcommands.add_parser("approve-for-pool")
+    add_default_arguments(approve_for_pool_parser, True)
+    approve_for_pool_parser.add_argument(
+        "--pool-id", required=True, help="Type: uint256", type=int
+    )
+    approve_for_pool_parser.add_argument(
+        "--operator", required=True, help="Type: address"
+    )
+    approve_for_pool_parser.set_defaults(func=handle_approve_for_pool)
+
     balance_of_parser = subcommands.add_parser("balance-of")
     add_default_arguments(balance_of_parser, False)
     balance_of_parser.add_argument("--account", required=True, help="Type: address")
@@ -639,6 +688,19 @@ def generate_cli() -> argparse.ArgumentParser:
     pool_base_price_parser = subcommands.add_parser("pool-base-price")
     add_default_arguments(pool_base_price_parser, False)
     pool_base_price_parser.set_defaults(func=handle_pool_base_price)
+
+    pool_mint_batch_parser = subcommands.add_parser("pool-mint-batch")
+    add_default_arguments(pool_mint_batch_parser, True)
+    pool_mint_batch_parser.add_argument(
+        "--id", required=True, help="Type: uint256", type=int
+    )
+    pool_mint_batch_parser.add_argument(
+        "--to-addresses", required=True, help="Type: address[]", nargs="+"
+    )
+    pool_mint_batch_parser.add_argument(
+        "--amounts", required=True, help="Type: uint256[]", nargs="+"
+    )
+    pool_mint_batch_parser.set_defaults(func=handle_pool_mint_batch)
 
     safe_batch_transfer_from_parser = subcommands.add_parser("safe-batch-transfer-from")
     add_default_arguments(safe_batch_transfer_from_parser, True)
