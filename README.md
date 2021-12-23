@@ -27,8 +27,7 @@ Moonstream DAO represents this decentralization. The DAO will reward participant
 Rewards will be distributed as a share of revenue, represented in Moonstream platform tokens.
 
 As strong believers in decentralization, all our code is already open source and freely licensed (Apache 2.0
-and MIT): https://github.com/bugout-dev. The Moonstream DAO represents the next level of openness and
-transparency for Moonstream -- that of our infrastructure and operations.
+and MIT): https://github.com/bugout-dev.
 
 ## Architecture and deployments
 
@@ -43,7 +42,7 @@ and representing in-game achievements for on-chain games.
 
 You can find the addresses for all Moonstream DAO contracts on our [`operations`](./operations/README.md) page.
 
-## Development environment
+## Development
 
 ### Preparing your development environment
 
@@ -69,20 +68,27 @@ Then make sure that this new environment is active. If you used `venv` as above:
 source .dao/bin/activate
 ```
 
-Finally, install the dependencies and developer dependencies for `dao`:
+Install the Python dependencies and developer dependencies for `dao`:
 
 ```bash
 pip install -e ".[dev]"
 ```
 
-### Tests
+Install the Solidity dependencies for Moonstream DAO smart contracts:
 
-To run unit tests, run: `./test.sh`
+```bash
+brownie pm install OpenZeppelin/openzeppelin-contracts@4.3.2
+```
 
-Before you do this, you must make sure that a Python environment is available in your shell and that
-you have installed the development dependencies in this environment.
+### Compiling the smart contracts
 
-### Development workflow
+```bash
+brownie compile
+```
+
+### Generating interfaces to the smart contracts
+
+We use `moonworm` to generate command-line and Python interfaces to our smart contracts.
 
 Every time you add, remove, or modify an `external` or `public` method from a Solidity smart contract in this repository,
 make sure to regenerate its Python interface.
@@ -99,6 +105,13 @@ For example, if you modified the `TerminusFacet` contract, you would then run th
 ```bash
 moonworm generate-brownie -p . -o dao -n TerminusFacet
 ```
+
+### Tests
+
+To run unit tests, run: `./test.sh`
+
+Before you do this, you must make sure that a Python environment is available in your shell and that
+you have installed the development dependencies in this environment.
 
 ### VSCode setup
 
