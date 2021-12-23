@@ -10,6 +10,7 @@ Unless otherwise specified, all operations are executed from the `main` branch o
 ### Current addresses
 
 Moonstream platform token (MNSTR): `0x02620263be8A046Ca4812723596934AA20D7DC3C`
+
 Terminus: `0x040Cf7Ee9752936d8d280062a447eB53808EBc08`
 
 ### Operations
