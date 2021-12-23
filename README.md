@@ -31,14 +31,18 @@ and MIT): https://github.com/bugout-dev.
 
 ## Architecture and deployments
 
-Moonstream DAO currently consists of two components:
+### The Moonstream platform token
 
-1. **The Moonstream platform token**. This is an ERC20 token that represents the value that Moonstream
-provides our customers, and the value Moonstream participants provide to the DAO.
+This is an ERC20 token that represents the value that Moonstream provides our customers, and the value
+Moonstream participants provide to the DAO.
 
-2. **Terminus**. This is a decentralized authorization platform, which we use to manage permissions in the
-Moonstream DAO and our customers use for a variety of use cases, including whitelisting their token sales
-and representing in-game achievements for on-chain games.
+### Terminus
+
+[The Terminus whitepaper](./docs/terminus.md)
+
+This is a decentralized authorization platform, which we use to manage permissions in the Moonstream
+DAO and our customers use for a variety of use cases, including whitelisting their token sales and
+representing in-game achievements for on-chain games.
 
 You can find the addresses for all Moonstream DAO contracts on our [`operations`](./operations/README.md) page.
 
