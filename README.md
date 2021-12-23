@@ -1,6 +1,35 @@
 # dao
 Moonstream DAO
 
+## Decentralizing Moonstream
+
+[Moonstream](https://moonstream.to) helps you manage all aspects of your decentralized applications,
+from whitelisting to authorization to monitoring to product analytics.
+
+Moonstream infrastructure is currently hosted and managed by the team at Bugout.dev (https://bugout.dev).
+We run our own blockchain nodes (currently Ethereum and Polygon), and perform all Moonstream operations
+through these nodes.
+
+The coming years will bring an explosion of decentralized applications with a presence on multiple
+blockchains. We aim to bring the value of Moonstream to *every* major blockchain, and to do so in a
+truly decentralized manner. No other approach will scale to tens and eventually hundreds of supported
+blockchains.
+
+Moonstream DAO represents this decentralization. The DAO will reward participants who contribute:
+1. Blockchain node time
+2. Crawler time
+3. Crawler code
+4. Storage for the Moonstream databases
+5. Publicity for Moonstream
+6. Documentation
+7. Moonstream token liquidity
+
+Rewards will be distributed as a share of revenue, represented in Moonstream platform tokens.
+
+As strong believers in decentralization, all our code is already open source and freely licensed (Apache 2.0
+and MIT): https://github.com/bugout-dev. The Moonstream DAO represents the next level of openness and
+transparency for Moonstream -- that of our infrastructure and operations.
+
 ## Deployments
 
 You can find the addresses for all Moonstream DAO contracts on our [`operations`](./operations/README.md) page.
