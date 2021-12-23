@@ -56,7 +56,7 @@ the repository root:
 moonworm generate-brownie -p . -o dao -n "<name of Solidity contract you modified>"
 ```
 
-For example, if you modify the `TerminusFacet` contract, you would then run this command:
+For example, if you modified the `TerminusFacet` contract, you would then run this command:
 
 ```bash
 moonworm generate-brownie -p . -o dao -n TerminusFacet
