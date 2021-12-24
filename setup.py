@@ -6,7 +6,7 @@ with open("README.md") as ifp:
 
 setup(
     name="moonstream-dao",
-    version="0.0.1",
+    version="0.0.2",
     packages=find_packages(),
     install_requires=["eth-brownie", "tqdm"],
     extras_require={

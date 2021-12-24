@@ -141,6 +141,50 @@ class TestPoolOperations(TerminusTestCase):
     def setUp(self) -> None:
         self.diamond_terminus.create_simple_pool(10, {"from": accounts[1]})
 
+    def test_set_pool_controller(self):
+        pool_id = self.diamond_terminus.total_pools()
+        old_controller = accounts[1]
+        new_controller = accounts[2]
+
+        current_controller_address = self.diamond_terminus.terminus_pool_controller(
+            pool_id
+        )
+        self.assertEqual(current_controller_address, old_controller.address)
+
+        with self.assertRaises(Exception):
+            self.diamond_terminus.set_pool_controller(
+                pool_id, new_controller.address, {"from": new_controller}
+            )
+        current_controller_address = self.diamond_terminus.terminus_pool_controller(
+            pool_id
+        )
+        self.assertEqual(current_controller_address, old_controller.address)
+
+        self.diamond_terminus.set_pool_controller(
+            pool_id, new_controller.address, {"from": old_controller}
+        )
+        current_controller_address = self.diamond_terminus.terminus_pool_controller(
+            pool_id
+        )
+        self.assertEqual(current_controller_address, new_controller.address)
+
+        with self.assertRaises(Exception):
+            self.diamond_terminus.set_pool_controller(
+                pool_id, old_controller.address, {"from": old_controller}
+            )
+        current_controller_address = self.diamond_terminus.terminus_pool_controller(
+            pool_id
+        )
+        self.assertEqual(current_controller_address, new_controller.address)
+
+        self.diamond_terminus.set_pool_controller(
+            pool_id, old_controller.address, {"from": new_controller}
+        )
+        current_controller_address = self.diamond_terminus.terminus_pool_controller(
+            pool_id
+        )
+        self.assertEqual(current_controller_address, old_controller.address)
+
     def test_mint(self):
         pool_id = self.diamond_terminus.total_pools()
         self.diamond_terminus.mint(accounts[2], pool_id, 1, b"", {"from": accounts[1]})
