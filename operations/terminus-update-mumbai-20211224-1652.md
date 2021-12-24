@@ -12,7 +12,7 @@ You will modify this section as you go through the checklist
 ### `TerminusFacet` address
 
 ```
-export TERMINUS_FACET_ADDRESS=""
+export TERMINUS_FACET_ADDRESS="0x7Ad8FaD0897f531743817ae0BF43b682f7a0fB67"
 ```
 
 ## Environment variables
@@ -26,7 +26,7 @@ export TERMINUS_FACET_ADDRESS=""
 
 ## Detach existing `TerminusFacet`
 
-- [ ] Remove `TerminusFacet` from diamond. (This may require checkout of earlier commit and `brownie compile`.)
+- [x] Remove `TerminusFacet` from diamond. (This may require checkout of earlier commit and `brownie compile`. Checked out: `v0.0.1`.)
 
 ```bash
 dao core facet-cut \
@@ -36,15 +36,13 @@ dao core facet-cut \
     --gas-price "$GAS_PRICE" \
     --confirmations $CONFIRMATIONS \
     --facet-name TerminusFacet \
-    --facet-address $TERMINUS_FACET_ADDRESS \
-    --action add \
-    --initializer-address $TERMINUS_INITIALIZER_ADDRESS
+    --action remove
 ```
 
 
 ## Deploy `TerminusFacet`
 
-- [ ] Check out relevant commit and `brownie compile`.
+- [x] Check out relevant commit and `brownie compile`.
 
 - [ ] Deploy `TerminusFacet` contract
 
@@ -56,11 +54,11 @@ dao terminus deploy \
     --confirmations $CONFIRMATIONS
 ```
 
-- [ ] Export address of deployed contract as `export TERMINUS_FACET_ADDRESS=<address>`
+- [x] Export address of deployed contract as `export TERMINUS_FACET_ADDRESS=0x7Ad8FaD0897f531743817ae0BF43b682f7a0fB67`
 
-- [ ] Store address of deployed contract under `Deployed addresses / TerminusFacet address` above
+- [x] Store address of deployed contract under `Deployed addresses / TerminusFacet address` above
 
-- [ ] Attach `TerminusFacet` to diamond:
+- [x] Attach `TerminusFacet` to diamond:
 
 ```bash
 dao core facet-cut \
@@ -71,6 +69,5 @@ dao core facet-cut \
     --confirmations $CONFIRMATIONS \
     --facet-name TerminusFacet \
     --facet-address $TERMINUS_FACET_ADDRESS \
-    --action add \
-    --initializer-address $TERMINUS_INITIALIZER_ADDRESS
+    --action add
 ```

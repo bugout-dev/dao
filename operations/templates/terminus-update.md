@@ -47,9 +47,7 @@ dao core facet-cut \
     --gas-price "$GAS_PRICE" \
     --confirmations $CONFIRMATIONS \
     --facet-name TerminusFacet \
-    --facet-address $TERMINUS_FACET_ADDRESS \
-    --action add \
-    --initializer-address $TERMINUS_INITIALIZER_ADDRESS
+    --action remove
 ```
 
 ## Deploy `TerminusInitializer`
