@@ -214,6 +214,14 @@ class TerminusFacet:
         self.assert_contract_is_instantiated()
         return self.contract.setPoolBasePrice(new_base_price, transaction_config)
 
+    def set_pool_controller(
+        self, pool_id: int, new_controller: ChecksumAddress, transaction_config
+    ) -> Any:
+        self.assert_contract_is_instantiated()
+        return self.contract.setPoolController(
+            pool_id, new_controller, transaction_config
+        )
+
     def set_uri(self, pool_id: int, pool_uri: str, transaction_config) -> Any:
         self.assert_contract_is_instantiated()
         return self.contract.setURI(pool_id, pool_uri, transaction_config)
@@ -497,6 +505,18 @@ def handle_set_pool_base_price(args: argparse.Namespace) -> None:
     print(result)
 
 
+def handle_set_pool_controller(args: argparse.Namespace) -> None:
+    network.connect(args.network)
+    contract = TerminusFacet(args.address)
+    transaction_config = get_transaction_config(args)
+    result = contract.set_pool_controller(
+        pool_id=args.pool_id,
+        new_controller=args.new_controller,
+        transaction_config=transaction_config,
+    )
+    print(result)
+
+
 def handle_set_uri(args: argparse.Namespace) -> None:
     network.connect(args.network)
     contract = TerminusFacet(args.address)
@@ -761,6 +781,16 @@ def generate_cli() -> argparse.ArgumentParser:
         "--new-base-price", required=True, help="Type: uint256", type=int
     )
     set_pool_base_price_parser.set_defaults(func=handle_set_pool_base_price)
+
+    set_pool_controller_parser = subcommands.add_parser("set-pool-controller")
+    add_default_arguments(set_pool_controller_parser, True)
+    set_pool_controller_parser.add_argument(
+        "--pool-id", required=True, help="Type: uint256", type=int
+    )
+    set_pool_controller_parser.add_argument(
+        "--new-controller", required=True, help="Type: address"
+    )
+    set_pool_controller_parser.set_defaults(func=handle_set_pool_controller)
 
     set_uri_parser = subcommands.add_parser("set-uri")
     add_default_arguments(set_uri_parser, True)
