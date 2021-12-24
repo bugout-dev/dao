@@ -26,7 +26,10 @@ import "./LibTerminus.sol";
 import "../diamond/libraries/LibDiamond.sol";
 
 contract TerminusFacet is ERC1155WithTerminusStorage {
-    constructor() {}
+    constructor() {
+        LibTerminus.TerminusStorage storage ts = LibTerminus.terminusStorage();
+        ts.controller = msg.sender;
+    }
 
     event PoolMintBatch(
         uint256 indexed id,
