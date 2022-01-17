@@ -10,6 +10,8 @@ from brownie import network
 
 from . import (
     abi,
+)
+from .contracts import (
     Diamond,
     DiamondCutFacet,
     DiamondLoupeFacet,
