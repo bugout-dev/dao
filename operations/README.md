@@ -13,8 +13,8 @@ Terminus: `0x062BEc5e84289Da2CD6147E0e4DA402B33B8f796`
 
 ### Operations
 
-- [Deployment of Terminus contract](./terminus-deploy-mainnet-20220121-0704.md)
-- [Terminus contract setup](./terminus-setup-mainnet-20220121-0704.md)
+- [Deployment of Terminus contract](./terminus-deploy-mainnet-20220121-0704.md) - January 21, 2022
+- [Terminus contract setup](./terminus-setup-mainnet-20220121-0704.md) - January 21, 2022
 
 ### Parameters
 
