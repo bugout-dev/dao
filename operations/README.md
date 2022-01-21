@@ -5,6 +5,24 @@ blockchains.
 
 Unless otherwise specified, all operations are executed from the `main` branch of this repository.
 
+## Polygon mainnet
+
+### Current addresses
+
+Terminus: `0x062BEc5e84289Da2CD6147E0e4DA402B33B8f796`
+
+### Operations
+
+- [Deployment of Terminus contract](./terminus-deploy-mainnet-20220121-0704.md)
+- [Terminus contract setup](./terminus-setup-mainnet-20220121-0704.md)
+
+### Parameters
+
+Terminus payment token: Wrapped Ether at `0x7ceB23fD6bC0adD59E62ac25578270cFf1b9f619`
+
+Terminus pool base price: `0.01 WETH`
+
+
 ## Polygon Mumbai testnet
 
 ### Current addresses
@@ -18,7 +36,7 @@ Terminus: `0x040Cf7Ee9752936d8d280062a447eB53808EBc08`
 - [Deployment of Moonstream platform token](./moonstream-deploy-mumbai-20211218-1633.md) - December 18, 2021
 - [Update to Moonstream platform token](./moonstream-update-mumbai-20211221-1912.md) - December 21, 2021
 - [Deployment of Terminus contract](./terminus-deploy-mumbai-20211222-2028.md) - December 22, 2021
-- [Terminus contract setup](terminus-setup-20211222-2049.md) - December 22, 2021
+- [Terminus contract setup](./terminus-setup-20211222-2049.md) - December 22, 2021
 
 ## Templates
 
