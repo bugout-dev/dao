@@ -44,7 +44,7 @@ dao core facet-cut \
 
 - [x] Check out relevant commit and `brownie compile`.
 
-- [ ] Deploy `TerminusFacet` contract
+- [x] Deploy `TerminusFacet` contract
 
 ```bash
 dao terminus deploy \

@@ -59,7 +59,7 @@ dao core gogogo \
 - [ ] Deploy `TerminusInitializer` contract
 
 ```bash
-dao moonstream-initializer deploy \
+dao terminus-initializer deploy \
     --network $DAO_NETWORK \
     --sender $DAO_OWNER \
     --gas-price "$GAS_PRICE" \
