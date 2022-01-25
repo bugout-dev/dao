@@ -12,21 +12,21 @@ You will modify this section as you go through the checklist
 ### `TerminusFacet` address
 
 ```
-export TERMINUS_FACET_ADDRESS=""
+export TERMINUS_FACET_ADDRESS="0x9718FA06867D2939981151D193cF7ee2B924aec0"
 ```
 
 ## Environment variables
 
-- [ ] `export DAO_NETWORK=polygon-test`
-- [ ] `export DAO_OWNER=.secrets/dao-dev.json`
-- [ ] `export DAO_OWNER_ADDRESS=$(jq -r .address $DAO_OWNER)`
-- [ ] `export GAS_PRICE="35 gwei"`
-- [ ] `export CONFIRMATIONS=2`
-- [ ] `export TERMINUS_DIAMOND=0x040Cf7Ee9752936d8d280062a447eB53808EBc08`
+- [x] `export DAO_NETWORK=matic`
+- [x] `export DAO_OWNER=<path to keystore>`
+- [x] `export DAO_OWNER_ADDRESS=$(jq -r .address $DAO_OWNER)`
+- [x] `export GAS_PRICE="300 gwei"`
+- [x] `export CONFIRMATIONS=5`
+- [x] `export TERMINUS_DIAMOND=0x062BEc5e84289Da2CD6147E0e4DA402B33B8f796`
 
 ## Detach existing `TerminusFacet`
 
-- [ ] Remove `TerminusFacet` from diamond. (This may require checkout of earlier commit and `brownie compile`. Checked out: `v0.0.1`.)
+- [x] Remove `TerminusFacet` from diamond. (This may require checkout of earlier commit and `brownie compile`. Checked out: `v0.0.1`.)
 
 ```bash
 dao core facet-cut \
@@ -43,7 +43,7 @@ dao core facet-cut \
 
 ## Deploy `TerminusFacet`
 
-- [ ] Deploy `TerminusFacet` contract
+- [x] Deploy `TerminusFacet` contract
 
 ```bash
 dao terminus deploy \
@@ -53,11 +53,11 @@ dao terminus deploy \
     --confirmations $CONFIRMATIONS
 ```
 
-- [ ] Export address of deployed contract as `export TERMINUS_FACET_ADDRESS=`
+- [x] Export address of deployed contract as `export TERMINUS_FACET_ADDRESS=0x9718FA06867D2939981151D193cF7ee2B924aec0`
 
-- [ ] Store address of deployed contract under `Deployed addresses / TerminusFacet address` above
+- [x] Store address of deployed contract under `Deployed addresses / TerminusFacet address` above
 
-- [ ] Attach `TerminusFacet` to diamond:
+- [x] Attach `TerminusFacet` to diamond:
 
 ```bash
 dao core facet-cut \
