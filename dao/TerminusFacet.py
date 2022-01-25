@@ -115,6 +115,10 @@ class TerminusFacet:
         self.assert_contract_is_instantiated()
         return self.contract.burn(from_, pool_id, amount, transaction_config)
 
+    def contract_uri(self) -> Any:
+        self.assert_contract_is_instantiated()
+        return self.contract.contractURI.call()
+
     def create_pool_v1(
         self, _capacity: int, _transferable: bool, _burnable: bool, transaction_config
     ) -> Any:
@@ -208,6 +212,10 @@ class TerminusFacet:
     ) -> Any:
         self.assert_contract_is_instantiated()
         return self.contract.setApprovalForAll(operator, approved, transaction_config)
+
+    def set_contract_uri(self, _contract_uri: str, transaction_config) -> Any:
+        self.assert_contract_is_instantiated()
+        return self.contract.setContractURI(_contract_uri, transaction_config)
 
     def set_payment_token(
         self, new_payment_token: ChecksumAddress, transaction_config
@@ -363,6 +371,13 @@ def handle_burn(args: argparse.Namespace) -> None:
     print(result)
 
 
+def handle_contract_uri(args: argparse.Namespace) -> None:
+    network.connect(args.network)
+    contract = TerminusFacet(args.address)
+    result = contract.contract_uri()
+    print(result)
+
+
 def handle_create_pool_v1(args: argparse.Namespace) -> None:
     network.connect(args.network)
     contract = TerminusFacet(args.address)
@@ -493,6 +508,16 @@ def handle_set_approval_for_all(args: argparse.Namespace) -> None:
         operator=args.operator,
         approved=args.approved,
         transaction_config=transaction_config,
+    )
+    print(result)
+
+
+def handle_set_contract_uri(args: argparse.Namespace) -> None:
+    network.connect(args.network)
+    contract = TerminusFacet(args.address)
+    transaction_config = get_transaction_config(args)
+    result = contract.set_contract_uri(
+        _contract_uri=args.contract_uri_arg, transaction_config=transaction_config
     )
     print(result)
 
@@ -650,6 +675,10 @@ def generate_cli() -> argparse.ArgumentParser:
     burn_parser.add_argument("--amount", required=True, help="Type: uint256", type=int)
     burn_parser.set_defaults(func=handle_burn)
 
+    contract_uri_parser = subcommands.add_parser("contract-uri")
+    add_default_arguments(contract_uri_parser, False)
+    contract_uri_parser.set_defaults(func=handle_contract_uri)
+
     create_pool_v1_parser = subcommands.add_parser("create-pool-v1")
     add_default_arguments(create_pool_v1_parser, True)
     create_pool_v1_parser.add_argument(
@@ -783,6 +812,13 @@ def generate_cli() -> argparse.ArgumentParser:
         "--approved", required=True, help="Type: bool", type=boolean_argument_type
     )
     set_approval_for_all_parser.set_defaults(func=handle_set_approval_for_all)
+
+    set_contract_uri_parser = subcommands.add_parser("set-contract-uri")
+    add_default_arguments(set_contract_uri_parser, True)
+    set_contract_uri_parser.add_argument(
+        "--contract-uri-arg", required=True, help="Type: string", type=str
+    )
+    set_contract_uri_parser.set_defaults(func=handle_set_contract_uri)
 
     set_payment_token_parser = subcommands.add_parser("set-payment-token")
     add_default_arguments(set_payment_token_parser, True)

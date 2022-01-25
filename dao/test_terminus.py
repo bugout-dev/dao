@@ -32,6 +32,20 @@ class TestDeployment(MoonstreamDAOSingleContractTestCase):
         self.assertEqual(controller, accounts[0].address)
 
 
+class TestContractURI(TerminusTestCase):
+    def test_contract_uri(self):
+        terminus_diamond_address = self.terminus_contracts["Diamond"]
+        diamond_terminus = TerminusFacet.TerminusFacet(terminus_diamond_address)
+
+        contract_uri = diamond_terminus.contract_uri()
+        self.assertEqual(contract_uri, "")
+
+        diamond_terminus.set_contract_uri("https://example.com", {"from": accounts[0]})
+
+        contract_uri = diamond_terminus.contract_uri()
+        self.assertEqual(contract_uri, "https://example.com")
+
+
 class TestPoolCreation(TerminusTestCase):
     def test_create_simple_pool(self):
         moonstream_diamond_address = self.contracts["Diamond"]

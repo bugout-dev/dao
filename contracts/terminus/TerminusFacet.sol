@@ -122,6 +122,16 @@ contract TerminusFacet is ERC1155WithTerminusStorage {
         paymentTokenContract.transfer(toAddress, amount);
     }
 
+    function contractURI() public view returns (string memory) {
+        return LibTerminus.terminusStorage().contractURI;
+    }
+
+    function setContractURI(string memory _contractURI) external {
+        LibTerminus.enforceIsController();
+        LibTerminus.TerminusStorage storage ts = LibTerminus.terminusStorage();
+        ts.contractURI = _contractURI;
+    }
+
     function setURI(uint256 poolID, string memory poolURI) external {
         LibTerminus.enforcePoolIsController(poolID, _msgSender());
         LibTerminus.TerminusStorage storage ts = LibTerminus.terminusStorage();
