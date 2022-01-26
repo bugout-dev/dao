@@ -10,7 +10,7 @@ You will modify this section as you go through the checklist
 
 ### Diamond addresses
 
-```json
+```
 export TERMINUS_DIAMOND="0x99A558BDBdE247C2B2716f0D4cFb0E246DFB697D"
 ```
 
