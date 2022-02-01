@@ -2,6 +2,7 @@ from typing import List
 import unittest
 
 from brownie import accounts
+from brownie.exceptions import VirtualMachineError
 
 from . import ERC20Facet, TerminusFacet, TerminusInitializer
 from .core import facet_cut
@@ -30,6 +31,34 @@ class TestDeployment(MoonstreamDAOSingleContractTestCase):
 
         controller = diamond_terminus.terminus_controller()
         self.assertEqual(controller, accounts[0].address)
+
+
+class TestController(TerminusTestCase):
+    def test_set_controller_fails_when_not_called_by_controller(self):
+        terminus_diamond_address = self.terminus_contracts["Diamond"]
+        diamond_terminus = TerminusFacet.TerminusFacet(terminus_diamond_address)
+
+        with self.assertRaises(VirtualMachineError):
+            diamond_terminus.set_controller(accounts[1].address, {"from": accounts[1]})
+
+    def test_set_controller_fails_when_not_called_by_controller_even_if_they_change_to_existing_controller(
+        self,
+    ):
+        terminus_diamond_address = self.terminus_contracts["Diamond"]
+        diamond_terminus = TerminusFacet.TerminusFacet(terminus_diamond_address)
+
+        with self.assertRaises(VirtualMachineError):
+            diamond_terminus.set_controller(accounts[0].address, {"from": accounts[1]})
+
+    def test_set_controller(self):
+        terminus_diamond_address = self.terminus_contracts["Diamond"]
+        diamond_terminus = TerminusFacet.TerminusFacet(terminus_diamond_address)
+
+        self.assertEqual(diamond_terminus.terminus_controller(), accounts[0].address)
+        diamond_terminus.set_controller(accounts[3].address, {"from": accounts[0]})
+        self.assertEqual(diamond_terminus.terminus_controller(), accounts[3].address)
+        diamond_terminus.set_controller(accounts[0].address, {"from": accounts[3]})
+        self.assertEqual(diamond_terminus.terminus_controller(), accounts[0].address)
 
 
 class TestContractURI(TerminusTestCase):
