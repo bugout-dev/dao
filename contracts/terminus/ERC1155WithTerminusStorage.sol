@@ -275,6 +275,11 @@ contract ERC1155WithTerminusStorage is
             uint256 id = ids[i];
             uint256 amount = amounts[i];
 
+            require(
+                !ts.poolNotTransferable[id],
+                "ERC1155WithTerminusStorage: _safeBatchTransferFrom -- pool is not transferable"
+            );
+
             uint256 fromBalance = ts.poolBalances[id][from];
             require(
                 fromBalance >= amount,
