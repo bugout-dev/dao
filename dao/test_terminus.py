@@ -2,6 +2,7 @@ from typing import List
 import unittest
 
 from brownie import accounts
+from brownie.exceptions import VirtualMachineError
 
 from . import ERC20Facet, TerminusFacet, TerminusInitializer
 from .core import facet_cut
@@ -30,6 +31,34 @@ class TestDeployment(MoonstreamDAOSingleContractTestCase):
 
         controller = diamond_terminus.terminus_controller()
         self.assertEqual(controller, accounts[0].address)
+
+
+class TestController(TerminusTestCase):
+    def test_set_controller_fails_when_not_called_by_controller(self):
+        terminus_diamond_address = self.terminus_contracts["Diamond"]
+        diamond_terminus = TerminusFacet.TerminusFacet(terminus_diamond_address)
+
+        with self.assertRaises(VirtualMachineError):
+            diamond_terminus.set_controller(accounts[1].address, {"from": accounts[1]})
+
+    def test_set_controller_fails_when_not_called_by_controller_even_if_they_change_to_existing_controller(
+        self,
+    ):
+        terminus_diamond_address = self.terminus_contracts["Diamond"]
+        diamond_terminus = TerminusFacet.TerminusFacet(terminus_diamond_address)
+
+        with self.assertRaises(VirtualMachineError):
+            diamond_terminus.set_controller(accounts[0].address, {"from": accounts[1]})
+
+    def test_set_controller(self):
+        terminus_diamond_address = self.terminus_contracts["Diamond"]
+        diamond_terminus = TerminusFacet.TerminusFacet(terminus_diamond_address)
+
+        self.assertEqual(diamond_terminus.terminus_controller(), accounts[0].address)
+        diamond_terminus.set_controller(accounts[3].address, {"from": accounts[0]})
+        self.assertEqual(diamond_terminus.terminus_controller(), accounts[3].address)
+        diamond_terminus.set_controller(accounts[0].address, {"from": accounts[3]})
+        self.assertEqual(diamond_terminus.terminus_controller(), accounts[0].address)
 
 
 class TestContractURI(TerminusTestCase):
@@ -64,12 +93,14 @@ class TestPoolCreation(TerminusTestCase):
         pool_base_price = diamond_terminus.pool_base_price()
         self.assertEqual(pool_base_price, 1000)
 
+        diamond_terminus.set_controller(accounts[1].address, {"from": accounts[0]})
+
         diamond_moonstream.mint(accounts[1], 1000, {"from": accounts[0]})
         initial_payer_balance = diamond_moonstream.balance_of(accounts[1].address)
         initial_terminus_balance = diamond_moonstream.balance_of(
             terminus_diamond_address
         )
-        initial_controller_balance = diamond_moonstream.balance_of(accounts[0].address)
+        initial_controller_balance = diamond_moonstream.balance_of(accounts[1].address)
 
         diamond_moonstream.approve(
             terminus_diamond_address, 1000, {"from": accounts[1]}
@@ -87,20 +118,17 @@ class TestPoolCreation(TerminusTestCase):
             terminus_diamond_address
         )
         intermediate_controller_balance = diamond_moonstream.balance_of(
-            accounts[0].address
+            accounts[1].address
         )
         self.assertEqual(final_payer_balance, initial_payer_balance - 1000)
         self.assertEqual(intermediate_terminus_balance, initial_terminus_balance + 1000)
-        self.assertEqual(intermediate_controller_balance, initial_controller_balance)
+        self.assertEqual(
+            intermediate_controller_balance, initial_controller_balance - 1000
+        )
 
         with self.assertRaises(Exception):
             diamond_terminus.withdraw_payments(
-                accounts[1].address, 1000, {"from": accounts[1]}
-            )
-
-        with self.assertRaises(Exception):
-            diamond_terminus.withdraw_payments(
-                accounts[0].address, 1000, {"from": accounts[1]}
+                accounts[0].address, 1000, {"from": accounts[0]}
             )
 
         with self.assertRaises(Exception):
@@ -108,12 +136,17 @@ class TestPoolCreation(TerminusTestCase):
                 accounts[1].address, 1000, {"from": accounts[0]}
             )
 
+        with self.assertRaises(Exception):
+            diamond_terminus.withdraw_payments(
+                accounts[0].address, 1000, {"from": accounts[1]}
+            )
+
         diamond_terminus.withdraw_payments(
-            accounts[0].address, 1000, {"from": accounts[0]}
+            accounts[1].address, 1000, {"from": accounts[1]}
         )
 
         final_terminus_balance = diamond_moonstream.balance_of(terminus_diamond_address)
-        final_controller_balance = diamond_moonstream.balance_of(accounts[0].address)
+        final_controller_balance = diamond_moonstream.balance_of(accounts[1].address)
         self.assertEqual(final_terminus_balance, intermediate_terminus_balance - 1000)
         self.assertEqual(
             final_controller_balance, intermediate_controller_balance + 1000
@@ -151,6 +184,8 @@ class TestPoolOperations(TerminusTestCase):
         )
         cls.diamond_terminus = diamond_terminus
         cls.diamond_moonstream = diamond_moonstream
+
+        cls.diamond_terminus.set_controller(accounts[1].address, {"from": accounts[0]})
 
     def setUp(self) -> None:
         self.diamond_terminus.create_simple_pool(10, {"from": accounts[1]})

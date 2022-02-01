@@ -39,6 +39,11 @@ contract TerminusFacet is ERC1155WithTerminusStorage {
         uint256[] amounts
     );
 
+    function setController(address newController) external {
+        LibTerminus.enforceIsController();
+        LibTerminus.setController(newController);
+    }
+
     function poolMintBatch(
         uint256 id,
         address[] memory toAddresses,
@@ -172,6 +177,7 @@ contract TerminusFacet is ERC1155WithTerminusStorage {
     }
 
     function createSimplePool(uint256 _capacity) external returns (uint256) {
+        LibTerminus.enforceIsController();
         LibTerminus.TerminusStorage storage ts = LibTerminus.terminusStorage();
         uint256 requiredPayment = ts.poolBasePrice;
         IERC20 paymentTokenContract = _paymentTokenContract();
@@ -193,6 +199,7 @@ contract TerminusFacet is ERC1155WithTerminusStorage {
         bool _transferable,
         bool _burnable
     ) external returns (uint256) {
+        LibTerminus.enforceIsController();
         LibTerminus.TerminusStorage storage ts = LibTerminus.terminusStorage();
         // TODO(zomglings): Implement requiredPayment update based on pool features.
         uint256 requiredPayment = ts.poolBasePrice;
