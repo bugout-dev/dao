@@ -217,6 +217,12 @@ class TerminusFacet:
         self.assert_contract_is_instantiated()
         return self.contract.setContractURI(_contract_uri, transaction_config)
 
+    def set_controller(
+        self, new_controller: ChecksumAddress, transaction_config
+    ) -> Any:
+        self.assert_contract_is_instantiated()
+        return self.contract.setController(new_controller, transaction_config)
+
     def set_payment_token(
         self, new_payment_token: ChecksumAddress, transaction_config
     ) -> Any:
@@ -536,6 +542,16 @@ def handle_set_contract_uri(args: argparse.Namespace) -> None:
     print(result)
 
 
+def handle_set_controller(args: argparse.Namespace) -> None:
+    network.connect(args.network)
+    contract = TerminusFacet(args.address)
+    transaction_config = get_transaction_config(args)
+    result = contract.set_controller(
+        new_controller=args.new_controller, transaction_config=transaction_config
+    )
+    print(result)
+
+
 def handle_set_payment_token(args: argparse.Namespace) -> None:
     network.connect(args.network)
     contract = TerminusFacet(args.address)
@@ -833,6 +849,13 @@ def generate_cli() -> argparse.ArgumentParser:
         "--contract-uri-arg", required=True, help="Type: string", type=str
     )
     set_contract_uri_parser.set_defaults(func=handle_set_contract_uri)
+
+    set_controller_parser = subcommands.add_parser("set-controller")
+    add_default_arguments(set_controller_parser, True)
+    set_controller_parser.add_argument(
+        "--new-controller", required=True, help="Type: address"
+    )
+    set_controller_parser.set_defaults(func=handle_set_controller)
 
     set_payment_token_parser = subcommands.add_parser("set-payment-token")
     add_default_arguments(set_payment_token_parser, True)

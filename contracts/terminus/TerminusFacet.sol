@@ -39,6 +39,11 @@ contract TerminusFacet is ERC1155WithTerminusStorage {
         uint256[] amounts
     );
 
+    function setController(address newController) external {
+        LibTerminus.enforceIsController();
+        LibTerminus.setController(newController);
+    }
+
     function poolMintBatch(
         uint256 id,
         address[] memory toAddresses,
