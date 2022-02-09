@@ -242,7 +242,10 @@ class TestERC20(MoonstreamTokenTestCase):
 
         with self.assertRaises(Exception):
             diamond.transfer_from(
-                accounts[1].address, accounts[2].address, 501, {"from": accounts[2]},
+                accounts[1].address,
+                accounts[2].address,
+                501,
+                {"from": accounts[2]},
             )
 
         final_sender_balance = diamond.balance_of(accounts[1].address)
