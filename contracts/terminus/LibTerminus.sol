@@ -37,6 +37,9 @@ library LibTerminus {
         mapping(uint256 => mapping(address => bool)) globalPoolOperatorApprovals;
         // Contract metadata
         string contractURI;
+        // Pool controller enumeration
+        mapping(address => uint256) controllerPoolsNumber;
+        mapping(address => mapping(uint256 => uint256)) controlledPools;
     }
 
     function terminusStorage()
