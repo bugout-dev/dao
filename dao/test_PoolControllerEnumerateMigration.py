@@ -32,11 +32,11 @@ class TestPoolControllerEnumerationMigration(MoonstreamDAOSingleContractTestCase
         controllerPools0 = diamond_terminus.get_controller_pools(accounts[0].address)
         diamond_terminus.create_simple_pool(1,{"from": accounts[0]})
         controllerPools1 = diamond_terminus.get_controller_pools(accounts[0].address)
-        self.assertEqual(controllerPools0.length+1, controllerPools1.length)
+        self.assertEqual(len(controllerPools0)+1, len(controllerPools1))
         self.assertDictContainsSubset(controllerPools0, controllerPools1)
         for poolId in range(diamond_terminus.total_pools()):
             controller = diamond_terminus.terminus_pool_controller(poolId)
-            is_enumerated = diamond_terminus.controllerPools1.incluces(poolId)
+            is_enumerated = poolId in diamond_terminus.controllerPools1
             if controller == accounts[0].address:
                 self.assertTrue(is_enumerated)
             else:
