@@ -3,6 +3,7 @@ import unittest
 
 from brownie import accounts
 from brownie.exceptions import VirtualMachineError
+from sqlalchemy import true
 
 from . import TerminusFacet, PoolControllerEnumeration
 from .core import facet_cut
@@ -36,7 +37,9 @@ class TestPoolControllerEnumerationMigration(MoonstreamDAOSingleContractTestCase
         self.assertDictContainsSubset(controllerPools0, controllerPools1)
         for poolId in range(diamond_terminus.total_pools()):
             controller = diamond_terminus.terminus_pool_controller(poolId)
-            is_enumerated = poolId in diamond_terminus.controllerPools1
+            is_enumerated = False
+            if poolId in diamond_terminus.controllerPools1:
+                is_enumerated = True
             if controller == accounts[0].address:
                 self.assertTrue(is_enumerated)
             else:
