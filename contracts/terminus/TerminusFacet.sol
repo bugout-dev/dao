@@ -273,7 +273,8 @@ contract TerminusFacet is ERC1155WithTerminusStorage {
                 poolIDs[index] = i;
                 index++;
             }
-            return poolIDs;
+            index++;
+            return poolIDs[:index];
         }
     }
 }
