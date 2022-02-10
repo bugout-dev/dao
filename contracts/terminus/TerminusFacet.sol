@@ -264,7 +264,6 @@ contract TerminusFacet is ERC1155WithTerminusStorage {
         returns (uint256[] memory)
     {
         LibTerminus.TerminusStorage storage ts = LibTerminus.terminusStorage();
-        //  LibTerminus.terminusStorage().poolSupply[poolID]
 
         for (uint256 i = 0; i < ts.currentPoolID; i++) {
             uint256 index = 0;
