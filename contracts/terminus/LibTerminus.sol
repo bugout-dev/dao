@@ -40,6 +40,8 @@ library LibTerminus {
         // Pool controller enumeration
         mapping(address => uint256) controllerPoolsNumber;
         mapping(address => mapping(uint256 => uint256)) controlledPools;
+        mapping(uint256 => uint256) controlledPoolsIndexForID; // controlledPoolsIndexForID[poolID] => index of controlledPools[poolController[poolID]]
+
     }
 
     function terminusStorage()
@@ -87,9 +89,16 @@ library LibTerminus {
         ts.poolController[poolID] = newController;
         if(previousController != newController)
         {
-            ts.controllerPoolsNumber[newController]++;
-            ts.controlledPools[newController][ts.controllerPoolsNumber[newController]] = poolID;
+            uint256 length = ts.controllerPoolsNumber[previousController];
+            uint256 lastElement = ts.controlledPools[previousController][length];
+
+            ts.controlledPools[previousController][ts.controlledPoolsIndexForID[poolID]] = lastElement;
             ts.controllerPoolsNumber[previousController]--;
+
+            ts.controlledPools[newController][ts.controllerPoolsNumber[newController]] = poolID;
+            ts.controllerPoolsNumber[newController]++;
+            
+            ts.controlledPoolsIndexForID[poolID] = ts.controllerPoolsNumber[newController];
         }
         emit PoolControlTransferred(poolID, previousController, newController);
     }

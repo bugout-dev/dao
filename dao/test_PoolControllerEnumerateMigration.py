@@ -45,6 +45,14 @@ class TestPoolControllerEnumerationMigration(MoonstreamDAOSingleContractTestCase
             else:
                 self.assertFalse(is_enumerated)
 
+    def test_pool_enum_after_transfer(self):
+        diamond_address = self.contracts["Diamond"]
+        diamond_terminus = TerminusFacet.TerminusFacet(diamond_address)
+        diamond_terminus.assert_contract_is_instantiated
+
+
+
+
 
 if __name__ == "__main__":
     unittest.main()
