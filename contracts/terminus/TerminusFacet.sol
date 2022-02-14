@@ -143,10 +143,6 @@ contract TerminusFacet is ERC1155WithTerminusStorage {
         ts.poolURI[poolID] = poolURI;
     }
 
-    function totalPools() external view returns (uint256) {
-        return LibTerminus.terminusStorage().currentPoolID;
-    }
-
     function setPoolController(uint256 poolID, address newController) external {
         LibTerminus.enforcePoolIsController(poolID, msg.sender);
         LibTerminus.setPoolController(poolID, newController);
@@ -259,18 +255,5 @@ contract TerminusFacet is ERC1155WithTerminusStorage {
         _burn(from, poolID, amount);
     }
 
-    function getControllerPools(address controller)
-        external
-        view
-        returns (uint256[] memory)
-    {
-        LibTerminus.TerminusStorage storage ts = LibTerminus.terminusStorage();
-        uint256[] memory poolIDs = new uint256[](
-            ts.controllerPoolsNumber[controller]
-        );
-        for (uint256 i = 0; i < ts.controllerPoolsNumber[controller]; i++) {
-            poolIDs[i] = ts.controlledPools[controller][i];
-        }
-        return poolIDs;
-    }
+
 }

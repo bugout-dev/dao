@@ -22,12 +22,14 @@ import "@openzeppelin-contracts/contracts/utils/Address.sol";
 import "@openzeppelin-contracts/contracts/utils/Context.sol";
 import "@openzeppelin-contracts/contracts/utils/introspection/ERC165.sol";
 import "./LibTerminus.sol";
+import "./IERC1155Enumerable.sol";
 
 contract ERC1155WithTerminusStorage is
     Context,
     ERC165,
     IERC1155,
-    IERC1155MetadataURI
+    IERC1155MetadataURI,
+    IERC1155Enumerable
 {
     using Address for address;
 
@@ -44,6 +46,7 @@ contract ERC1155WithTerminusStorage is
         returns (bool)
     {
         return
+            interfaceId == type(IERC1155Enumerable).interfaceId ||
             interfaceId == type(IERC1155).interfaceId ||
             interfaceId == type(IERC1155MetadataURI).interfaceId ||
             super.supportsInterface(interfaceId);
@@ -628,4 +631,26 @@ contract ERC1155WithTerminusStorage is
 
         return array;
     }
+
+    function poolOfOwnerByIndex(address owner, uint256 index)
+        external
+        view
+        returns (uint256)
+    {
+        LibTerminus.TerminusStorage storage ts = LibTerminus.terminusStorage();
+        require(index < ts.controllerPoolsNumber[owner], "ERC1155Enumerable: owner index out of bounds");
+        return ts.controlledPools[owner][index];
+    }
+
+    function totalPools() external view returns (uint256)
+    {
+        LibTerminus.TerminusStorage storage ts = LibTerminus.terminusStorage();
+        return ts.currentPoolID;
+    }
+     function totalPoolsByOwner(address owner) external view returns (uint256)
+    {
+        LibTerminus.TerminusStorage storage ts = LibTerminus.terminusStorage();
+        return ts.controllerPoolsNumber[owner];
+    }
+
 }

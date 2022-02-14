@@ -85,6 +85,12 @@ library LibTerminus {
         TerminusStorage storage ts = terminusStorage();
         address previousController = ts.poolController[poolID];
         ts.poolController[poolID] = newController;
+        if(previousController != newController)
+        {
+            ts.controllerPoolsNumber[newController]++;
+            ts.controlledPools[newController][ts.controllerPoolsNumber[newController]] = poolID;
+            ts.controllerPoolsNumber[previousController]--;
+        }
         emit PoolControlTransferred(poolID, previousController, newController);
     }
 
