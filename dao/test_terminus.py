@@ -7,7 +7,12 @@ from brownie.exceptions import VirtualMachineError
 
 from . import ERC20Facet, TerminusFacet, TerminusInitializer
 from .core import facet_cut
-from .test_core import MoonstreamDAOSingleContractTestCase, TerminusTestCase, TerminusFixtureTestCase, PoolControllerEnumeration
+from .test_core import (
+    MoonstreamDAOSingleContractTestCase,
+    TerminusTestCase,
+    TerminusFixtureTestCase,
+    PoolControllerEnumeration,
+)
 from .fixtures import TerminusFacetFixture, TerminusInitializerFixture
 
 
@@ -744,6 +749,7 @@ class TestCreatePoolV1(TestPoolOperations):
         self.assertEqual(final_pool_supply, initial_pool_supply)
         self.assertEqual(final_owner_balance, initial_owner_balance)
 
+
 class TestPoolControllerEnumerationMigration(TerminusFixtureTestCase):
     @classmethod
     def setUpClass(cls) -> None:
@@ -751,7 +757,9 @@ class TestPoolControllerEnumerationMigration(TerminusFixtureTestCase):
         moonstream_diamond_address = cls.contracts["Diamond"]
         diamond_moonstream = ERC20Facet.ERC20Facet(moonstream_diamond_address)
         terminus_diamond_fixture_address = cls.terminus_fixture_contracts["Diamond"]
-        diamond_terminus_fixture = TerminusFacetFixture.TerminusFacetFixture(terminus_diamond_fixture_address)
+        diamond_terminus_fixture = TerminusFacetFixture.TerminusFacetFixture(
+            terminus_diamond_fixture_address
+        )
         diamond_terminus_fixture.set_payment_token(
             moonstream_diamond_address, {"from": accounts[0]}
         )
@@ -763,15 +771,19 @@ class TestPoolControllerEnumerationMigration(TerminusFixtureTestCase):
         cls.diamond_terminus_fixture = diamond_terminus_fixture
         cls.diamond_moonstream = diamond_moonstream
 
-        cls.diamond_terminus_fixture.set_controller(accounts[1].address, {"from": accounts[0]})
+        cls.diamond_terminus_fixture.set_controller(
+            accounts[1].address, {"from": accounts[0]}
+        )
 
         cls.diamond_terminus_fixture.create_simple_pool(10, {"from": accounts[1]})
+        cls.diamond_terminus_fixture.create_simple_pool(10, {"from": accounts[1]})
+        cls.diamond_terminus_fixture.create_simple_pool(10, {"from": accounts[1]})
+
 
     def test_migration_from_old_state(self):
 
-
-        #test - create test pools and check that they are correctly saved
-        #teardown - after test
+        # test - create test pools and check that they are correctly saved
+        # teardown - after test
 
         diamond_fixture_address = self.terminus_fixture_contracts["Diamond"]
         terminus_fixture_facet = self.terminus_fixture_facet
@@ -779,12 +791,14 @@ class TestPoolControllerEnumerationMigration(TerminusFixtureTestCase):
         terminus_facet = TerminusFacet.TerminusFacet(None)
         terminus_facet.deploy({"from": accounts[0]})
 
-        migration_initializer = PoolControllerEnumeration.PoolControllerEnumeration(None)
+        migration_initializer = PoolControllerEnumeration.PoolControllerEnumeration(
+            None
+        )
         migration_initializer.deploy({"from": accounts[0]})
 
         facet_cut(
             diamond_fixture_address,
-            "TerminusFacetFixture",
+            "TerminusFacet",
             terminus_fixture_facet,
             "remove",
             {"from": accounts[0]},
@@ -799,13 +813,23 @@ class TestPoolControllerEnumerationMigration(TerminusFixtureTestCase):
             migration_initializer.address,
         )
 
-        # final_total_pools = self.diamond_terminus_fixture.total_pools()
-        # print("final_total_pools:", final_total_pools)
+        terminus_facet = TerminusFacet.TerminusFacet(diamond_fixture_address)
+        total_pools = terminus_facet.total_pools()
+        self.assertEqual(total_pools,3)
+        number_pools_owned_by_account0 = terminus_facet.total_pools_by_owner(accounts[0])
+        self.assertEqual(number_pools_owned_by_account0,0)
+
+        number_pools_owned_by_account1 = terminus_facet.total_pools_by_owner(accounts[1])
+        self.assertEqual(number_pools_owned_by_account1,3)
+
+        for pool_id in range(total_pools):
+            owner = terminus_facet.terminus_pool_controller(pool_id)
+            all_owner_pools = {}
+            for index, owner_pool_internal_id, in enumerate(range(terminus_facet.total_pools_by_owner(owner))):
+                all_owner_pools[index] = terminus_facet.pool_of_owner_by_index(owner,owner_pool_internal_id)
+            self.assertTrue(pool_id in all_owner_pools)
+
         # self.assertEqual(final_total_pools, initial_total_pools + 1)
-
-
-
-
 
     # def test_migration_from_old_state(self):
 
@@ -817,7 +841,6 @@ class TestPoolControllerEnumerationMigration(TerminusFixtureTestCase):
     #     fixture_terminus_facet.deploy({"from": accounts[0]})
 
     #     # deploy, intialize, setup and test new diamond contract
-
 
     #     # facet_cut fixtures onto newly created diamond
 
@@ -847,7 +870,6 @@ class TestPoolControllerEnumerationMigration(TerminusFixtureTestCase):
     #     diamond_terminus = TerminusFacet.TerminusFacet(diamond_address)
     #     for poolId in range(diamond_terminus.total_pools()):
     #             controller = diamond_terminus.terminus_pool_controller(poolId)
-
 
 
 if __name__ == "__main__":

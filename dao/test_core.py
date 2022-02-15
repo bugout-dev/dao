@@ -82,7 +82,9 @@ class TerminusFixtureTestCase(MoonstreamTokenTestCase):
         cls.terminus_fixture_contracts = gogogo(accounts[0], {"from": accounts[0]})
 
         # Deploy Terminus
-        fixture_initializer = TerminusInitializerFixture.TerminusInitializerFixture(None)
+        fixture_initializer = TerminusInitializerFixture.TerminusInitializerFixture(
+            None
+        )
         fixture_initializer.deploy({"from": accounts[0]})
 
         terminus_fixture_facet = TerminusFacetFixture.TerminusFacetFixture(None)
@@ -92,7 +94,7 @@ class TerminusFixtureTestCase(MoonstreamTokenTestCase):
 
         facet_cut(
             diamond_fixture_address,
-            "TerminusFacetFixture",
+            "TerminusFacet",
             terminus_fixture_facet.address,
             "add",
             {"from": accounts[0]},
