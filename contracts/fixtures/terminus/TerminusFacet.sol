@@ -22,12 +22,12 @@ pragma solidity ^0.8.0;
 
 import "@openzeppelin-contracts/contracts/token/ERC20/IERC20.sol";
 import "./ERC1155WithTerminusStorage.sol";
-import "./LibTerminus.sol";
+import "./LibTerminusFixture.sol";
 import "../../diamond/libraries/LibDiamond.sol";
 
-contract TerminusFacet is ERC1155WithTerminusStorage {
+contract TerminusFacetFixture is ERC1155WithTerminusStorageFixture {
     constructor() {
-        LibTerminus.TerminusStorage storage ts = LibTerminus.terminusStorage();
+        LibTerminusFixture.TerminusStorage storage ts = LibTerminusFixture.terminusStorage();
         ts.controller = msg.sender;
     }
 
@@ -40,8 +40,8 @@ contract TerminusFacet is ERC1155WithTerminusStorage {
     );
 
     function setController(address newController) external {
-        LibTerminus.enforceIsController();
-        LibTerminus.setController(newController);
+        LibTerminusFixture.enforceIsController();
+        LibTerminusFixture.setController(newController);
     }
 
     function poolMintBatch(
@@ -50,13 +50,13 @@ contract TerminusFacet is ERC1155WithTerminusStorage {
         uint256[] memory amounts
     ) public {
         address operator = _msgSender();
-        LibTerminus.enforcePoolIsController(id, operator);
+        LibTerminusFixture.enforcePoolIsController(id, operator);
         require(
             toAddresses.length == amounts.length,
             "TerminusFacet: _poolMintBatch -- toAddresses and amounts length mismatch"
         );
 
-        LibTerminus.TerminusStorage storage ts = LibTerminus.terminusStorage();
+        LibTerminusFixture.TerminusStorage storage ts = LibTerminusFixture.terminusStorage();
 
         uint256 i = 0;
         uint256 totalAmount = 0;
@@ -83,31 +83,31 @@ contract TerminusFacet is ERC1155WithTerminusStorage {
     }
 
     function terminusController() external view returns (address) {
-        return LibTerminus.terminusStorage().controller;
+        return LibTerminusFixture.terminusStorage().controller;
     }
 
     function paymentToken() external view returns (address) {
-        return LibTerminus.terminusStorage().paymentToken;
+        return LibTerminusFixture.terminusStorage().paymentToken;
     }
 
     function setPaymentToken(address newPaymentToken) external {
-        LibTerminus.enforceIsController();
-        LibTerminus.TerminusStorage storage ts = LibTerminus.terminusStorage();
+        LibTerminusFixture.enforceIsController();
+        LibTerminusFixture.TerminusStorage storage ts = LibTerminusFixture.terminusStorage();
         ts.paymentToken = newPaymentToken;
     }
 
     function poolBasePrice() external view returns (uint256) {
-        return LibTerminus.terminusStorage().poolBasePrice;
+        return LibTerminusFixture.terminusStorage().poolBasePrice;
     }
 
     function setPoolBasePrice(uint256 newBasePrice) external {
-        LibTerminus.enforceIsController();
-        LibTerminus.TerminusStorage storage ts = LibTerminus.terminusStorage();
+        LibTerminusFixture.enforceIsController();
+        LibTerminusFixture.TerminusStorage storage ts = LibTerminusFixture.terminusStorage();
         ts.poolBasePrice = newBasePrice;
     }
 
     function _paymentTokenContract() internal view returns (IERC20) {
-        address paymentTokenAddress = LibTerminus
+        address paymentTokenAddress = LibTerminusFixture
             .terminusStorage()
             .paymentToken;
         require(
@@ -118,7 +118,7 @@ contract TerminusFacet is ERC1155WithTerminusStorage {
     }
 
     function withdrawPayments(address toAddress, uint256 amount) external {
-        LibTerminus.enforceIsController();
+        LibTerminusFixture.enforceIsController();
         require(
             _msgSender() == toAddress,
             "TerminusFacet: withdrawPayments -- Controller can only withdraw to self"
@@ -128,28 +128,28 @@ contract TerminusFacet is ERC1155WithTerminusStorage {
     }
 
     function contractURI() public view returns (string memory) {
-        return LibTerminus.terminusStorage().contractURI;
+        return LibTerminusFixture.terminusStorage().contractURI;
     }
 
     function setContractURI(string memory _contractURI) external {
-        LibTerminus.enforceIsController();
-        LibTerminus.TerminusStorage storage ts = LibTerminus.terminusStorage();
+        LibTerminusFixture.enforceIsController();
+        LibTerminusFixture.TerminusStorage storage ts = LibTerminusFixture.terminusStorage();
         ts.contractURI = _contractURI;
     }
 
     function setURI(uint256 poolID, string memory poolURI) external {
-        LibTerminus.enforcePoolIsController(poolID, _msgSender());
-        LibTerminus.TerminusStorage storage ts = LibTerminus.terminusStorage();
+        LibTerminusFixture.enforcePoolIsController(poolID, _msgSender());
+        LibTerminusFixture.TerminusStorage storage ts = LibTerminusFixture.terminusStorage();
         ts.poolURI[poolID] = poolURI;
     }
 
     function totalPools() external view returns (uint256) {
-        return LibTerminus.terminusStorage().currentPoolID;
+        return LibTerminusFixture.terminusStorage().currentPoolID;
     }
 
     function setPoolController(uint256 poolID, address newController) external {
-        LibTerminus.enforcePoolIsController(poolID, msg.sender);
-        LibTerminus.setPoolController(poolID, newController);
+        LibTerminusFixture.enforcePoolIsController(poolID, msg.sender);
+        LibTerminusFixture.setPoolController(poolID, newController);
     }
 
     function terminusPoolController(uint256 poolID)
@@ -157,7 +157,7 @@ contract TerminusFacet is ERC1155WithTerminusStorage {
         view
         returns (address)
     {
-        return LibTerminus.terminusStorage().poolController[poolID];
+        return LibTerminusFixture.terminusStorage().poolController[poolID];
     }
 
     function terminusPoolCapacity(uint256 poolID)
@@ -165,7 +165,7 @@ contract TerminusFacet is ERC1155WithTerminusStorage {
         view
         returns (uint256)
     {
-        return LibTerminus.terminusStorage().poolCapacity[poolID];
+        return LibTerminusFixture.terminusStorage().poolCapacity[poolID];
     }
 
     function terminusPoolSupply(uint256 poolID)
@@ -173,12 +173,12 @@ contract TerminusFacet is ERC1155WithTerminusStorage {
         view
         returns (uint256)
     {
-        return LibTerminus.terminusStorage().poolSupply[poolID];
+        return LibTerminusFixture.terminusStorage().poolSupply[poolID];
     }
 
     function createSimplePool(uint256 _capacity) external returns (uint256) {
-        LibTerminus.enforceIsController();
-        LibTerminus.TerminusStorage storage ts = LibTerminus.terminusStorage();
+        LibTerminusFixture.enforceIsController();
+        LibTerminusFixture.TerminusStorage storage ts = LibTerminusFixture.terminusStorage();
         uint256 requiredPayment = ts.poolBasePrice;
         IERC20 paymentTokenContract = _paymentTokenContract();
         require(
@@ -191,7 +191,7 @@ contract TerminusFacet is ERC1155WithTerminusStorage {
             address(this),
             requiredPayment
         );
-        return LibTerminus.createSimplePool(_capacity);
+        return LibTerminusFixture.createSimplePool(_capacity);
     }
 
     function createPoolV1(
@@ -199,8 +199,8 @@ contract TerminusFacet is ERC1155WithTerminusStorage {
         bool _transferable,
         bool _burnable
     ) external returns (uint256) {
-        LibTerminus.enforceIsController();
-        LibTerminus.TerminusStorage storage ts = LibTerminus.terminusStorage();
+        LibTerminusFixture.enforceIsController();
+        LibTerminusFixture.TerminusStorage storage ts = LibTerminusFixture.terminusStorage();
         // TODO(zomglings): Implement requiredPayment update based on pool features.
         uint256 requiredPayment = ts.poolBasePrice;
         IERC20 paymentTokenContract = _paymentTokenContract();
@@ -214,7 +214,7 @@ contract TerminusFacet is ERC1155WithTerminusStorage {
             address(this),
             requiredPayment
         );
-        uint256 poolID = LibTerminus.createSimplePool(_capacity);
+        uint256 poolID = LibTerminusFixture.createSimplePool(_capacity);
         if (!_transferable) {
             ts.poolNotTransferable[poolID] = true;
         }
@@ -230,7 +230,7 @@ contract TerminusFacet is ERC1155WithTerminusStorage {
         uint256 amount,
         bytes memory data
     ) external {
-        LibTerminus.enforcePoolIsController(poolID, msg.sender);
+        LibTerminusFixture.enforcePoolIsController(poolID, msg.sender);
         _mint(to, poolID, amount, data);
     }
 
@@ -241,7 +241,7 @@ contract TerminusFacet is ERC1155WithTerminusStorage {
         bytes memory data
     ) external {
         for (uint256 i = 0; i < poolIDs.length; i++) {
-            LibTerminus.enforcePoolIsController(poolIDs[i], _msgSender());
+            LibTerminusFixture.enforcePoolIsController(poolIDs[i], _msgSender());
         }
         _mintBatch(to, poolIDs, amounts, data);
     }

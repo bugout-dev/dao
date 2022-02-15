@@ -11,10 +11,9 @@
 
 // TODO(zomglings): Should we support EIP1761 in addition to ERC1155 or roll our own scopes and feature flags?
 // https://eips.ethereum.org/EIPS/eip-1761
-
 pragma solidity ^0.8.9;
 
-library LibTerminus {
+library LibTerminusFixture {
     bytes32 constant TERMINUS_STORAGE_POSITION =
         keccak256("moonstreamdao.eth.storage.terminus");
 
@@ -110,7 +109,7 @@ library LibTerminus {
         view
         returns (bool)
     {
-        LibTerminus.TerminusStorage storage ts = LibTerminus.terminusStorage();
+        LibTerminusFixture.TerminusStorage storage ts = LibTerminusFixture.terminusStorage();
         if (operator == ts.poolController[poolID]) {
             return true;
         } else if (ts.globalPoolOperatorApprovals[poolID][operator]) {
@@ -120,7 +119,7 @@ library LibTerminus {
     }
 
     function _approveForPool(uint256 poolID, address operator) internal {
-        LibTerminus.TerminusStorage storage ts = LibTerminus.terminusStorage();
+        LibTerminusFixture.TerminusStorage storage ts = LibTerminusFixture.terminusStorage();
         ts.globalPoolOperatorApprovals[poolID][operator] = true;
     }
 }

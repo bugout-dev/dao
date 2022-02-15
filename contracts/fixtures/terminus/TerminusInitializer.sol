@@ -12,15 +12,15 @@ pragma solidity ^0.8.9;
 import "@openzeppelin-contracts/contracts/token/ERC1155/IERC1155.sol";
 import "@openzeppelin-contracts/contracts/token/ERC1155/extensions/IERC1155MetadataURI.sol";
 import "../../diamond/libraries/LibDiamond.sol";
-import "./LibTerminus.sol";
+import "./LibTerminusFixture.sol";
 
-contract TerminusInitializer {
+contract TerminusInitializerFixture {
     function init() external {
         LibDiamond.DiamondStorage storage ds = LibDiamond.diamondStorage();
         ds.supportedInterfaces[type(IERC1155).interfaceId] = true;
         ds.supportedInterfaces[type(IERC1155MetadataURI).interfaceId] = true;
 
-        LibTerminus.TerminusStorage storage ts = LibTerminus.terminusStorage();
+        LibTerminusFixture.TerminusStorage storage ts = LibTerminusFixture.terminusStorage();
         ts.controller = msg.sender;
     }
 }
