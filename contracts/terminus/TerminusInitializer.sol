@@ -19,6 +19,7 @@ contract TerminusInitializer {
         LibDiamond.DiamondStorage storage ds = LibDiamond.diamondStorage();
         ds.supportedInterfaces[type(IERC1155).interfaceId] = true;
         ds.supportedInterfaces[type(IERC1155MetadataURI).interfaceId] = true;
+        ds.supportedInterfaces[type(IERC1155MetadataURI).interfaceId] = true;
 
         LibTerminus.TerminusStorage storage ts = LibTerminus.terminusStorage();
         ts.controller = msg.sender;
