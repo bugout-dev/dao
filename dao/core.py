@@ -21,6 +21,10 @@ from . import (
     TerminusFacet,
     TerminusInitializer,
 )
+from .fixtures import (
+    TerminusFacetFixture,
+    TerminusInitializerFixture,
+)
 
 FACETS: Dict[str, Any] = {
     "DiamondCutFacet": DiamondCutFacet,
@@ -28,6 +32,7 @@ FACETS: Dict[str, Any] = {
     "ERC20Facet": ERC20Facet,
     "OwnershipFacet": OwnershipFacet,
     "TerminusFacet": TerminusFacet,
+    "TerminusFacetFixture": TerminusFacetFixture,
 }
 
 FACET_PRECEDENCE: List[str] = [
@@ -36,6 +41,7 @@ FACET_PRECEDENCE: List[str] = [
     "DiamondLoupeFacet",
     "ERC20Facet",
     "TerminusFacet",
+    "TerminusFacetFixture",
 ]
 
 FACET_ACTIONS: Dict[str, int] = {"add": 0, "replace": 1, "remove": 2}
@@ -114,6 +120,12 @@ def facet_cut(
     elif facet_name == "TerminusFacet":
         if initializer_address != ZERO_ADDRESS and action != "remove":
             terminus_initializer = TerminusInitializer.TerminusInitializer(
+                initializer_address
+            )
+            calldata = terminus_initializer.contract.init.encode_input()
+    elif facet_name == "TerminusFacetFixture":
+        if initializer_address != ZERO_ADDRESS and action != "remove":
+            terminus_initializer = TerminusInitializerFixture.TerminusInitializerFixture(
                 initializer_address
             )
             calldata = terminus_initializer.contract.init.encode_input()

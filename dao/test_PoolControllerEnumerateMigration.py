@@ -25,6 +25,7 @@ class TestPoolControllerEnumerationMigration(MoonstreamDAOSingleContractTestCase
         fixture_terminus_facet.deploy({"from": accounts[0]})
 
         # deploy, intialize, setup and test new diamond contract
+        
 
         # facet_cut fixtures onto newly created diamond
 

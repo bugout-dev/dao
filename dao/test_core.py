@@ -6,7 +6,8 @@ from .core import facet_cut, gogogo
 from .ERC20Facet import ERC20Facet
 from .ERC20Initializer import ERC20Initializer
 from . import TerminusFacet
-from . import TerminusInitializer
+from . import TerminusInitializer, PoolControllerEnumeration
+from .fixtures import TerminusFacetFixture, TerminusInitializerFixture
 
 
 class MoonstreamDAOSingleContractTestCase(unittest.TestCase):
@@ -71,6 +72,35 @@ class TerminusTestCase(MoonstreamTokenTestCase):
 
         cls.terminus_initializer = initializer.address
         cls.terminus_facet = terminus_facet.address
+
+
+class TerminusFixtureTestCase(MoonstreamTokenTestCase):
+    @classmethod
+    def setUpClass(cls) -> None:
+        super().setUpClass()
+
+        cls.terminus_fixture_contracts = gogogo(accounts[0], {"from": accounts[0]})
+
+        # Deploy Terminus
+        fixture_initializer = TerminusInitializerFixture.TerminusInitializerFixture(None)
+        fixture_initializer.deploy({"from": accounts[0]})
+
+        terminus_fixture_facet = TerminusFacetFixture.TerminusFacetFixture(None)
+        terminus_fixture_facet.deploy({"from": accounts[0]})
+
+        diamond_fixture_address = cls.terminus_fixture_contracts["Diamond"]
+
+        facet_cut(
+            diamond_fixture_address,
+            "TerminusFacetFixture",
+            terminus_fixture_facet.address,
+            "add",
+            {"from": accounts[0]},
+            fixture_initializer.address,
+        )
+
+        cls.terminus_fixture_initializer = fixture_initializer.address
+        cls.terminus_fixture_facet = terminus_fixture_facet.address
 
 
 class TestCoreDeployment(MoonstreamDAOSingleContractTestCase):
