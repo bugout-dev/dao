@@ -4,7 +4,7 @@
  * Authors: Moonstream Engineering (engineering@moonstream.to)
  * GitHub: https://github.com/bugout-dev/dao
  *
- * Initializer for Terminus contract. Used when mounting a new TerminusFacet onto its diamond proxy.
+ * Migration file to migrate upgrade where we add terminus pool controller enumeration functionality
  */
 
 pragma solidity ^0.8.9;
