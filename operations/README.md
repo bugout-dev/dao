@@ -31,6 +31,8 @@ Moonstream platform token (MNSTR): `0x02620263be8A046Ca4812723596934AA20D7DC3C`
 
 Terminus: `0x040Cf7Ee9752936d8d280062a447eB53808EBc08`
 
+Moonstream token faucet: `0x008dB85178d557a5612941131FDF75028422Df33`
+
 ### Operations
 
 - [Deployment of Moonstream platform token](./moonstream-deploy-mumbai-20211218-1633.md) - December 18, 2021
