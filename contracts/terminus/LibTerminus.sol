@@ -89,16 +89,18 @@ library LibTerminus {
         ts.poolController[poolID] = newController;
         if(previousController != newController)
         {
-            uint256 length = ts.controllerPoolsNumber[previousController];
-            uint256 lastElement = ts.controlledPools[previousController][length - 1];
-
-            ts.controlledPools[previousController][ts.controlledPoolsIndexForID[poolID]] = lastElement;
-            ts.controllerPoolsNumber[previousController]--;
-
+            if(previousController != address(0))
+            {
+                uint256 length = ts.controllerPoolsNumber[previousController];
+                uint256 lastElement = ts.controlledPools[previousController][length];
+                ts.controlledPools[previousController][ts.controlledPoolsIndexForID[poolID]] = lastElement;
+                ts.controllerPoolsNumber[previousController]--;
+            }
             ts.controlledPools[newController][ts.controllerPoolsNumber[newController]] = poolID;
             ts.controllerPoolsNumber[newController]++;
-
             ts.controlledPoolsIndexForID[poolID] = ts.controllerPoolsNumber[newController];
+
+
         }
         emit PoolControlTransferred(poolID, previousController, newController);
     }
