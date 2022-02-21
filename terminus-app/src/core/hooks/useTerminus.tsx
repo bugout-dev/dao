@@ -118,7 +118,7 @@ const useTerminus = ({
 
   const terminusFacetCache = useQuery(
     ["terminusFacet", DiamondAddress],
-    getTerminusFacetState(contracts["terminusFacet"]),
+    getTerminusFacetState(contracts["terminusFacet"], web3Provider.account),
     {
       onSuccess: () => {},
       enabled:

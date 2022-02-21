@@ -40,7 +40,6 @@ const Homepage = () => {
   // });
 
   if (!terminus.terminusFacetCache.data?.totalPools) return "";
-  const n = Number(terminus.terminusFacetCache.data?.totalPools);
   return (
     <>
       <Center w="100%" bgColor="blue.1200">
@@ -53,8 +52,11 @@ const Homepage = () => {
           New Pool
         </Button>
       </Center>
-      {[...Array(n)].map((e, i) => (
-        <PoolCard poolId={String(i)} />
+      {terminus.terminusFacetCache.data?.ownedPoolIds.map((ownedPoolId) => (
+        <PoolCard
+          key={`ownedpool-${ownedPoolId}`}
+          poolId={String(ownedPoolId)}
+        />
       ))}
       <Stack />
     </>
