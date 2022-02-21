@@ -147,6 +147,11 @@ export interface TerminusFacet extends BaseContract {
       amounts: (number | string | BN)[]
     ): NonPayableTransactionObject<void>;
 
+    poolOfOwnerByIndex(
+      owner: string,
+      index: number | string | BN
+    ): NonPayableTransactionObject<string>;
+
     safeBatchTransferFrom(
       from: string,
       to: string,
@@ -207,6 +212,8 @@ export interface TerminusFacet extends BaseContract {
     ): NonPayableTransactionObject<string>;
 
     totalPools(): NonPayableTransactionObject<string>;
+
+    totalPoolsByOwner(owner: string): NonPayableTransactionObject<string>;
 
     uri(poolID: number | string | BN): NonPayableTransactionObject<string>;
 

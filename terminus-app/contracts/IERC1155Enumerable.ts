@@ -60,19 +60,14 @@ export type URI = ContractEventLog<{
   1: string;
 }>;
 
-export interface ERC1155WithTerminusStorage extends BaseContract {
+export interface IERC1155Enumerable extends BaseContract {
   constructor(
     jsonInterface: any[],
     address?: string,
     options?: ContractOptions
-  ): ERC1155WithTerminusStorage;
-  clone(): ERC1155WithTerminusStorage;
+  ): IERC1155Enumerable;
+  clone(): IERC1155Enumerable;
   methods: {
-    approveForPool(
-      poolID: number | string | BN,
-      operator: string
-    ): NonPayableTransactionObject<void>;
-
     balanceOf(
       account: string,
       id: number | string | BN
@@ -85,11 +80,6 @@ export interface ERC1155WithTerminusStorage extends BaseContract {
 
     isApprovedForAll(
       account: string,
-      operator: string
-    ): NonPayableTransactionObject<boolean>;
-
-    isApprovedForPool(
-      poolID: number | string | BN,
       operator: string
     ): NonPayableTransactionObject<boolean>;
 
@@ -126,8 +116,6 @@ export interface ERC1155WithTerminusStorage extends BaseContract {
     totalPools(): NonPayableTransactionObject<string>;
 
     totalPoolsByOwner(owner: string): NonPayableTransactionObject<string>;
-
-    uri(poolID: number | string | BN): NonPayableTransactionObject<string>;
   };
   events: {
     ApprovalForAll(cb?: Callback<ApprovalForAll>): EventEmitter;

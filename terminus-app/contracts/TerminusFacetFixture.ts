@@ -29,6 +29,18 @@ export type ApprovalForAll = ContractEventLog<{
   1: string;
   2: boolean;
 }>;
+export type PoolMintBatch = ContractEventLog<{
+  id: string;
+  operator: string;
+  from: string;
+  toAddresses: string[];
+  amounts: string[];
+  0: string;
+  1: string;
+  2: string;
+  3: string[];
+  4: string[];
+}>;
 export type TransferBatch = ContractEventLog<{
   operator: string;
   from: string;
@@ -60,13 +72,13 @@ export type URI = ContractEventLog<{
   1: string;
 }>;
 
-export interface ERC1155WithTerminusStorage extends BaseContract {
+export interface TerminusFacetFixture extends BaseContract {
   constructor(
     jsonInterface: any[],
     address?: string,
     options?: ContractOptions
-  ): ERC1155WithTerminusStorage;
-  clone(): ERC1155WithTerminusStorage;
+  ): TerminusFacetFixture;
+  clone(): TerminusFacetFixture;
   methods: {
     approveForPool(
       poolID: number | string | BN,
@@ -83,6 +95,24 @@ export interface ERC1155WithTerminusStorage extends BaseContract {
       ids: (number | string | BN)[]
     ): NonPayableTransactionObject<string[]>;
 
+    burn(
+      from: string,
+      poolID: number | string | BN,
+      amount: number | string | BN
+    ): NonPayableTransactionObject<void>;
+
+    contractURI(): NonPayableTransactionObject<string>;
+
+    createPoolV1(
+      _capacity: number | string | BN,
+      _transferable: boolean,
+      _burnable: boolean
+    ): NonPayableTransactionObject<string>;
+
+    createSimplePool(
+      _capacity: number | string | BN
+    ): NonPayableTransactionObject<string>;
+
     isApprovedForAll(
       account: string,
       operator: string
@@ -93,10 +123,31 @@ export interface ERC1155WithTerminusStorage extends BaseContract {
       operator: string
     ): NonPayableTransactionObject<boolean>;
 
-    poolOfOwnerByIndex(
-      owner: string,
-      index: number | string | BN
-    ): NonPayableTransactionObject<string>;
+    isFixture(): NonPayableTransactionObject<boolean>;
+
+    mint(
+      to: string,
+      poolID: number | string | BN,
+      amount: number | string | BN,
+      data: string | number[]
+    ): NonPayableTransactionObject<void>;
+
+    mintBatch(
+      to: string,
+      poolIDs: (number | string | BN)[],
+      amounts: (number | string | BN)[],
+      data: string | number[]
+    ): NonPayableTransactionObject<void>;
+
+    paymentToken(): NonPayableTransactionObject<string>;
+
+    poolBasePrice(): NonPayableTransactionObject<string>;
+
+    poolMintBatch(
+      id: number | string | BN,
+      toAddresses: string[],
+      amounts: (number | string | BN)[]
+    ): NonPayableTransactionObject<void>;
 
     safeBatchTransferFrom(
       from: string,
@@ -119,21 +170,64 @@ export interface ERC1155WithTerminusStorage extends BaseContract {
       approved: boolean
     ): NonPayableTransactionObject<void>;
 
+    setContractURI(_contractURI: string): NonPayableTransactionObject<void>;
+
+    setController(newController: string): NonPayableTransactionObject<void>;
+
+    setPaymentToken(newPaymentToken: string): NonPayableTransactionObject<void>;
+
+    setPoolBasePrice(
+      newBasePrice: number | string | BN
+    ): NonPayableTransactionObject<void>;
+
+    setPoolController(
+      poolID: number | string | BN,
+      newController: string
+    ): NonPayableTransactionObject<void>;
+
+    setURI(
+      poolID: number | string | BN,
+      poolURI: string
+    ): NonPayableTransactionObject<void>;
+
     supportsInterface(
       interfaceId: string | number[]
     ): NonPayableTransactionObject<boolean>;
 
+    terminusController(): NonPayableTransactionObject<string>;
+
+    terminusPoolCapacity(
+      poolID: number | string | BN
+    ): NonPayableTransactionObject<string>;
+
+    terminusPoolController(
+      poolID: number | string | BN
+    ): NonPayableTransactionObject<string>;
+
+    terminusPoolSupply(
+      poolID: number | string | BN
+    ): NonPayableTransactionObject<string>;
+
     totalPools(): NonPayableTransactionObject<string>;
 
-    totalPoolsByOwner(owner: string): NonPayableTransactionObject<string>;
-
     uri(poolID: number | string | BN): NonPayableTransactionObject<string>;
+
+    withdrawPayments(
+      toAddress: string,
+      amount: number | string | BN
+    ): NonPayableTransactionObject<void>;
   };
   events: {
     ApprovalForAll(cb?: Callback<ApprovalForAll>): EventEmitter;
     ApprovalForAll(
       options?: EventOptions,
       cb?: Callback<ApprovalForAll>
+    ): EventEmitter;
+
+    PoolMintBatch(cb?: Callback<PoolMintBatch>): EventEmitter;
+    PoolMintBatch(
+      options?: EventOptions,
+      cb?: Callback<PoolMintBatch>
     ): EventEmitter;
 
     TransferBatch(cb?: Callback<TransferBatch>): EventEmitter;
@@ -159,6 +253,13 @@ export interface ERC1155WithTerminusStorage extends BaseContract {
     event: "ApprovalForAll",
     options: EventOptions,
     cb: Callback<ApprovalForAll>
+  ): void;
+
+  once(event: "PoolMintBatch", cb: Callback<PoolMintBatch>): void;
+  once(
+    event: "PoolMintBatch",
+    options: EventOptions,
+    cb: Callback<PoolMintBatch>
   ): void;
 
   once(event: "TransferBatch", cb: Callback<TransferBatch>): void;

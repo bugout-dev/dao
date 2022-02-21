@@ -26,11 +26,7 @@ const PoolCard = ({ poolId }: { poolId: string }) => {
     poolId: poolId,
   });
 
-  const web3Provider = useContext(Web3Context);
-  const isOwner =
-    terminusPool.terminusFacetCache.data?.controller === web3Provider.account;
-
-  if (!isOwner || terminusPool.terminusFacetCache.isLoading) return "";
+  if (terminusPool.terminusFacetCache.isLoading) return <Spinner />;
   return (
     <Center>
       <Flex

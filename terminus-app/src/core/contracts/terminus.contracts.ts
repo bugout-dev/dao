@@ -7,18 +7,43 @@ import { ERC20WithCommonStorage } from "../../../contracts/ERC20WithCommonStorag
 import { MoonstreamTokenFaucet } from "../../../contracts/MoonstreamTokenFaucet";
 const erc20abi = require("../../../abi/erc20.json");
 
-export const getTerminusFacetState = (contract: BaseContract) => async () => {
-  console.log("getTerminusFacetState");
-  const terminusFacet = contract as TerminusFacet;
-  // const controller = await terminusFacet.methods.terminusController().call();
-  const poolBasePrice = await terminusFacet.methods.poolBasePrice().call();
-  console.log("poolBasePrice", poolBasePrice);
-  const paymentToken = await terminusFacet.methods.paymentToken().call();
-  const contractURI = await terminusFacet.methods.contractURI().call();
-  const totalPools = await terminusFacet.methods.totalPools().call();
+export const getTerminusFacetState =
+  (contract: BaseContract, owner?: string) => async () => {
+    console.log("getTerminusFacetState");
+    const terminusFacet = contract as TerminusFacet;
+    // const controller = await terminusFacet.methods.terminusController().call();
+    const poolBasePrice = await terminusFacet.methods.poolBasePrice().call();
+    console.log("poolBasePrice", poolBasePrice);
+    const paymentToken = await terminusFacet.methods.paymentToken().call();
+    const contractURI = await terminusFacet.methods.contractURI().call();
+    const totalPools = await terminusFacet.methods.totalPools().call();
+    let numberOfOwnedPools = "0";
+    let ownedPoolIds = [];
+    if (owner) {
+      numberOfOwnedPools = await terminusFacet.methods
+        .totalPoolsByOwner(owner)
+        .call();
 
-  return { poolBasePrice, paymentToken, contractURI, totalPools };
-};
+      if (numberOfOwnedPools !== "0") {
+        const n = new Number(numberOfOwnedPools);
+        for (let i = 0; i < n; i++) {
+          const poolId = await terminusFacet.methods
+            .poolOfOwnerByIndex(owner, i)
+            .call();
+          ownedPoolIds.push(poolId);
+        }
+      }
+    }
+
+    return {
+      poolBasePrice,
+      paymentToken,
+      contractURI,
+      totalPools,
+      numberOfOwnedPools,
+      ownedPoolIds,
+    };
+  };
 
 export const getTerminusFacetPoolState =
   (contract: BaseContract, poolId: string) => async () => {
@@ -35,6 +60,13 @@ export const getTerminusFacetPoolState =
       .call();
 
     return { controller, supply, uri, capacity };
+  };
+
+export const getNumberOfPoolsByOwner =
+  (contract: BaseContract, owner: string) => async () => {
+    const terminusFacet = contract as TerminusFacet;
+
+    return number;
   };
 
 export const createSimplePool =

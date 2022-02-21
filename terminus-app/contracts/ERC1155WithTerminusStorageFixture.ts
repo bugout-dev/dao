@@ -60,13 +60,13 @@ export type URI = ContractEventLog<{
   1: string;
 }>;
 
-export interface ERC1155WithTerminusStorage extends BaseContract {
+export interface ERC1155WithTerminusStorageFixture extends BaseContract {
   constructor(
     jsonInterface: any[],
     address?: string,
     options?: ContractOptions
-  ): ERC1155WithTerminusStorage;
-  clone(): ERC1155WithTerminusStorage;
+  ): ERC1155WithTerminusStorageFixture;
+  clone(): ERC1155WithTerminusStorageFixture;
   methods: {
     approveForPool(
       poolID: number | string | BN,
@@ -93,10 +93,7 @@ export interface ERC1155WithTerminusStorage extends BaseContract {
       operator: string
     ): NonPayableTransactionObject<boolean>;
 
-    poolOfOwnerByIndex(
-      owner: string,
-      index: number | string | BN
-    ): NonPayableTransactionObject<string>;
+    isFixture(): NonPayableTransactionObject<boolean>;
 
     safeBatchTransferFrom(
       from: string,
@@ -122,10 +119,6 @@ export interface ERC1155WithTerminusStorage extends BaseContract {
     supportsInterface(
       interfaceId: string | number[]
     ): NonPayableTransactionObject<boolean>;
-
-    totalPools(): NonPayableTransactionObject<string>;
-
-    totalPoolsByOwner(owner: string): NonPayableTransactionObject<string>;
 
     uri(poolID: number | string | BN): NonPayableTransactionObject<string>;
   };
