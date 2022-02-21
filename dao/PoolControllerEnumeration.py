@@ -69,12 +69,12 @@ def contract_from_build(abi_name: str) -> ContractContainer:
     return ContractContainer(PROJECT, build)
 
 
-class TerminusInitializer:
+class PoolControllerEnumeration:
     def __init__(self, contract_address: Optional[ChecksumAddress]):
-        self.contract_name = "TerminusInitializer"
+        self.contract_name = "PoolControllerEnumeration"
         self.address = contract_address
         self.contract = None
-        self.abi = get_abi_json("TerminusInitializer")
+        self.abi = get_abi_json("PoolControllerEnumeration")
         if self.address is not None:
             self.contract: Optional[Contract] = Contract.from_abi(
                 self.contract_name, self.address, self.abi
@@ -163,28 +163,28 @@ def add_default_arguments(parser: argparse.ArgumentParser, transact: bool) -> No
 def handle_deploy(args: argparse.Namespace) -> None:
     network.connect(args.network)
     transaction_config = get_transaction_config(args)
-    contract = TerminusInitializer(None)
+    contract = PoolControllerEnumeration(None)
     result = contract.deploy(transaction_config=transaction_config)
     print(result)
 
 
 def handle_verify_contract(args: argparse.Namespace) -> None:
     network.connect(args.network)
-    contract = TerminusInitializer(args.address)
+    contract = PoolControllerEnumeration(args.address)
     result = contract.verify_contract()
     print(result)
 
 
 def handle_init(args: argparse.Namespace) -> None:
     network.connect(args.network)
-    contract = TerminusInitializer(args.address)
+    contract = PoolControllerEnumeration(args.address)
     transaction_config = get_transaction_config(args)
     result = contract.init(transaction_config=transaction_config)
     print(result)
 
 
 def generate_cli() -> argparse.ArgumentParser:
-    parser = argparse.ArgumentParser(description="CLI for TerminusInitializer")
+    parser = argparse.ArgumentParser(description="CLI for PoolControllerEnumeration")
     parser.set_defaults(func=lambda _: parser.print_help())
     subcommands = parser.add_subparsers()
 

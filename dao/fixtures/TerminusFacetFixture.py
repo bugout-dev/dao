@@ -12,7 +12,7 @@ from brownie.network.contract import ContractContainer
 from eth_typing.evm import ChecksumAddress
 
 
-PROJECT_DIRECTORY = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
+PROJECT_DIRECTORY = os.path.abspath(os.path.join(os.path.dirname(__file__), "../.."))
 BUILD_DIRECTORY = os.path.join(PROJECT_DIRECTORY, "build", "contracts")
 
 
@@ -69,12 +69,12 @@ def contract_from_build(abi_name: str) -> ContractContainer:
     return ContractContainer(PROJECT, build)
 
 
-class TerminusFacet:
+class TerminusFacetFixture:
     def __init__(self, contract_address: Optional[ChecksumAddress]):
-        self.contract_name = "TerminusFacet"
+        self.contract_name = "TerminusFacetFixture"
         self.address = contract_address
         self.contract = None
-        self.abi = get_abi_json("TerminusFacet")
+        self.abi = get_abi_json("TerminusFacetFixture")
         if self.address is not None:
             self.contract: Optional[Contract] = Contract.from_abi(
                 self.contract_name, self.address, self.abi
@@ -141,6 +141,10 @@ class TerminusFacet:
         self.assert_contract_is_instantiated()
         return self.contract.isApprovedForPool.call(pool_id, operator)
 
+    def is_fixture(self, transaction_config) -> Any:
+        self.assert_contract_is_instantiated()
+        return self.contract.isFixture(transaction_config)
+
     def mint(
         self,
         to: ChecksumAddress,
@@ -178,10 +182,6 @@ class TerminusFacet:
         return self.contract.poolMintBatch(
             id, to_addresses, amounts, transaction_config
         )
-
-    def pool_of_owner_by_index(self, owner: ChecksumAddress, index: int) -> Any:
-        self.assert_contract_is_instantiated()
-        return self.contract.poolOfOwnerByIndex.call(owner, index)
 
     def safe_batch_transfer_from(
         self,
@@ -273,10 +273,6 @@ class TerminusFacet:
         self.assert_contract_is_instantiated()
         return self.contract.totalPools.call()
 
-    def total_pools_by_owner(self, owner: ChecksumAddress) -> Any:
-        self.assert_contract_is_instantiated()
-        return self.contract.totalPoolsByOwner.call(owner)
-
     def uri(self, pool_id: int) -> Any:
         self.assert_contract_is_instantiated()
         return self.contract.uri.call(pool_id)
@@ -351,21 +347,21 @@ def add_default_arguments(parser: argparse.ArgumentParser, transact: bool) -> No
 def handle_deploy(args: argparse.Namespace) -> None:
     network.connect(args.network)
     transaction_config = get_transaction_config(args)
-    contract = TerminusFacet(None)
+    contract = TerminusFacetFixture(None)
     result = contract.deploy(transaction_config=transaction_config)
     print(result)
 
 
 def handle_verify_contract(args: argparse.Namespace) -> None:
     network.connect(args.network)
-    contract = TerminusFacet(args.address)
+    contract = TerminusFacetFixture(args.address)
     result = contract.verify_contract()
     print(result)
 
 
 def handle_approve_for_pool(args: argparse.Namespace) -> None:
     network.connect(args.network)
-    contract = TerminusFacet(args.address)
+    contract = TerminusFacetFixture(args.address)
     transaction_config = get_transaction_config(args)
     result = contract.approve_for_pool(
         pool_id=args.pool_id,
@@ -377,21 +373,21 @@ def handle_approve_for_pool(args: argparse.Namespace) -> None:
 
 def handle_balance_of(args: argparse.Namespace) -> None:
     network.connect(args.network)
-    contract = TerminusFacet(args.address)
+    contract = TerminusFacetFixture(args.address)
     result = contract.balance_of(account=args.account, id=args.id)
     print(result)
 
 
 def handle_balance_of_batch(args: argparse.Namespace) -> None:
     network.connect(args.network)
-    contract = TerminusFacet(args.address)
+    contract = TerminusFacetFixture(args.address)
     result = contract.balance_of_batch(accounts=args.accounts, ids=args.ids)
     print(result)
 
 
 def handle_burn(args: argparse.Namespace) -> None:
     network.connect(args.network)
-    contract = TerminusFacet(args.address)
+    contract = TerminusFacetFixture(args.address)
     transaction_config = get_transaction_config(args)
     result = contract.burn(
         from_=args.from_arg,
@@ -404,14 +400,14 @@ def handle_burn(args: argparse.Namespace) -> None:
 
 def handle_contract_uri(args: argparse.Namespace) -> None:
     network.connect(args.network)
-    contract = TerminusFacet(args.address)
+    contract = TerminusFacetFixture(args.address)
     result = contract.contract_uri()
     print(result)
 
 
 def handle_create_pool_v1(args: argparse.Namespace) -> None:
     network.connect(args.network)
-    contract = TerminusFacet(args.address)
+    contract = TerminusFacetFixture(args.address)
     transaction_config = get_transaction_config(args)
     result = contract.create_pool_v1(
         _capacity=args.capacity_arg,
@@ -424,7 +420,7 @@ def handle_create_pool_v1(args: argparse.Namespace) -> None:
 
 def handle_create_simple_pool(args: argparse.Namespace) -> None:
     network.connect(args.network)
-    contract = TerminusFacet(args.address)
+    contract = TerminusFacetFixture(args.address)
     transaction_config = get_transaction_config(args)
     result = contract.create_simple_pool(
         _capacity=args.capacity_arg, transaction_config=transaction_config
@@ -434,21 +430,29 @@ def handle_create_simple_pool(args: argparse.Namespace) -> None:
 
 def handle_is_approved_for_all(args: argparse.Namespace) -> None:
     network.connect(args.network)
-    contract = TerminusFacet(args.address)
+    contract = TerminusFacetFixture(args.address)
     result = contract.is_approved_for_all(account=args.account, operator=args.operator)
     print(result)
 
 
 def handle_is_approved_for_pool(args: argparse.Namespace) -> None:
     network.connect(args.network)
-    contract = TerminusFacet(args.address)
+    contract = TerminusFacetFixture(args.address)
     result = contract.is_approved_for_pool(pool_id=args.pool_id, operator=args.operator)
+    print(result)
+
+
+def handle_is_fixture(args: argparse.Namespace) -> None:
+    network.connect(args.network)
+    contract = TerminusFacetFixture(args.address)
+    transaction_config = get_transaction_config(args)
+    result = contract.is_fixture(transaction_config=transaction_config)
     print(result)
 
 
 def handle_mint(args: argparse.Namespace) -> None:
     network.connect(args.network)
-    contract = TerminusFacet(args.address)
+    contract = TerminusFacetFixture(args.address)
     transaction_config = get_transaction_config(args)
     result = contract.mint(
         to=args.to,
@@ -462,7 +466,7 @@ def handle_mint(args: argparse.Namespace) -> None:
 
 def handle_mint_batch(args: argparse.Namespace) -> None:
     network.connect(args.network)
-    contract = TerminusFacet(args.address)
+    contract = TerminusFacetFixture(args.address)
     transaction_config = get_transaction_config(args)
     result = contract.mint_batch(
         to=args.to,
@@ -476,21 +480,21 @@ def handle_mint_batch(args: argparse.Namespace) -> None:
 
 def handle_payment_token(args: argparse.Namespace) -> None:
     network.connect(args.network)
-    contract = TerminusFacet(args.address)
+    contract = TerminusFacetFixture(args.address)
     result = contract.payment_token()
     print(result)
 
 
 def handle_pool_base_price(args: argparse.Namespace) -> None:
     network.connect(args.network)
-    contract = TerminusFacet(args.address)
+    contract = TerminusFacetFixture(args.address)
     result = contract.pool_base_price()
     print(result)
 
 
 def handle_pool_mint_batch(args: argparse.Namespace) -> None:
     network.connect(args.network)
-    contract = TerminusFacet(args.address)
+    contract = TerminusFacetFixture(args.address)
     transaction_config = get_transaction_config(args)
     result = contract.pool_mint_batch(
         id=args.id,
@@ -501,16 +505,9 @@ def handle_pool_mint_batch(args: argparse.Namespace) -> None:
     print(result)
 
 
-def handle_pool_of_owner_by_index(args: argparse.Namespace) -> None:
-    network.connect(args.network)
-    contract = TerminusFacet(args.address)
-    result = contract.pool_of_owner_by_index(owner=args.owner, index=args.index)
-    print(result)
-
-
 def handle_safe_batch_transfer_from(args: argparse.Namespace) -> None:
     network.connect(args.network)
-    contract = TerminusFacet(args.address)
+    contract = TerminusFacetFixture(args.address)
     transaction_config = get_transaction_config(args)
     result = contract.safe_batch_transfer_from(
         from_=args.from_arg,
@@ -525,7 +522,7 @@ def handle_safe_batch_transfer_from(args: argparse.Namespace) -> None:
 
 def handle_safe_transfer_from(args: argparse.Namespace) -> None:
     network.connect(args.network)
-    contract = TerminusFacet(args.address)
+    contract = TerminusFacetFixture(args.address)
     transaction_config = get_transaction_config(args)
     result = contract.safe_transfer_from(
         from_=args.from_arg,
@@ -540,7 +537,7 @@ def handle_safe_transfer_from(args: argparse.Namespace) -> None:
 
 def handle_set_approval_for_all(args: argparse.Namespace) -> None:
     network.connect(args.network)
-    contract = TerminusFacet(args.address)
+    contract = TerminusFacetFixture(args.address)
     transaction_config = get_transaction_config(args)
     result = contract.set_approval_for_all(
         operator=args.operator,
@@ -552,7 +549,7 @@ def handle_set_approval_for_all(args: argparse.Namespace) -> None:
 
 def handle_set_contract_uri(args: argparse.Namespace) -> None:
     network.connect(args.network)
-    contract = TerminusFacet(args.address)
+    contract = TerminusFacetFixture(args.address)
     transaction_config = get_transaction_config(args)
     result = contract.set_contract_uri(
         _contract_uri=args.contract_uri_arg, transaction_config=transaction_config
@@ -562,7 +559,7 @@ def handle_set_contract_uri(args: argparse.Namespace) -> None:
 
 def handle_set_controller(args: argparse.Namespace) -> None:
     network.connect(args.network)
-    contract = TerminusFacet(args.address)
+    contract = TerminusFacetFixture(args.address)
     transaction_config = get_transaction_config(args)
     result = contract.set_controller(
         new_controller=args.new_controller, transaction_config=transaction_config
@@ -572,7 +569,7 @@ def handle_set_controller(args: argparse.Namespace) -> None:
 
 def handle_set_payment_token(args: argparse.Namespace) -> None:
     network.connect(args.network)
-    contract = TerminusFacet(args.address)
+    contract = TerminusFacetFixture(args.address)
     transaction_config = get_transaction_config(args)
     result = contract.set_payment_token(
         new_payment_token=args.new_payment_token, transaction_config=transaction_config
@@ -582,7 +579,7 @@ def handle_set_payment_token(args: argparse.Namespace) -> None:
 
 def handle_set_pool_base_price(args: argparse.Namespace) -> None:
     network.connect(args.network)
-    contract = TerminusFacet(args.address)
+    contract = TerminusFacetFixture(args.address)
     transaction_config = get_transaction_config(args)
     result = contract.set_pool_base_price(
         new_base_price=args.new_base_price, transaction_config=transaction_config
@@ -592,7 +589,7 @@ def handle_set_pool_base_price(args: argparse.Namespace) -> None:
 
 def handle_set_pool_controller(args: argparse.Namespace) -> None:
     network.connect(args.network)
-    contract = TerminusFacet(args.address)
+    contract = TerminusFacetFixture(args.address)
     transaction_config = get_transaction_config(args)
     result = contract.set_pool_controller(
         pool_id=args.pool_id,
@@ -604,7 +601,7 @@ def handle_set_pool_controller(args: argparse.Namespace) -> None:
 
 def handle_set_uri(args: argparse.Namespace) -> None:
     network.connect(args.network)
-    contract = TerminusFacet(args.address)
+    contract = TerminusFacetFixture(args.address)
     transaction_config = get_transaction_config(args)
     result = contract.set_uri(
         pool_id=args.pool_id,
@@ -616,63 +613,56 @@ def handle_set_uri(args: argparse.Namespace) -> None:
 
 def handle_supports_interface(args: argparse.Namespace) -> None:
     network.connect(args.network)
-    contract = TerminusFacet(args.address)
+    contract = TerminusFacetFixture(args.address)
     result = contract.supports_interface(interface_id=args.interface_id)
     print(result)
 
 
 def handle_terminus_controller(args: argparse.Namespace) -> None:
     network.connect(args.network)
-    contract = TerminusFacet(args.address)
+    contract = TerminusFacetFixture(args.address)
     result = contract.terminus_controller()
     print(result)
 
 
 def handle_terminus_pool_capacity(args: argparse.Namespace) -> None:
     network.connect(args.network)
-    contract = TerminusFacet(args.address)
+    contract = TerminusFacetFixture(args.address)
     result = contract.terminus_pool_capacity(pool_id=args.pool_id)
     print(result)
 
 
 def handle_terminus_pool_controller(args: argparse.Namespace) -> None:
     network.connect(args.network)
-    contract = TerminusFacet(args.address)
+    contract = TerminusFacetFixture(args.address)
     result = contract.terminus_pool_controller(pool_id=args.pool_id)
     print(result)
 
 
 def handle_terminus_pool_supply(args: argparse.Namespace) -> None:
     network.connect(args.network)
-    contract = TerminusFacet(args.address)
+    contract = TerminusFacetFixture(args.address)
     result = contract.terminus_pool_supply(pool_id=args.pool_id)
     print(result)
 
 
 def handle_total_pools(args: argparse.Namespace) -> None:
     network.connect(args.network)
-    contract = TerminusFacet(args.address)
+    contract = TerminusFacetFixture(args.address)
     result = contract.total_pools()
-    print(result)
-
-
-def handle_total_pools_by_owner(args: argparse.Namespace) -> None:
-    network.connect(args.network)
-    contract = TerminusFacet(args.address)
-    result = contract.total_pools_by_owner(owner=args.owner)
     print(result)
 
 
 def handle_uri(args: argparse.Namespace) -> None:
     network.connect(args.network)
-    contract = TerminusFacet(args.address)
+    contract = TerminusFacetFixture(args.address)
     result = contract.uri(pool_id=args.pool_id)
     print(result)
 
 
 def handle_withdraw_payments(args: argparse.Namespace) -> None:
     network.connect(args.network)
-    contract = TerminusFacet(args.address)
+    contract = TerminusFacetFixture(args.address)
     transaction_config = get_transaction_config(args)
     result = contract.withdraw_payments(
         to_address=args.to_address,
@@ -683,7 +673,7 @@ def handle_withdraw_payments(args: argparse.Namespace) -> None:
 
 
 def generate_cli() -> argparse.ArgumentParser:
-    parser = argparse.ArgumentParser(description="CLI for TerminusFacet")
+    parser = argparse.ArgumentParser(description="CLI for TerminusFacetFixture")
     parser.set_defaults(func=lambda _: parser.print_help())
     subcommands = parser.add_subparsers()
 
@@ -777,6 +767,10 @@ def generate_cli() -> argparse.ArgumentParser:
     )
     is_approved_for_pool_parser.set_defaults(func=handle_is_approved_for_pool)
 
+    is_fixture_parser = subcommands.add_parser("is-fixture")
+    add_default_arguments(is_fixture_parser, True)
+    is_fixture_parser.set_defaults(func=handle_is_fixture)
+
     mint_parser = subcommands.add_parser("mint")
     add_default_arguments(mint_parser, True)
     mint_parser.add_argument("--to", required=True, help="Type: address")
@@ -821,16 +815,6 @@ def generate_cli() -> argparse.ArgumentParser:
         "--amounts", required=True, help="Type: uint256[]", nargs="+"
     )
     pool_mint_batch_parser.set_defaults(func=handle_pool_mint_batch)
-
-    pool_of_owner_by_index_parser = subcommands.add_parser("pool-of-owner-by-index")
-    add_default_arguments(pool_of_owner_by_index_parser, False)
-    pool_of_owner_by_index_parser.add_argument(
-        "--owner", required=True, help="Type: address"
-    )
-    pool_of_owner_by_index_parser.add_argument(
-        "--index", required=True, help="Type: uint256", type=int
-    )
-    pool_of_owner_by_index_parser.set_defaults(func=handle_pool_of_owner_by_index)
 
     safe_batch_transfer_from_parser = subcommands.add_parser("safe-batch-transfer-from")
     add_default_arguments(safe_batch_transfer_from_parser, True)
@@ -961,13 +945,6 @@ def generate_cli() -> argparse.ArgumentParser:
     total_pools_parser = subcommands.add_parser("total-pools")
     add_default_arguments(total_pools_parser, False)
     total_pools_parser.set_defaults(func=handle_total_pools)
-
-    total_pools_by_owner_parser = subcommands.add_parser("total-pools-by-owner")
-    add_default_arguments(total_pools_by_owner_parser, False)
-    total_pools_by_owner_parser.add_argument(
-        "--owner", required=True, help="Type: address"
-    )
-    total_pools_by_owner_parser.set_defaults(func=handle_total_pools_by_owner)
 
     uri_parser = subcommands.add_parser("uri")
     add_default_arguments(uri_parser, False)

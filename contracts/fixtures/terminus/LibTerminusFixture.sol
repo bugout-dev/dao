@@ -11,10 +11,9 @@
 
 // TODO(zomglings): Should we support EIP1761 in addition to ERC1155 or roll our own scopes and feature flags?
 // https://eips.ethereum.org/EIPS/eip-1761
-
 pragma solidity ^0.8.9;
 
-library LibTerminus {
+library LibTerminusFixture {
     bytes32 constant TERMINUS_STORAGE_POSITION =
         keccak256("moonstreamdao.eth.storage.terminus");
 
@@ -37,11 +36,6 @@ library LibTerminus {
         mapping(uint256 => mapping(address => bool)) globalPoolOperatorApprovals;
         // Contract metadata
         string contractURI;
-        // Pool controller enumeration
-        mapping(address => uint256) controllerPoolsNumber;
-        mapping(address => mapping(uint256 => uint256)) controlledPools;
-        mapping(uint256 => uint256) controlledPoolsIndexForID; // controlledPoolsIndexForID[poolID] => index of controlledPools[poolController[poolID]]
-
     }
 
     function terminusStorage()
@@ -87,21 +81,6 @@ library LibTerminus {
         TerminusStorage storage ts = terminusStorage();
         address previousController = ts.poolController[poolID];
         ts.poolController[poolID] = newController;
-        if(previousController != newController)
-        {
-            if(previousController != address(0))
-            {
-                uint256 length = ts.controllerPoolsNumber[previousController];
-                uint256 lastElement = ts.controlledPools[previousController][length];
-                ts.controlledPools[previousController][ts.controlledPoolsIndexForID[poolID]] = lastElement;
-                ts.controllerPoolsNumber[previousController]--;
-            }
-            ts.controlledPools[newController][ts.controllerPoolsNumber[newController]] = poolID;
-            ts.controllerPoolsNumber[newController]++;
-            ts.controlledPoolsIndexForID[poolID] = ts.controllerPoolsNumber[newController];
-
-
-        }
         emit PoolControlTransferred(poolID, previousController, newController);
     }
 
@@ -130,7 +109,7 @@ library LibTerminus {
         view
         returns (bool)
     {
-        LibTerminus.TerminusStorage storage ts = LibTerminus.terminusStorage();
+        LibTerminusFixture.TerminusStorage storage ts = LibTerminusFixture.terminusStorage();
         if (operator == ts.poolController[poolID]) {
             return true;
         } else if (ts.globalPoolOperatorApprovals[poolID][operator]) {
@@ -140,7 +119,7 @@ library LibTerminus {
     }
 
     function _approveForPool(uint256 poolID, address operator) internal {
-        LibTerminus.TerminusStorage storage ts = LibTerminus.terminusStorage();
+        LibTerminusFixture.TerminusStorage storage ts = LibTerminusFixture.terminusStorage();
         ts.globalPoolOperatorApprovals[poolID][operator] = true;
     }
 }

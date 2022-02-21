@@ -69,12 +69,12 @@ def contract_from_build(abi_name: str) -> ContractContainer:
     return ContractContainer(PROJECT, build)
 
 
-class ERC20Facet:
+class ERC20WithCommonStorage:
     def __init__(self, contract_address: Optional[ChecksumAddress]):
-        self.contract_name = "ERC20Facet"
+        self.contract_name = "ERC20WithCommonStorage"
         self.address = contract_address
         self.contract = None
-        self.abi = get_abi_json("ERC20Facet")
+        self.abi = get_abi_json("ERC20WithCommonStorage")
         if self.address is not None:
             self.contract: Optional[Contract] = Contract.from_abi(
                 self.contract_name, self.address, self.abi
@@ -124,14 +124,6 @@ class ERC20Facet:
     ) -> Any:
         self.assert_contract_is_instantiated()
         return self.contract.increaseAllowance(spender, added_value, transaction_config)
-
-    def mint(self, account: ChecksumAddress, amount: int, transaction_config) -> Any:
-        self.assert_contract_is_instantiated()
-        return self.contract.mint(account, amount, transaction_config)
-
-    def moonstream_controller(self) -> Any:
-        self.assert_contract_is_instantiated()
-        return self.contract.moonstreamController.call()
 
     def name(self) -> Any:
         self.assert_contract_is_instantiated()
@@ -229,28 +221,28 @@ def add_default_arguments(parser: argparse.ArgumentParser, transact: bool) -> No
 def handle_deploy(args: argparse.Namespace) -> None:
     network.connect(args.network)
     transaction_config = get_transaction_config(args)
-    contract = ERC20Facet(None)
+    contract = ERC20WithCommonStorage(None)
     result = contract.deploy(transaction_config=transaction_config)
     print(result)
 
 
 def handle_verify_contract(args: argparse.Namespace) -> None:
     network.connect(args.network)
-    contract = ERC20Facet(args.address)
+    contract = ERC20WithCommonStorage(args.address)
     result = contract.verify_contract()
     print(result)
 
 
 def handle_allowance(args: argparse.Namespace) -> None:
     network.connect(args.network)
-    contract = ERC20Facet(args.address)
+    contract = ERC20WithCommonStorage(args.address)
     result = contract.allowance(owner=args.owner, spender=args.spender)
     print(result)
 
 
 def handle_approve(args: argparse.Namespace) -> None:
     network.connect(args.network)
-    contract = ERC20Facet(args.address)
+    contract = ERC20WithCommonStorage(args.address)
     transaction_config = get_transaction_config(args)
     result = contract.approve(
         spender=args.spender, amount=args.amount, transaction_config=transaction_config
@@ -260,21 +252,21 @@ def handle_approve(args: argparse.Namespace) -> None:
 
 def handle_balance_of(args: argparse.Namespace) -> None:
     network.connect(args.network)
-    contract = ERC20Facet(args.address)
+    contract = ERC20WithCommonStorage(args.address)
     result = contract.balance_of(account=args.account)
     print(result)
 
 
 def handle_decimals(args: argparse.Namespace) -> None:
     network.connect(args.network)
-    contract = ERC20Facet(args.address)
+    contract = ERC20WithCommonStorage(args.address)
     result = contract.decimals()
     print(result)
 
 
 def handle_decrease_allowance(args: argparse.Namespace) -> None:
     network.connect(args.network)
-    contract = ERC20Facet(args.address)
+    contract = ERC20WithCommonStorage(args.address)
     transaction_config = get_transaction_config(args)
     result = contract.decrease_allowance(
         spender=args.spender,
@@ -286,7 +278,7 @@ def handle_decrease_allowance(args: argparse.Namespace) -> None:
 
 def handle_increase_allowance(args: argparse.Namespace) -> None:
     network.connect(args.network)
-    contract = ERC20Facet(args.address)
+    contract = ERC20WithCommonStorage(args.address)
     transaction_config = get_transaction_config(args)
     result = contract.increase_allowance(
         spender=args.spender,
@@ -296,33 +288,16 @@ def handle_increase_allowance(args: argparse.Namespace) -> None:
     print(result)
 
 
-def handle_mint(args: argparse.Namespace) -> None:
-    network.connect(args.network)
-    contract = ERC20Facet(args.address)
-    transaction_config = get_transaction_config(args)
-    result = contract.mint(
-        account=args.account, amount=args.amount, transaction_config=transaction_config
-    )
-    print(result)
-
-
-def handle_moonstream_controller(args: argparse.Namespace) -> None:
-    network.connect(args.network)
-    contract = ERC20Facet(args.address)
-    result = contract.moonstream_controller()
-    print(result)
-
-
 def handle_name(args: argparse.Namespace) -> None:
     network.connect(args.network)
-    contract = ERC20Facet(args.address)
+    contract = ERC20WithCommonStorage(args.address)
     result = contract.name()
     print(result)
 
 
 def handle_set_erc20_metadata(args: argparse.Namespace) -> None:
     network.connect(args.network)
-    contract = ERC20Facet(args.address)
+    contract = ERC20WithCommonStorage(args.address)
     transaction_config = get_transaction_config(args)
     result = contract.set_erc20_metadata(
         name_=args.name_arg,
@@ -334,21 +309,21 @@ def handle_set_erc20_metadata(args: argparse.Namespace) -> None:
 
 def handle_symbol(args: argparse.Namespace) -> None:
     network.connect(args.network)
-    contract = ERC20Facet(args.address)
+    contract = ERC20WithCommonStorage(args.address)
     result = contract.symbol()
     print(result)
 
 
 def handle_total_supply(args: argparse.Namespace) -> None:
     network.connect(args.network)
-    contract = ERC20Facet(args.address)
+    contract = ERC20WithCommonStorage(args.address)
     result = contract.total_supply()
     print(result)
 
 
 def handle_transfer(args: argparse.Namespace) -> None:
     network.connect(args.network)
-    contract = ERC20Facet(args.address)
+    contract = ERC20WithCommonStorage(args.address)
     transaction_config = get_transaction_config(args)
     result = contract.transfer(
         recipient=args.recipient,
@@ -360,7 +335,7 @@ def handle_transfer(args: argparse.Namespace) -> None:
 
 def handle_transfer_from(args: argparse.Namespace) -> None:
     network.connect(args.network)
-    contract = ERC20Facet(args.address)
+    contract = ERC20WithCommonStorage(args.address)
     transaction_config = get_transaction_config(args)
     result = contract.transfer_from(
         sender=args.sender_arg,
@@ -372,7 +347,7 @@ def handle_transfer_from(args: argparse.Namespace) -> None:
 
 
 def generate_cli() -> argparse.ArgumentParser:
-    parser = argparse.ArgumentParser(description="CLI for ERC20Facet")
+    parser = argparse.ArgumentParser(description="CLI for ERC20WithCommonStorage")
     parser.set_defaults(func=lambda _: parser.print_help())
     subcommands = parser.add_subparsers()
 
@@ -426,16 +401,6 @@ def generate_cli() -> argparse.ArgumentParser:
         "--added-value", required=True, help="Type: uint256", type=int
     )
     increase_allowance_parser.set_defaults(func=handle_increase_allowance)
-
-    mint_parser = subcommands.add_parser("mint")
-    add_default_arguments(mint_parser, True)
-    mint_parser.add_argument("--account", required=True, help="Type: address")
-    mint_parser.add_argument("--amount", required=True, help="Type: uint256", type=int)
-    mint_parser.set_defaults(func=handle_mint)
-
-    moonstream_controller_parser = subcommands.add_parser("moonstream-controller")
-    add_default_arguments(moonstream_controller_parser, False)
-    moonstream_controller_parser.set_defaults(func=handle_moonstream_controller)
 
     name_parser = subcommands.add_parser("name")
     add_default_arguments(name_parser, False)

@@ -12,7 +12,7 @@ from brownie.network.contract import ContractContainer
 from eth_typing.evm import ChecksumAddress
 
 
-PROJECT_DIRECTORY = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
+PROJECT_DIRECTORY = os.path.abspath(os.path.join(os.path.dirname(__file__), "../.."))
 BUILD_DIRECTORY = os.path.join(PROJECT_DIRECTORY, "build", "contracts")
 
 
@@ -69,12 +69,12 @@ def contract_from_build(abi_name: str) -> ContractContainer:
     return ContractContainer(PROJECT, build)
 
 
-class TerminusInitializer:
+class TestFixture:
     def __init__(self, contract_address: Optional[ChecksumAddress]):
-        self.contract_name = "TerminusInitializer"
+        self.contract_name = "TestFixture"
         self.address = contract_address
         self.contract = None
-        self.abi = get_abi_json("TerminusInitializer")
+        self.abi = get_abi_json("TestFixture")
         if self.address is not None:
             self.contract: Optional[Contract] = Contract.from_abi(
                 self.contract_name, self.address, self.abi
@@ -95,9 +95,9 @@ class TerminusInitializer:
         contract_class = contract_from_build(self.contract_name)
         contract_class.publish_source(self.contract)
 
-    def init(self, transaction_config) -> Any:
+    def is_fixture(self, transaction_config) -> Any:
         self.assert_contract_is_instantiated()
-        return self.contract.init(transaction_config)
+        return self.contract.isFixture(transaction_config)
 
 
 def get_transaction_config(args: argparse.Namespace) -> Dict[str, Any]:
@@ -163,28 +163,28 @@ def add_default_arguments(parser: argparse.ArgumentParser, transact: bool) -> No
 def handle_deploy(args: argparse.Namespace) -> None:
     network.connect(args.network)
     transaction_config = get_transaction_config(args)
-    contract = TerminusInitializer(None)
+    contract = TestFixture(None)
     result = contract.deploy(transaction_config=transaction_config)
     print(result)
 
 
 def handle_verify_contract(args: argparse.Namespace) -> None:
     network.connect(args.network)
-    contract = TerminusInitializer(args.address)
+    contract = TestFixture(args.address)
     result = contract.verify_contract()
     print(result)
 
 
-def handle_init(args: argparse.Namespace) -> None:
+def handle_is_fixture(args: argparse.Namespace) -> None:
     network.connect(args.network)
-    contract = TerminusInitializer(args.address)
+    contract = TestFixture(args.address)
     transaction_config = get_transaction_config(args)
-    result = contract.init(transaction_config=transaction_config)
+    result = contract.is_fixture(transaction_config=transaction_config)
     print(result)
 
 
 def generate_cli() -> argparse.ArgumentParser:
-    parser = argparse.ArgumentParser(description="CLI for TerminusInitializer")
+    parser = argparse.ArgumentParser(description="CLI for TestFixture")
     parser.set_defaults(func=lambda _: parser.print_help())
     subcommands = parser.add_subparsers()
 
@@ -196,9 +196,9 @@ def generate_cli() -> argparse.ArgumentParser:
     add_default_arguments(verify_contract_parser, False)
     verify_contract_parser.set_defaults(func=handle_verify_contract)
 
-    init_parser = subcommands.add_parser("init")
-    add_default_arguments(init_parser, True)
-    init_parser.set_defaults(func=handle_init)
+    is_fixture_parser = subcommands.add_parser("is-fixture")
+    add_default_arguments(is_fixture_parser, True)
+    is_fixture_parser.set_defaults(func=handle_is_fixture)
 
     return parser
 

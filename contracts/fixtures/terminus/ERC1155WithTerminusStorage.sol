@@ -21,15 +21,15 @@ import "@openzeppelin-contracts/contracts/token/ERC1155/extensions/IERC1155Metad
 import "@openzeppelin-contracts/contracts/utils/Address.sol";
 import "@openzeppelin-contracts/contracts/utils/Context.sol";
 import "@openzeppelin-contracts/contracts/utils/introspection/ERC165.sol";
-import "./LibTerminus.sol";
-import "./IERC1155Enumerable.sol";
+import "./LibTerminusFixture.sol";
+import "../Fixture.sol";
 
-contract ERC1155WithTerminusStorage is
+contract ERC1155WithTerminusStorageFixture is
     Context,
     ERC165,
     IERC1155,
     IERC1155MetadataURI,
-    IERC1155Enumerable
+    TestFixture
 {
     using Address for address;
 
@@ -46,7 +46,6 @@ contract ERC1155WithTerminusStorage is
         returns (bool)
     {
         return
-            interfaceId == type(IERC1155Enumerable).interfaceId ||
             interfaceId == type(IERC1155).interfaceId ||
             interfaceId == type(IERC1155MetadataURI).interfaceId ||
             super.supportsInterface(interfaceId);
@@ -59,7 +58,7 @@ contract ERC1155WithTerminusStorage is
         override
         returns (string memory)
     {
-        return LibTerminus.terminusStorage().poolURI[poolID];
+        return LibTerminusFixture.terminusStorage().poolURI[poolID];
     }
 
     /**
@@ -80,7 +79,7 @@ contract ERC1155WithTerminusStorage is
             account != address(0),
             "ERC1155WithTerminusStorage: balance query for the zero address"
         );
-        return LibTerminus.terminusStorage().poolBalances[id][account];
+        return LibTerminusFixture.terminusStorage().poolBalances[id][account];
     }
 
     /**
@@ -133,7 +132,7 @@ contract ERC1155WithTerminusStorage is
         returns (bool)
     {
         return
-            LibTerminus.terminusStorage().globalOperatorApprovals[account][
+            LibTerminusFixture.terminusStorage().globalOperatorApprovals[account][
                 operator
             ];
     }
@@ -143,12 +142,12 @@ contract ERC1155WithTerminusStorage is
         view
         returns (bool)
     {
-        return LibTerminus._isApprovedForPool(poolID, operator);
+        return LibTerminusFixture._isApprovedForPool(poolID, operator);
     }
 
     function approveForPool(uint256 poolID, address operator) external {
-        LibTerminus.enforcePoolIsController(poolID, _msgSender());
-        LibTerminus._approveForPool(poolID, operator);
+        LibTerminusFixture.enforcePoolIsController(poolID, _msgSender());
+        LibTerminusFixture._approveForPool(poolID, operator);
     }
 
     /**
@@ -210,7 +209,7 @@ contract ERC1155WithTerminusStorage is
             to != address(0),
             "ERC1155WithTerminusStorage: transfer to the zero address"
         );
-        LibTerminus.TerminusStorage storage ts = LibTerminus.terminusStorage();
+        LibTerminusFixture.TerminusStorage storage ts = LibTerminusFixture.terminusStorage();
         require(
             !ts.poolNotTransferable[id],
             "ERC1155WithTerminusStorage: _safeTransferFrom -- pool is not transferable"
@@ -272,7 +271,7 @@ contract ERC1155WithTerminusStorage is
 
         _beforeTokenTransfer(operator, from, to, ids, amounts, data);
 
-        LibTerminus.TerminusStorage storage ts = LibTerminus.terminusStorage();
+        LibTerminusFixture.TerminusStorage storage ts = LibTerminusFixture.terminusStorage();
 
         for (uint256 i = 0; i < ids.length; ++i) {
             uint256 id = ids[i];
@@ -322,7 +321,7 @@ contract ERC1155WithTerminusStorage is
             to != address(0),
             "ERC1155WithTerminusStorage: mint to the zero address"
         );
-        LibTerminus.TerminusStorage storage ts = LibTerminus.terminusStorage();
+        LibTerminusFixture.TerminusStorage storage ts = LibTerminusFixture.terminusStorage();
         require(
             ts.poolSupply[id] + amount <= ts.poolCapacity[id],
             "ERC1155WithTerminusStorage: _mint -- Minted tokens would exceed pool capacity"
@@ -377,7 +376,7 @@ contract ERC1155WithTerminusStorage is
             "ERC1155WithTerminusStorage: ids and amounts length mismatch"
         );
 
-        LibTerminus.TerminusStorage storage ts = LibTerminus.terminusStorage();
+        LibTerminusFixture.TerminusStorage storage ts = LibTerminusFixture.terminusStorage();
 
         for (uint256 i = 0; i < ids.length; i++) {
             require(
@@ -424,7 +423,7 @@ contract ERC1155WithTerminusStorage is
             from != address(0),
             "ERC1155WithTerminusStorage: burn from the zero address"
         );
-        LibTerminus.TerminusStorage storage ts = LibTerminus.terminusStorage();
+        LibTerminusFixture.TerminusStorage storage ts = LibTerminusFixture.terminusStorage();
         require(
             ts.poolBurnable[id],
             "ERC1155WithTerminusStorage: _burn -- pool is not burnable"
@@ -477,7 +476,7 @@ contract ERC1155WithTerminusStorage is
 
         address operator = _msgSender();
 
-        LibTerminus.TerminusStorage storage ts = LibTerminus.terminusStorage();
+        LibTerminusFixture.TerminusStorage storage ts = LibTerminusFixture.terminusStorage();
         for (uint256 i = 0; i < ids.length; i++) {
             require(
                 ts.poolBurnable[ids[i]],
@@ -519,7 +518,7 @@ contract ERC1155WithTerminusStorage is
             owner != operator,
             "ERC1155WithTerminusStorage: setting approval status for self"
         );
-        LibTerminus.TerminusStorage storage ts = LibTerminus.terminusStorage();
+        LibTerminusFixture.TerminusStorage storage ts = LibTerminusFixture.terminusStorage();
         ts.globalOperatorApprovals[owner][operator] = approved;
         emit ApprovalForAll(owner, operator, approved);
     }
@@ -631,26 +630,4 @@ contract ERC1155WithTerminusStorage is
 
         return array;
     }
-
-    function poolOfOwnerByIndex(address owner, uint256 index)
-        external
-        view
-        returns (uint256)
-    {
-        LibTerminus.TerminusStorage storage ts = LibTerminus.terminusStorage();
-        require(index < ts.controllerPoolsNumber[owner], "ERC1155Enumerable: owner index out of bounds");
-        return ts.controlledPools[owner][index];
-    }
-
-    function totalPools() external view returns (uint256)
-    {
-        LibTerminus.TerminusStorage storage ts = LibTerminus.terminusStorage();
-        return ts.currentPoolID;
-    }
-     function totalPoolsByOwner(address owner) external view returns (uint256)
-    {
-        LibTerminus.TerminusStorage storage ts = LibTerminus.terminusStorage();
-        return ts.controllerPoolsNumber[owner];
-    }
-
 }
