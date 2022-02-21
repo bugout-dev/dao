@@ -7,7 +7,8 @@
     "build": "next build && next export -o build",
     "start": "next start",
     "lint": "eslint ./ --ext js,jsx,ts,tsx --fix",
-    "pretty": "prettier --write \"./**/*.{js,jsx,json,ts,tsx}\""
+    "pretty": "prettier --write \"./**/*.{js,jsx,json,ts,tsx}\"",
+    "dao": "typechain --target=web3-v1 --out-dir contracts '../build/contracts/*.json'"
   },
   "dependencies": {
     "@chakra-ui/icons": "^1.0.14",
