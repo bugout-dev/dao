@@ -115,7 +115,24 @@ class TestPoolCreation(TerminusTestCase):
 
         initial_total_pools = diamond_terminus.total_pools()
 
+        total_owners_pools_before = diamond_terminus.total_pools_by_owner(
+            accounts[1]
+        )
+
         diamond_terminus.create_simple_pool(10, {"from": accounts[1]})
+
+        total_owners_pools_after = diamond_terminus.total_pools_by_owner(
+            accounts[1]
+        )
+
+        pool_id = diamond_terminus.total_pools()
+        self.assertEqual(total_owners_pools_after, total_owners_pools_before + 1)
+
+        last_enumerated_pool_id = diamond_terminus.pool_of_owner_by_index(
+            accounts[1], total_owners_pools_after-1
+        )
+        self.assertEqual(pool_id, last_enumerated_pool_id)
+
 
         final_total_pools = diamond_terminus.total_pools()
         self.assertEqual(final_total_pools, initial_total_pools + 1)
@@ -172,16 +189,7 @@ class TestPoolCreation(TerminusTestCase):
         pool_capacity = diamond_terminus.terminus_pool_capacity(final_total_pools)
         self.assertEqual(pool_capacity, 10)
 
-    def new_pool_is_enumerated(self):
 
-        total_owners_pools_before = self.diamond_terminus.total_pools_by_owner(accounts[1])
-        self.diamond_terminus.create_pool_v1(10, True, True, {"from": accounts[1]})
-        pool_id = self.diamond_terminus.total_pools()
-        total_owners_pools_after = self.diamond_terminus.total_pools_by_owner(accounts[1])
-        self.assertEqual(total_owners_pools_after, total_owners_pools_before+1)
-
-        last_enumerated_pool_id = self.diamond_terminus.pool_of_owner_by_index(accounts[1], total_owners_pools_after)
-        self.assertEqual(pool_id, last_enumerated_pool_id)
 
 
 
@@ -640,31 +648,86 @@ class TestPoolOperations(TerminusTestCase):
         self.assertEqual(final_pool_supply, initial_pool_supply)
         self.assertEqual(final_owner_balance, initial_owner_balance)
 
-    def pool_transfer_is_enumerated(self):
+    def test_pool_transfer_is_enumerated(self):
+        sender = accounts[1]
+        receiver = accounts[2]
+        self.diamond_terminus.create_pool_v1(10, True, True, {"from": sender})
+        self.diamond_terminus.create_pool_v1(10, True, True, {"from": sender})
+
+        first_created_in_this_test = (self.diamond_terminus.total_pools() - 1 )
+        sender_total_pools_before_transfer = self.diamond_terminus.total_pools_by_owner(
+            sender
+        )
+        reciever_total_pools_before_transfer = (
+            self.diamond_terminus.total_pools_by_owner(receiver)
+        )
+
+        self.diamond_terminus.set_pool_controller(first_created_in_this_test, receiver, {"from": sender})
+        self.assertEqual(
+            self.diamond_terminus.terminus_pool_controller(first_created_in_this_test), receiver
+        )
+        self.assertEqual(
+            self.diamond_terminus.total_pools_by_owner(receiver),
+            reciever_total_pools_before_transfer + 1,
+        )
+        self.assertEqual(
+            self.diamond_terminus.total_pools_by_owner(sender),
+            sender_total_pools_before_transfer - 1,
+        )
+
+        for i in range(sender_total_pools_before_transfer - 1):
+            enumerated_pool_id = self.diamond_terminus.pool_of_owner_by_index(sender, i)
+            self.assertNotEqual(enumerated_pool_id, first_created_in_this_test)
+
+        rx_enumerated_pools = []
+        for i in range(reciever_total_pools_before_transfer + 1):
+            enumerated_pool_id = self.diamond_terminus.pool_of_owner_by_index(receiver, i)
+            rx_enumerated_pools.append(enumerated_pool_id)
+        self.assertIn(first_created_in_this_test,rx_enumerated_pools)
+
+    def test_pool_transfer_failure_is_not_enumerated(self):
         self.diamond_terminus.create_pool_v1(10, True, True, {"from": accounts[1]})
         pool_id = self.diamond_terminus.total_pools()
 
-        self.diamond_terminus.set_pool_controller(pool_id, accounts[0])
-        reciever_total_pools_before_transfer = self.diamond_terminus.total_pools_by_owner(accounts[0])
-        self.assertEqual(self.diamond_terminus.terminus_pool_controller(pool_id), accounts[0])
-        self.assertEqual(self.diamond_terminus.total_pools_by_owner(accounts[0], reciever_total_pools_before_transfer+1))
-        self.assertEqual(self.diamond_terminus.pool_of_owner_by_index(reciever_total_pools_before_transfer, pool_id))
+        reciever_total_pools_before_transfer = (
+            self.diamond_terminus.total_pools_by_owner(accounts[0])
+        )
+        sender_total_pools_before_transfer = self.diamond_terminus.total_pools_by_owner(
+            accounts[1]
+        )
 
-    def pool_transfer_failure_is_not_enumerated(self):
-        self.diamond_terminus.create_pool_v1(10, True, True, {"from": accounts[1]})
-        pool_id = self.diamond_terminus.total_pools()
-
-        self.diamond_terminus.set_pool_controller(pool_id, accounts[0], {"from": accounts[2]})
-        reciever_total_pools_before_transfer = self.diamond_terminus.total_pools_by_owner(accounts[0])
-        sender_total_pools_before_transfer = self.diamond_terminus.total_pools_by_owner(accounts[1])
-        self.assertNotEqual(self.diamond_terminus.terminus_pool_controller(pool_id), accounts[0])
-        self.assertEqual(self.diamond_terminus.terminus_pool_controller(pool_id), accounts[1])
-        self.assertNotEqual(self.diamond_terminus.total_pools_by_owner(accounts[0], reciever_total_pools_before_transfer+1))
-        self.assertEqual(self.diamond_terminus.total_pools_by_owner(accounts[1], sender_total_pools_before_transfer))
-        self.assertNotEqual(self.diamond_terminus.pool_of_owner_by_index(reciever_total_pools_before_transfer, pool_id))
-        self.assertEqual(self.diamond_terminus.pool_of_owner_by_index(sender_total_pools_before_transfer, pool_id))
+        with self.assertRaises(Exception):
+            self.diamond_terminus.set_pool_controller(
+                pool_id, accounts[0], {"from": accounts[2]}
+            )
 
 
+        self.assertNotEqual(
+            self.diamond_terminus.terminus_pool_controller(pool_id), accounts[2]
+        )
+        self.assertEqual(
+            self.diamond_terminus.terminus_pool_controller(pool_id), accounts[1]
+        )
+        self.assertNotEqual(
+            self.diamond_terminus.total_pools_by_owner(
+                accounts[0]
+            ), reciever_total_pools_before_transfer + 1
+        )
+        self.assertEqual(
+            self.diamond_terminus.total_pools_by_owner(
+                accounts[1]
+            ), sender_total_pools_before_transfer
+        )
+        with self.assertRaises(Exception):
+            self.diamond_terminus.pool_of_owner_by_index(
+               accounts[2], reciever_total_pools_before_transfer
+            )
+
+        self.assertEqual(
+            self.diamond_terminus.pool_of_owner_by_index(
+                accounts[1], sender_total_pools_before_transfer-1
+            ), pool_id
+        )
 
 
 class TestCreatePoolV1(TestPoolOperations):
@@ -787,17 +850,22 @@ class TestCreatePoolV1(TestPoolOperations):
         self.assertEqual(final_pool_supply, initial_pool_supply)
         self.assertEqual(final_owner_balance, initial_owner_balance)
 
-    def new_pool_is_enumerated(self):
+    def test_new_pool_is_enumerated(self):
 
-        total_owners_pools_before = self.diamond_terminus.total_pools_by_owner(accounts[1])
+        total_owners_pools_before = self.diamond_terminus.total_pools_by_owner(
+            accounts[1]
+        )
         self.diamond_terminus.create_pool_v1(10, True, True, {"from": accounts[1]})
         pool_id = self.diamond_terminus.total_pools()
-        total_owners_pools_after = self.diamond_terminus.total_pools_by_owner(accounts[1])
-        self.assertEqual(total_owners_pools_after, total_owners_pools_before+1)
+        total_owners_pools_after = self.diamond_terminus.total_pools_by_owner(
+            accounts[1]
+        )
+        self.assertEqual(total_owners_pools_after, total_owners_pools_before + 1)
 
-        last_enumerated_pool_id = self.diamond_terminus.pool_of_owner_by_index(accounts[1], total_owners_pools_after)
+        last_enumerated_pool_id = self.diamond_terminus.pool_of_owner_by_index(
+            accounts[1], total_owners_pools_after-1
+        )
         self.assertEqual(pool_id, last_enumerated_pool_id)
-
 
 
 class TestPoolControllerEnumerationMigration(TerminusFixtureTestCase):
@@ -856,7 +924,6 @@ class TestPoolControllerEnumerationMigration(TerminusFixtureTestCase):
             migration_initializer.address,
         )
 
-
     @classmethod
     def increment_pools_created(cls, value):
         cls.pools_created += value
@@ -866,20 +933,28 @@ class TestPoolControllerEnumerationMigration(TerminusFixtureTestCase):
         diamond_fixture_address = self.terminus_fixture_contracts["Diamond"]
         terminus_facet = TerminusFacet.TerminusFacet(diamond_fixture_address)
         total_pools = terminus_facet.total_pools()
-        self.assertEqual(total_pools,self.pools_created)
-        number_pools_owned_by_account0 = terminus_facet.total_pools_by_owner(accounts[0])
-        self.assertEqual(number_pools_owned_by_account0,0)
+        self.assertEqual(total_pools, self.pools_created)
+        number_pools_owned_by_account0 = terminus_facet.total_pools_by_owner(
+            accounts[0]
+        )
+        self.assertEqual(number_pools_owned_by_account0, 0)
 
-        number_pools_owned_by_account1 = terminus_facet.total_pools_by_owner(accounts[1])
-        self.assertEqual(number_pools_owned_by_account1,self.pools_created)
+        number_pools_owned_by_account1 = terminus_facet.total_pools_by_owner(
+            accounts[1]
+        )
+        self.assertEqual(number_pools_owned_by_account1, self.pools_created)
 
         for pool_id in range(total_pools):
             owner = terminus_facet.terminus_pool_controller(pool_id)
             all_owner_pools = {}
-            for index, owner_pool_internal_id, in enumerate(range(terminus_facet.total_pools_by_owner(owner))):
-                all_owner_pools[index] = terminus_facet.pool_of_owner_by_index(owner,owner_pool_internal_id)
+            for (
+                index,
+                owner_pool_internal_id,
+            ) in enumerate(range(terminus_facet.total_pools_by_owner(owner))):
+                all_owner_pools[index] = terminus_facet.pool_of_owner_by_index(
+                    owner, owner_pool_internal_id
+                )
             self.assertTrue(pool_id in all_owner_pools)
-
 
 
 if __name__ == "__main__":
