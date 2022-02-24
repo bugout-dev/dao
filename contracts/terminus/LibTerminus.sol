@@ -40,7 +40,7 @@ library LibTerminus {
         // Pool controller enumeration
         mapping(address => uint256) controllerPoolsNumber;
         mapping(address => mapping(uint256 => uint256)) controlledPools;
-        mapping(uint256 => uint256) controlledPoolsIndexForID; // controlledPoolsIndexForID[poolID] => index of controlledPools[poolController[poolID]]
+        mapping(uint256 => uint256) fromPoolIdToControllersPoolId;
 
     }
 
@@ -93,12 +93,12 @@ library LibTerminus {
             {
                 uint256 length = ts.controllerPoolsNumber[previousController];
                 uint256 lastElement = ts.controlledPools[previousController][length];
-                ts.controlledPools[previousController][ts.controlledPoolsIndexForID[poolID]] = lastElement;
+                ts.controlledPools[previousController][ts.fromPoolIdToControllersPoolId[poolID]] = lastElement;
                 ts.controllerPoolsNumber[previousController]--;
             }
-            ts.controlledPools[newController][ts.controllerPoolsNumber[newController]] = poolID;
             ts.controllerPoolsNumber[newController]++;
-            ts.controlledPoolsIndexForID[poolID] = ts.controllerPoolsNumber[newController];
+            ts.controlledPools[newController][ts.controllerPoolsNumber[newController]] = poolID;
+            ts.fromPoolIdToControllersPoolId[poolID] = ts.controllerPoolsNumber[newController];
 
 
         }
