@@ -26,12 +26,8 @@ import {
 import router from "next/router";
 import { MODAL_TYPES } from "../core/providers/OverlayProvider/constants";
 import Web3Context from "../core/providers/Web3Provider/context";
-import {
-  UNIM_ADDRESS,
-  BOTTLER_ADDRESS,
-  TERMINUS_DIAMOND_ADDRESS,
-} from "../AppDefintions";
-import { chains, targetChain } from "../core/providers/Web3Provider";
+import { TERMINUS_DIAMOND_ADDRESS } from "../AppDefintions";
+import { targetChain } from "../core/providers/Web3Provider";
 import useTerminus from "../core/hooks/useTerminus";
 
 const LandingNavbar = () => {
@@ -116,18 +112,50 @@ const LandingNavbar = () => {
                       h="22px"
                       src="https://darkforest.cryptounicorns.fun/static/media/icon_milk.6fc3d44e.png"
                     />
-                    <Text mx={2} display={"inline-block"}>
-                      {terminus.terminusPaymentTokenCache?.data?.balance ? (
-                        web3Provider.web3.utils.fromWei(
+                    {terminus.terminusPaymentTokenCache?.data?.balance ? (
+                      <Text mx={2} display={"inline-block"}>
+                        Your balance:{" "}
+                        {web3Provider.web3.utils.fromWei(
                           terminus.terminusPaymentTokenCache.data.balance,
                           "ether"
-                        )
+                        )}
+                      </Text>
+                    ) : (
+                      <Spinner m={0} size="xs" />
+                    )}
+                  </Flex>
+                </Badge>
+                {web3Provider.account ===
+                  terminus.terminusFacetCache.data?.controller && (
+                  <Badge
+                    colorScheme={"pink"}
+                    variant={"solid"}
+                    fontSize={"md"}
+                    borderRadius={"md"}
+                    mr={2}
+                  >
+                    <Flex>
+                      <Image
+                        ml={2}
+                        h="22px"
+                        src="https://darkforest.cryptounicorns.fun/static/media/icon_milk.6fc3d44e.png"
+                      />
+                      {terminus.terminusPaymentTokenCache?.data
+                        ?.spenderBalance ? (
+                        <Text mx={2} display={"inline-block"}>
+                          Terminus contract balance:{" "}
+                          {web3Provider.web3.utils.fromWei(
+                            terminus.terminusPaymentTokenCache.data
+                              .spenderBalance,
+                            "ether"
+                          )}
+                        </Text>
                       ) : (
                         <Spinner m={0} size="xs" />
                       )}
-                    </Text>
-                  </Flex>
-                </Badge>
+                    </Flex>
+                  </Badge>
+                )}
                 <Badge
                   colorScheme={"green"}
                   variant={"solid"}

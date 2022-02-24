@@ -358,6 +358,19 @@
     "type": "function"
   },
   {
+    "inputs": [],
+    "name": "isFixture",
+    "outputs": [
+      {
+        "internalType": "bool",
+        "name": "",
+        "type": "bool"
+      }
+    ],
+    "stateMutability": "pure",
+    "type": "function"
+  },
+  {
     "inputs": [
       {
         "internalType": "address",
@@ -460,30 +473,6 @@
     "name": "poolMintBatch",
     "outputs": [],
     "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "address",
-        "name": "owner",
-        "type": "address"
-      },
-      {
-        "internalType": "uint256",
-        "name": "index",
-        "type": "uint256"
-      }
-    ],
-    "name": "poolOfOwnerByIndex",
-    "outputs": [
-      {
-        "internalType": "uint256",
-        "name": "",
-        "type": "uint256"
-      }
-    ],
-    "stateMutability": "view",
     "type": "function"
   },
   {
@@ -750,25 +739,6 @@
   {
     "inputs": [],
     "name": "totalPools",
-    "outputs": [
-      {
-        "internalType": "uint256",
-        "name": "",
-        "type": "uint256"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "address",
-        "name": "owner",
-        "type": "address"
-      }
-    ],
-    "name": "totalPoolsByOwner",
     "outputs": [
       {
         "internalType": "uint256",

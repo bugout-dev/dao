@@ -1,34 +1,33 @@
 import { TerminusFacet } from "../../../contracts/TerminusFacet";
 import { BaseContract } from "../../../contracts/types";
-import { setAllowance } from "./ERC20.contracts";
-import BN from "bn.js";
-import Web3 from "web3";
-import { ERC20WithCommonStorage } from "../../../contracts/ERC20WithCommonStorage";
-import { MoonstreamTokenFaucet } from "../../../contracts/MoonstreamTokenFaucet";
-const erc20abi = require("../../../abi/erc20.json");
+import { OwnershipFacet } from "../../../contracts/OwnershipFacet";
 
 export const getTerminusFacetState =
-  (contract: BaseContract, owner?: string) => async () => {
-    console.log("getTerminusFacetState");
-    const terminusFacet = contract as TerminusFacet;
-    // const controller = await terminusFacet.methods.terminusController().call();
+  (
+    contracts: { ownershipFacet: BaseContract; terminusFacet: BaseContract },
+    account?: string
+  ) =>
+  async () => {
+    const terminusFacet = contracts.terminusFacet as TerminusFacet;
+    const ownershipFacet = contracts.ownershipFacet as OwnershipFacet;
     const poolBasePrice = await terminusFacet.methods.poolBasePrice().call();
-    console.log("poolBasePrice", poolBasePrice);
     const paymentToken = await terminusFacet.methods.paymentToken().call();
     const contractURI = await terminusFacet.methods.contractURI().call();
     const totalPools = await terminusFacet.methods.totalPools().call();
+    const owner = await ownershipFacet.methods.owner().call();
+    const controller = await terminusFacet.methods.terminusController().call();
     let numberOfOwnedPools = "0";
     let ownedPoolIds = [];
-    if (owner) {
+    if (account) {
       numberOfOwnedPools = await terminusFacet.methods
-        .totalPoolsByOwner(owner)
+        .totalPoolsByOwner(account)
         .call();
 
       if (numberOfOwnedPools !== "0") {
         const n = new Number(numberOfOwnedPools);
         for (let i = 0; i < n; i++) {
           const poolId = await terminusFacet.methods
-            .poolOfOwnerByIndex(owner, i)
+            .poolOfOwnerByIndex(account, i)
             .call();
           ownedPoolIds.push(poolId);
         }
@@ -42,6 +41,8 @@ export const getTerminusFacetState =
       totalPools,
       numberOfOwnedPools,
       ownedPoolIds,
+      owner,
+      controller,
     };
   };
 
@@ -62,13 +63,6 @@ export const getTerminusFacetPoolState =
     return { controller, supply, uri, capacity };
   };
 
-export const getNumberOfPoolsByOwner =
-  (contract: BaseContract, owner: string) => async () => {
-    const terminusFacet = contract as TerminusFacet;
-
-    return number;
-  };
-
 export const createSimplePool =
   (contract: BaseContract, defaultTxConfig: any) =>
   async ({
@@ -83,6 +77,169 @@ export const createSimplePool =
     console.debug("txConfig", txConfig);
     const response = await terminusFacet.methods
       .createSimplePool(capacity)
+      .send(txConfig);
+    return response;
+  };
+
+export const mintNewAccessToken =
+  (contract: BaseContract, defaultTxConfig: any) =>
+  async ({
+    address,
+    poolId,
+    amount,
+    transactionConfig,
+  }: {
+    address: string;
+    amount: number;
+    poolId: string;
+    transactionConfig?: any;
+  }) => {
+    console.debug("mintNewAccessToken", address, amount, poolId);
+    const terminusFacet = contract as TerminusFacet;
+    const txConfig = { ...defaultTxConfig, ...transactionConfig };
+    console.debug("address", address);
+    const response = await terminusFacet.methods
+      .mint(address, poolId, amount, "asd")
+      .send(txConfig);
+    return response;
+  };
+
+export const transferTerminusOwnership =
+  (contract: BaseContract, defaultTxConfig: any) =>
+  async ({
+    newOwner,
+    transactionConfig,
+  }: {
+    newOwner: string;
+    transactionConfig?: any;
+  }) => {
+    const ownershipFacet = contract as OwnershipFacet;
+    const txConfig = { ...defaultTxConfig, ...transactionConfig };
+    const response = await ownershipFacet.methods
+      .transferOwnership(newOwner)
+      .send(txConfig);
+    return response;
+  };
+
+export const setController =
+  (contract: BaseContract, defaultTxConfig: any) =>
+  async ({
+    newController,
+    transactionConfig,
+  }: {
+    newController: string;
+    transactionConfig?: any;
+  }) => {
+    const terminus = contract as TerminusFacet;
+    const txConfig = { ...defaultTxConfig, ...transactionConfig };
+    const response = await terminus.methods
+      .setController(newController)
+      .send(txConfig);
+    return response;
+  };
+
+export const withrawTerminusFunds =
+  (contract: BaseContract, defaultTxConfig: any) =>
+  async ({
+    toAddress,
+    amount,
+    transactionConfig,
+  }: {
+    toAddress: string;
+    amount: string;
+    transactionConfig?: any;
+  }) => {
+    const terminusFacet = contract as TerminusFacet;
+    const txConfig = { ...defaultTxConfig, ...transactionConfig };
+    const response = await terminusFacet.methods
+      .withdrawPayments(toAddress, amount)
+      .send(txConfig);
+    return response;
+  };
+
+export const setTerminusPoolBasePrice =
+  (contract: BaseContract, defaultTxConfig: any) =>
+  async ({
+    newPoolBasePrice,
+    transactionConfig,
+  }: {
+    newPoolBasePrice: string;
+    transactionConfig?: any;
+  }) => {
+    const terminusFacet = contract as TerminusFacet;
+    const txConfig = { ...defaultTxConfig, ...transactionConfig };
+    const response = await terminusFacet.methods
+      .setPoolBasePrice(newPoolBasePrice)
+      .send(txConfig);
+    return response;
+  };
+
+export const setTerminusURI =
+  (contract: BaseContract, defaultTxConfig: any) =>
+  async ({
+    newURI,
+    transactionConfig,
+  }: {
+    newURI: string;
+    transactionConfig?: any;
+  }) => {
+    const terminusFacet = contract as TerminusFacet;
+    const txConfig = { ...defaultTxConfig, ...transactionConfig };
+    const response = await terminusFacet.methods
+      .setContractURI(newURI)
+      .send(txConfig);
+    return response;
+  };
+
+export const setTerminusPoolURI =
+  (contract: BaseContract, defaultTxConfig: any) =>
+  async ({
+    newURI,
+    poolId,
+    transactionConfig,
+  }: {
+    newURI: string;
+    poolId: string;
+    transactionConfig?: any;
+  }) => {
+    const terminusFacet = contract as TerminusFacet;
+    const txConfig = { ...defaultTxConfig, ...transactionConfig };
+    const response = await terminusFacet.methods
+      .setURI(poolId, newURI)
+      .send(txConfig);
+    return response;
+  };
+
+export const setTerminusPaymentToken =
+  (contract: BaseContract, defaultTxConfig: any) =>
+  async ({
+    paymentTokenAddress,
+    transactionConfig,
+  }: {
+    paymentTokenAddress: string;
+    transactionConfig?: any;
+  }) => {
+    const terminusFacet = contract as TerminusFacet;
+    const txConfig = { ...defaultTxConfig, ...transactionConfig };
+    const response = await terminusFacet.methods
+      .setPaymentToken(paymentTokenAddress)
+      .send(txConfig);
+    return response;
+  };
+
+export const setTerminusPoolController =
+  (contract: BaseContract, poolId: string, defaultTxConfig: any) =>
+  async ({
+    newController,
+    transactionConfig,
+  }: {
+    newController: string;
+    transactionConfig?: any;
+  }) => {
+    const terminusFacet = contract as TerminusFacet;
+    const txConfig = { ...defaultTxConfig, ...transactionConfig };
+    const response = await terminusFacet.methods
+      .setPoolController(poolId, newController)
       .send(txConfig);
     return response;
   };

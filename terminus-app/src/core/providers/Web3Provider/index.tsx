@@ -137,6 +137,11 @@ const Web3Provider = ({ children }: { children: JSX.Element }) => {
   }, [chainId, web3.currentProvider, web3?.eth]);
 
   window?.ethereum?.on("chainChanged", () => window.location.reload());
+  window?.ethereum?.on("accountsChanged", (_accounts: Array<string>) => {
+    if (chainId === targetChain.chainId && web3.currentProvider) {
+      setAccount(web3.utils.toChecksumAddress(_accounts[0]));
+    }
+  });
 
   React.useLayoutEffect(() => {
     if (web3.currentProvider && chainId) {

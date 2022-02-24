@@ -92,9 +92,6 @@ const Footer = () => (
                 />
               </Link>
             </Box>
-            <Text textColor={"gray.300"} fontWeight={"600"}>
-              This is the way. Milky way.
-            </Text>
           </Stack>
           <Stack direction={"row"} spacing={6}>
             {SOCIAL_LINKS.map((social_link, idx) => {

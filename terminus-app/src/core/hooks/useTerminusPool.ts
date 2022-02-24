@@ -5,7 +5,12 @@ import { web3MethodCall } from "../providers/Web3Provider/context";
 import useWeb3MethodCall from "./useWeb3MethodCall";
 import DataContext from "../providers/DataProvider/context";
 import BN from "bn.js";
-import { useQuery, useQueryClient, UseQueryResult } from "react-query";
+import {
+  useMutation,
+  useQuery,
+  useQueryClient,
+  UseQueryResult,
+} from "react-query";
 import { queryCacheProps } from "./hookCommon";
 // import { }
 // import { bottler } from ...
@@ -14,7 +19,14 @@ import { DiamondLoupeFacet } from "../../../contracts/DiamondLoupeFacet";
 import { DiamondCutFacet } from "../../../contracts/DiamondCutFacet";
 import { OwnershipFacet } from "../../../contracts/OwnershipFacet";
 import { TerminusFacet } from "../../../contracts/TerminusFacet";
-import { getTerminusFacetPoolState } from "../contracts/terminus.contracts";
+import {
+  getTerminusFacetPoolState,
+  mintNewAccessToken,
+  setTerminusPoolController,
+} from "../contracts/terminus.contracts";
+import useTerminus from "./useTerminus";
+import { string } from "yargs";
+import { terminus } from "../services";
 
 export interface useTerminusPoolArgumentsType {
   DiamondAddress: string;
@@ -30,6 +42,11 @@ const useTerminusPool = ({
 }: useTerminusPoolArgumentsType) => {
   const { contracts, dispatchContracts } = useContext(DataContext);
   const web3Provider = useContext(Web3Context);
+
+  const terminus = useTerminus({
+    DiamondAddress: DiamondAddress,
+    targetChain: targetChain,
+  });
 
   React.useEffect(() => {
     if (!contracts["terminusFacet"]) {
@@ -48,15 +65,41 @@ const useTerminusPool = ({
       onSuccess: () => {
         console.debug("succ");
       },
-      refetchInterval: 100000,
+      refetchInterval: 1000000,
       staleTime: Infinity,
       enabled:
+        !!terminus.terminusFacetCache.data?.paymentToken &&
+        !!contracts["terminusFacet"] &&
         web3Provider.web3?.utils.isAddress(web3Provider.account) &&
         web3Provider.chainId === targetChain.chainId,
     }
   );
 
-  return { terminusFacetCache };
+  const mintPoolNFTMutation = useMutation(
+    mintNewAccessToken(contracts["terminusFacet"], {
+      from: web3Provider.account,
+    }),
+    {
+      onSettled: () => {
+        terminus.terminusFacetCache.refetch();
+        terminusFacetCache.refetch();
+      },
+    }
+  );
+
+  const setPoolController = useMutation(
+    setTerminusPoolController(contracts["terminusFacet"], poolId, {
+      from: web3Provider.account,
+    }),
+    {
+      onSettled: () => {
+        terminus.terminusFacetCache.refetch();
+        terminusFacetCache.refetch();
+      },
+    }
+  );
+
+  return { terminusFacetCache, mintPoolNFTMutation, setPoolController };
 };
 
 export default useTerminusPool;

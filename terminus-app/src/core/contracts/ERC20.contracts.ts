@@ -5,14 +5,14 @@ import { BaseContract } from "../../../contracts/types";
 import Web3 from "web3";
 import { Web3ProviderInterface } from "../providers/Web3Provider/context";
 // import erc20abi from "../../../abi/erc20.json";
-const erc20abi = require("../../../abi/erc20.json");
+const erc20abi = require("../../../abi/ERC20Facet.json");
 
 export const setAllowance =
   (
     provider: Web3ProviderInterface,
     address: string,
     defaultTxConfig: any,
-    defaultSpender?: string,
+    defaultSpender?: string
   ) =>
   async ({
     amount,
@@ -56,6 +56,9 @@ export const getTokenState =
     const balance = account
       ? await erc20contract.methods.balanceOf(account).call()
       : null;
+    const spenderBalance = spender
+      ? await erc20contract.methods.balanceOf(spender).call()
+      : null;
     const allowance =
       spender && account
         ? await erc20contract.methods.allowance(account, spender).call()
@@ -64,5 +67,13 @@ export const getTokenState =
     const symbol = await erc20contract.methods.symbol().call();
     const decimals = await erc20contract.methods.decimals().call();
     const name = await erc20contract.methods.name().call();
-    return { totalSupply, symbol, decimals, name, balance, allowance };
+    return {
+      totalSupply,
+      symbol,
+      decimals,
+      name,
+      balance,
+      allowance,
+      spenderBalance,
+    };
   };

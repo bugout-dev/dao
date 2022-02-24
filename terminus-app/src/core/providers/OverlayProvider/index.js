@@ -1,10 +1,4 @@
-import React, {
-  useState,
-  useLayoutEffect,
-  useContext,
-  Suspense,
-  useEffect,
-} from "react";
+import React, { useState, useLayoutEffect, useContext, Suspense } from "react";
 import OverlayContext from "./context";
 import { MODAL_TYPES, DRAWER_TYPES } from "./constants";
 import {
@@ -34,7 +28,6 @@ import {
 } from "@chakra-ui/react";
 import UserContext from "../UserProvider/context";
 import UIContext from "../UIProvider/context";
-import useDashboard from "../../hooks/useDashboard";
 import SignUp from "../../../components/SignUp";
 const ForgotPassword = React.lazy(() =>
   import("../../../components/ForgotPassword")
@@ -49,7 +42,6 @@ const NewSubscription = React.lazy(() =>
 );
 
 const OverlayProvider = ({ children }) => {
-  const { createDashboard } = useDashboard();
   const ui = useContext(UIContext);
   const { user } = useContext(UserContext);
   const [modal, toggleModal] = useState({
@@ -119,11 +111,6 @@ const OverlayProvider = ({ children }) => {
     window.sessionStorage.removeItem("new_dashboard");
   };
 
-  useEffect(() => {
-    if (createDashboard.isSuccess) {
-      finishNewDashboard();
-    }
-  }, [createDashboard.isSuccess]);
   return (
     <OverlayContext.Provider
       value={{ modal, toggleModal, drawer, toggleDrawer, toggleAlert }}
@@ -230,81 +217,6 @@ const OverlayProvider = ({ children }) => {
           </ModalBody>
         </ModalContent>
       </Modal>
-      {/* )} */}
-      <Drawer
-        trapFocus={false}
-        isOpen={drawerDisclosure.isOpen}
-        placement="right"
-        size="xl"
-        // w="80%"
-        initialFocusRef={firstField}
-        onClose={() => toggleAlert(() => finishNewDashboard())}
-      >
-        <DrawerOverlay />
-        <DrawerContent overflowY="scroll">
-          <DrawerCloseButton />
-          <DrawerHeader borderBottomWidth="1px">
-            {DRAWER_TYPES.NEW_DASHBOARD && "New dashboard"}
-          </DrawerHeader>
-
-          <DrawerBody h="auto">
-            {DRAWER_TYPES.NEW_DASHBOARD && (
-              <Suspense fallback={<Spinner />}>
-                <NewDashboard firstField={firstField} />
-              </Suspense>
-            )}
-          </DrawerBody>
-          <DrawerFooter borderTopWidth="1px">
-            <Button
-              variant="outline"
-              mr={3}
-              onClick={() => toggleAlert(() => finishNewDashboard())}
-            >
-              Cancel
-            </Button>
-            <Button
-              colorScheme="blue"
-              isLoading={createDashboard.isLoading}
-              onClick={() => {
-                const dashboardState = JSON.parse(
-                  sessionStorage.getItem("new_dashboard")
-                );
-                createDashboard.mutate({
-                  name: dashboardState.name,
-                  subscriptions: dashboardState.subscriptions.map(
-                    (pickedSubscription) => {
-                      const retval = {
-                        subscription_id: pickedSubscription.subscription_id,
-                        generic: [],
-                        all_methods: !!pickedSubscription.isMethods,
-                        all_events: !!pickedSubscription.isEvents,
-                      };
-
-                      pickedSubscription.generic.transactions.in &&
-                        retval.generic.push({ name: "transactions_in" });
-                      pickedSubscription.generic.transactions.out &&
-                        retval.generic.push({ name: "transactions_out" });
-                      pickedSubscription.generic.value.in &&
-                        retval.generic.push({ name: "value_in" });
-                      pickedSubscription.generic.value.out &&
-                        retval.generic.push({ name: "value_out" });
-                      pickedSubscription.generic.balance &&
-                        retval.generic.push({ name: "balance" });
-                      retval["methods"] = [];
-                      retval["events"] = [];
-
-                      return retval;
-                    }
-                  ),
-                });
-              }}
-            >
-              Submit
-            </Button>
-          </DrawerFooter>
-        </DrawerContent>
-      </Drawer>
-
       {children}
     </OverlayContext.Provider>
   );

@@ -10,12 +10,12 @@ export const APP_API_URL = process.env.NEXT_PUBLIC_APP_API_URL;
   image: URL of image to display on page preview in search engines and link shares
 */
 export const DEFAULT_METATAGS = {
-  title: "UNIM bottler",
-  description: "Sell your UNIM on OpenSea",
-  keywords: "web3, smart contracts, unim, nfts",
+  title: "Moonstream terminus",
+  description: "web3 whitelists made easy",
+  keywords: "web3, smart contracts, terminus, nfts",
   //TODO(@Peersky): setup correct url here
-  url: "https://bottler.cryptounicorns.exchange",
-  image: `https://s3.amazonaws.com/static.simiotics.com/unicorn_bazaar/small_um.png`,
+  url: "",
+  image: ``,
 };
 
 /*
@@ -84,12 +84,12 @@ export const AWS_ASSETS_PATH = `assets/path`;
 /*
 White Logo with text URL (.png)
 */
-export const WHITE_LOGO_W_TEXT_URL = `https://s3.amazonaws.com/static.simiotics.com/unicorn_bazaar/bottler-logo.png`;
+export const WHITE_LOGO_W_TEXT_URL = `https://s3.amazonaws.com/static.simiotics.com/moonstream/assets/moon-logo%2Btext-white.png`;
 
 /*
 White Logo URL (.svg)
 */
-export const WHITE_LOGO_SVG = `https://s3.amazonaws.com/static.simiotics.com/unicorn_bazaar/small_um.png`;
+export const WHITE_LOGO_SVG = `https://s3.amazonaws.com/static.simiotics.com/moonstream/assets/moon-logo%2Btext-white.png`;
 
 export const TIME_RANGE_SECONDS = {
   day: 86400,

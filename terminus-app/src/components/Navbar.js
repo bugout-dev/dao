@@ -17,7 +17,7 @@ const Navbar = () => {
       id="Navbar"
       minH="3rem"
       maxH="3rem"
-      bgColor="yellow.500"
+      bgColor="blue.900"
       direction="row"
       w="100%"
       overflow="hidden"

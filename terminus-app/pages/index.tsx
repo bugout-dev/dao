@@ -1,65 +1,45 @@
 import React, { useContext } from "react";
-import {
-  Stack,
-  Heading,
-  Center,
-  Flex,
-  Badge,
-  Image,
-  Text,
-  Spacer,
-  Spinner,
-  Button,
-} from "@chakra-ui/react";
+import { Flex, Button, Image, Center } from "@chakra-ui/react";
 import { DEFAULT_METATAGS } from "../src/core/constants";
 import { TERMINUS_DIAMOND_ADDRESS } from "../src/AppDefintions";
-
 import { targetChain } from "../src/core/providers/Web3Provider";
-
-import UIContext from "../src/core/providers/UIProvider/context";
 import useTerminus from "../src/core/hooks/useTerminus";
-import useTerminusPool from "../src/core/hooks/useTerminusPool";
-import PoolCard from "../src/components/PoolCard";
-
-const assets = {
+import Web3Context from "../src/core/providers/Web3Provider/context";
+import Terminus from "../src/components/Terminus";
+const assets: any = {
   onboarding:
     "https://s3.amazonaws.com/static.simiotics.com/unicorn_bazaar/unim-onboarding.png",
 };
 
 const Homepage = () => {
-  const ui = useContext(UIContext);
-  const terminus = useTerminus({
-    DiamondAddress: TERMINUS_DIAMOND_ADDRESS,
-    targetChain: targetChain,
-  });
+  const web3Provider = useContext(Web3Context);
 
-  // const terminusPool1 = useTerminusPool({
-  //   DiamondAddress: TERMINUS_DIAMOND_ADDRESS,
-  //   targetChain,
-  //   poolId: "74",
-  // });
-
-  if (!terminus.terminusFacetCache.data?.totalPools) return "";
   return (
-    <>
-      <Center w="100%" bgColor="blue.1200">
-        <Button
-          variant={"solid"}
-          colorScheme={"yellow"}
-          onClick={() => terminus.createPoolMutation.mutate("100")}
-          isLoading={terminus.createPoolMutation.isLoading}
-        >
-          New Pool
-        </Button>
-      </Center>
-      {terminus.terminusFacetCache.data?.ownedPoolIds.map((ownedPoolId) => (
-        <PoolCard
-          key={`ownedpool-${ownedPoolId}`}
-          poolId={String(ownedPoolId)}
-        />
-      ))}
-      <Stack />
-    </>
+    <Flex w="100%" minH="100vh" bgColor={"blue.1200"} direction={"column"}>
+      {web3Provider.account && <Terminus />}
+      {!web3Provider.account &&
+        web3Provider.buttonText !== web3Provider.WALLET_STATES.CONNECTED && (
+          <Center>
+            <Button
+              mt={20}
+              colorScheme={
+                web3Provider.buttonText === web3Provider.WALLET_STATES.CONNECTED
+                  ? "orange"
+                  : "orange"
+              }
+              onClick={web3Provider.onConnectWalletClick}
+            >
+              {web3Provider.buttonText}
+              {"  "}
+              <Image
+                pl={2}
+                h="24px"
+                src="https://raw.githubusercontent.com/MetaMask/brand-resources/master/SVG/metamask-fox.svg"
+              />
+            </Button>
+          </Center>
+        )}
+    </Flex>
   );
 };
 
