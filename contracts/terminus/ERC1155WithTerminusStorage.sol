@@ -639,7 +639,7 @@ contract ERC1155WithTerminusStorage is
     {
         LibTerminus.TerminusStorage storage ts = LibTerminus.terminusStorage();
         require(index < ts.controllerPoolsNumber[owner], "ERC1155Enumerable: owner index out of bounds");
-        return ts.controlledPools[owner][index];
+        return ts.controlledPools[owner][index + 1];
     }
 
     function totalPools() external view returns (uint256)
