@@ -22,10 +22,11 @@ contract PoolControllerEnumeration {
 
         for (uint256 i = 0; i < (ts.currentPoolID+1); i++) {
             address poolController = ts.poolController[i];
+            ts.controllerPoolsNumber[poolController]++;
             ts.controlledPools[poolController][
                 ts.controllerPoolsNumber[poolController]
             ] = i;
-            ts.controllerPoolsNumber[poolController]++;
+            ts.fromPoolIdToControllersPoolId[i] = ts.controllerPoolsNumber[poolController];
         }
     }
 }
