@@ -1,0 +1,41 @@
+{
+  "name": "Terminus-backend",
+  "version": "0.0.1",
+  "description": "Work with terminus diamond contract via a simple HTTP API",
+  "main": "build/index.js",
+  "scripts": {
+    "build": "./node_modules/.bin/tsc",
+    "server": "./node_modules/.bin/tsc && node build/index.js",
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "tsc": "node_modules/.bin/tsc"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/bugout-dev/dao.git"
+  },
+  "keywords": [
+    "web3",
+    "terminus",
+    "dao"
+  ],
+  "author": "Moonstream Engineering",
+  "license": "Apache-2.0",
+  "bugs": {
+    "url": "https://github.com/bugout-dev/dao/issues"
+  },
+  "homepage": "https://github.com/bugout-dev/dao#readme",
+  "devDependencies": {
+    "@types/web3": "^1.2.2",
+    "prettier": "^2.5.1",
+    "typescript": "^4.5.5"
+  },
+  "dependencies": {
+    "@koa/cors": "^3.1.0",
+    "@koa/router": "^10.1.1",
+    "@types/koa__cors": "^3.1.1",
+    "@types/koa__router": "^8.0.11",
+    "axios": "^0.26.0",
+    "koa": "^2.13.4",
+    "web3": "^1.7.0"
+  }
+}

@@ -1,0 +1,19 @@
+[Unit]
+Description=unim-leaderboard service
+StartLimitIntervalSec=500
+StartLimitBurst=5
+After=network.target
+
+[Service]
+Restart=on-failure
+RestartSec=5s
+User=ubuntu
+Group=www-data
+WorkingDirectory=/home/ubuntu/unim-leaderboard
+EnvironmentFile=/home/ubuntu/unim-leaderboard-secrets/app.env
+ExecStart=npm run server
+TimeoutStopSec=180
+SyslogIdentifier=unimleaderboard
+
+[Install]
+WantedBy=multi-user.target
