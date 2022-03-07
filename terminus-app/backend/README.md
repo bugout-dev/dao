@@ -1,3 +1,3 @@
-# unim-leaderboard
+# terinus web app
 
-Constructs UNIM leaderboard and exposes the leaderboard via a simple HTTP API
+Constructs terminus web app and exposes the terminus web app via a simple HTTP API
