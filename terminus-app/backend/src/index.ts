@@ -45,6 +45,42 @@ export function userUnpacker(response: any): BugoutUser {
   } as BugoutUser
 }
 
+interface Customer {
+  id: string // primary key we use to refer to customer in DB
+  name: string // name of customer
+  notes: string // human-readable/writeable notes about customer
+}
+
+interface Contract {
+  id: string // primary key we use to refer to contract in DB
+  blockchain: string // chain which Terminus contract is deployed
+  address: string // address of the contract on that blockchain
+  customer_id: string // foreign key to Customer.id
+  controller: string // address of Terminus controller
+  name: string // human friendly name for contract
+  notes: string // human friendly notes about contract
+}
+
+interface PoolAuthorization {
+  id: string // primary key
+  pool_id: string // foreign key into Pool.id
+  address: string // authorized address for pool
+}
+
+interface PoolOwner {
+  id: string // primary key
+  pool_id: string // foreign key into Pool.id
+  address: string // address of token owner
+  num_tokens: string // number of tokens they own
+}
+
+interface AddressAnnotation {
+  address: string
+  annotator: string // address of account that created annotation
+  name: string // name for address
+  notes: string // notes for address
+}
+
 interface StatusResponse {
   lastRefresh: number;
   nextRefresh: number;
@@ -169,6 +205,70 @@ async function syncBucket(app: any) {
 syncBucket(app);
 
 
+
+router.get("/terminus/:DiamondAddress", async (ctx) => {
+  /*
+
+  GET /terminus/${DiamondAddress} -> (TerminusContract):
+
+  terminus_contract_resource_id: BugoutResource = bc.list_resources(
+                  params = { "contract_address": DiamondAddress }
+              )[0]
+  terminus_resource = bc.get_resource( resource_id = terminus_contract_resource_id)
+
+  1. Update resource from web3 provider
+  2. Return resource
+
+  Case if terminus_contract not found:
+  Check web3 -> if contract exists and payment service conditions are met - create resource and set up crawler
+
+  */
+
+});
+
+
+router.get("/terminus/:DiamondAddress/pools/:poolId", async (ctx) => {
+  /*
+
+  GET /terminus/${DiamondAddress}/pools/${poolId} -> (TerminusPool): 
+  terminus_pool: BugoutResource = bc.get_resource(
+                  resource_id=terminus_contract[poolId],
+              )
+  1. Update resource from web3 provider
+  2. Return resource
+
+  Case if resource not found: 
+  If payment service conditions are met - create resource and set up crawler.
+    For each address found in crawler:
+      add TerminusIdentity. 
+
+  */
+
+});
+
+
+router.get("/terminus/:DiamondAddress/pools/:poolId/:address", async (ctx) => {
+  /*
+
+  GET /terminus/${DiamondAddress}/pools/${poolId}/${address} -> (TerminusIdentity)
+  terminus_pool_resource: BugoutResource = bc.get_resource(
+                  resource_id=terminus_pool.identities[],
+              )
+  if address in terminus_pool_resource.identities
+      terminus_identity_resource: BugoutResource = bc.get_resource(
+                  resource_id=address,
+              )
+      terminus_identity_record_resource: BugoutResource = bc.get_pool_resource(
+                  resource_id=web3.sha(DiamondAddress + poolId + address),
+              )
+ 
+
+  */
+
+});
+
+
+
 router.get("/status", async (ctx) => {
   const nowEpoch = toTimestamp(ctx.last_modified);
   const response: StatusResponse = {
@@ -178,28 +278,9 @@ router.get("/status", async (ctx) => {
   ctx.body = response;
 });
 
-router.get("/count/addresses", async (ctx) => {
-  const response: CountAddressesResponse = {
-    addresses: ctx.full_data.data.length,
-  };
-  ctx.body = response;
-});
 
-router.get("/count/unim", async (ctx) => {
-  const response: CountUNIMResponse = {
-    balance: ctx.full_data["total"],
-  };
-  ctx.body = response;
-});
 
-router.get("/quartiles", async (ctx) => {
-  const response: QuartilesResponse = {
-    persent_25: ctx.full_data["25%"],
-    persent_50: ctx.full_data["50%"],
-    persent_75: ctx.full_data["75%"],
-  };
-  ctx.body = response;
-});
+
 
 router.get("/position", async (ctx) => {
   const windowSizeRaw = ctx.query.window_size ? ctx.query.window_size[0] : "1";
