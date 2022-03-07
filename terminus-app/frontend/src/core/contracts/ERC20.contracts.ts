@@ -1,7 +1,8 @@
-import { ERC20WithCommonStorage } from "../../../types/contracts/ERC20WithCommonStorage";
+import { ERC20Facet } from "../../../types/contracts/ERC20Facet";
 import BN from "bn.js";
 import { Web3ProviderInterface } from "../providers/Web3Provider/context";
-import * as erc20abi from "../../../abi/ERC20Facet.json";
+import { AbiItem } from "web3-utils"
+const erc20abi: AbiItem = require("../../../abi/ERC20Facet.json");
 
 export const setAllowance =
   (
@@ -21,7 +22,7 @@ export const setAllowance =
   }) => {
     const erc20contract = new provider.web3.eth.Contract(
       erc20abi
-    ) as any as ERC20WithCommonStorage;
+    ) as any as ERC20Facet;
     erc20contract.options.address = address;
     const txConfig = { ...defaultTxConfig, ...transactionConfig };
     if (!spender && !defaultSpender) {
@@ -47,7 +48,7 @@ export const getTokenState =
   async (address: string) => {
     const erc20contract = new provider.web3.eth.Contract(
       erc20abi
-    ) as any as ERC20WithCommonStorage;
+    ) as any as ERC20Facet;
     erc20contract.options.address = address;
     const balance = account
       ? await erc20contract.methods.balanceOf(account).call()
