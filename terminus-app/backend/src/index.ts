@@ -11,8 +11,8 @@ const app = new Koa();
 const router = new Router();
 const corsConfiguration = cors({ allowMethods: "GET" });
 
-const UNIM_LEADERBOARD_PORT = process.env.UNIM_LEADERBOARD_PORT || 14601;
-const LEADERBOARD_APPLICATION_ID = process.env.LEADERBOARD_APPLICATION_ID || "";
+const TERMINUS_APPLICATION_PORT = process.env.TERMINUS_APPLICATION_PORT || 14601;
+const TERMINUS_APPLICATION_ID = process.env.TERMINUS_APPLICATION_ID || "";
 const BROOD_AUTH_URL = process.env.BROOD_AUTH_URL || "https://auth.bugout.dev";
 
 
@@ -111,7 +111,7 @@ async function checkAuth(ctx: Koa.BaseContext, next: ()=>Promise<any>) {
           ctx.body = {"error": "Wrong authorization header"};
 
         } else {
-          if (user.application_id != LEADERBOARD_APPLICATION_ID) {
+          if (user.application_id != TERMINUS_APPLICATION_ID) {
 
             ctx.status = 403;
             ctx.body = {"error": "User does not belong to this application"};
@@ -244,8 +244,8 @@ router.post("/update", async (ctx) => {
 
 app.use(corsConfiguration).use(router.routes());
 
-app.listen(UNIM_LEADERBOARD_PORT, () => {
+app.listen(TERMINUS_APPLICATION_PORT, () => {
   console.log(
-    `UNIM Leaderboard server listening on port ${UNIM_LEADERBOARD_PORT}`
+    `UNIM Leaderboard server listening on port ${TERMINUS_APPLICATION_PORT}`
   );
 });
