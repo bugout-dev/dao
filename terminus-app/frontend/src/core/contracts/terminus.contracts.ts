@@ -1,6 +1,6 @@
-import { TerminusFacet } from "../../../contracts/TerminusFacet";
-import { BaseContract } from "../../../contracts/types";
-import { OwnershipFacet } from "../../../contracts/OwnershipFacet";
+import { TerminusFacet } from "../../../types/contracts/TerminusFacet";
+import { BaseContract } from "../../../types/contracts/types";
+import { OwnershipFacet } from "../../../types/contracts/OwnershipFacet";
 
 import Web3 from "web3";
 

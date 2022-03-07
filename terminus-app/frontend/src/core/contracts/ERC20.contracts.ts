@@ -1,8 +1,7 @@
-import { ERC20WithCommonStorage } from "../../../contracts/ERC20WithCommonStorage";
+import { ERC20WithCommonStorage } from "../../../types/contracts/ERC20WithCommonStorage";
 import BN from "bn.js";
 import { Web3ProviderInterface } from "../providers/Web3Provider/context";
-// import erc20abi from "../../../abi/erc20.json";
-const erc20abi = require("../../../abi/ERC20Facet.json");
+import * as erc20abi from "../../../abi/ERC20Facet.json";
 
 export const setAllowance =
   (

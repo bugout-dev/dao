@@ -1,5 +1,5 @@
 import React, { createContext } from "react";
-import { BaseContract } from "../../../../contracts/types";
+import { BaseContract } from "../../../../types/contracts/types";
 
 export interface ContractsHolder {
   [key: string]: BaseContract;

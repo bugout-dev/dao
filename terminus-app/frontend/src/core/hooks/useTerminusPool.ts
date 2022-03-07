@@ -10,7 +10,7 @@ import {
 } from "../contracts/terminus.contracts";
 import useTerminus from "./useTerminus";
 import * as abi from "../../../abi/TerminusFacet.json";
-import { TerminusFacet } from "../../../contracts/TerminusFacet";
+import { TerminusFacet } from "../../../types/contracts/TerminusFacet";
 
 export interface useTerminusPoolArgumentsType {
   DiamondAddress: string;
