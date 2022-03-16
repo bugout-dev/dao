@@ -4,6 +4,10 @@ The Terminus contract is deployed as an EIP2535 Diamond proxy contract with a Te
 
 This checklist describes how to update the `TerminusFacet` on the Terminus diamond contract.
 
+## Purpose of update
+
+Describe what the purpose of this update is.
+
 ## Deployed addresses
 
 You will modify this section as you go through the checklist
