@@ -1,10 +1,18 @@
 import { http } from "../utils";
 const API = process.env.NEXT_PUBLIC_APP_API_URL;
 
+export const getTerminus = (diamondAddress, chainId) => {
+  console.log("API", API);
+  return http({
+    method: "GET",
+    url: `${API}/terminus/${chainId}/${diamondAddress}`,
+  });
+};
+
 export const getPoolState = (DiamondAddress, poolId) => (query) =>
   http({
     method: "GET",
-    url: `${API}/terminus/${DiamondAddress}/pools/${poolId}/`,
+    url: `${API}/terminus/${DiamondAddress}/${poolId}/`,
     params: query,
   });
 
@@ -45,3 +53,19 @@ export const authWithAddress = (DiamondAddress, poolId) =>
     method: "GET",
     url: `${API}/terminus/${DiamondAddress}/pools/${poolId}/auth/quest`,
   });
+
+export const getweb3Auth = (address, chainId) =>
+  http({
+    method: "GET",
+    url: `${API}/web3auth/${chainId}/${address}/`,
+  });
+
+export const postweb3Auth = (address, chainId) => (signature) => {
+  const data = new FormData();
+  data.append("signature", signature);
+  return http({
+    method: "POST",
+    url: `${API}/web3auth/${chainId}/${address}/`,
+    data,
+  });
+};

@@ -10,7 +10,6 @@ import { useStorage, useQuery, useRouter } from "../../hooks";
 import UIContext from "./context";
 import UserContext from "../UserProvider/context";
 import { v4 as uuid4 } from "uuid";
-import { PreferencesService } from "../../services";
 
 //TODO: onboardingSteps must be made either generic for any APP, or removed at all for now
 const onboardingSteps = [
@@ -159,7 +158,6 @@ const UIProvider = ({ children }) => {
 
   const [onboardingState, setOnboardingState] = useState(false);
   const [onboardingStep, setOnboardingStep] = useState();
-  const [onboardingStateInit, setOnboardingStateInit] = useState(false);
   const [onboardingRedirectCheckPassed, setOnboardingRedirectCheckPassed] =
     useState(false);
 
@@ -170,26 +168,6 @@ const UIProvider = ({ children }) => {
     [onboardingState]
   );
 
-  useEffect(() => {
-    //If onboarding state not exists - fetch it from backend
-    //If it exists but init is not set - set init true
-    //If it exists and is init -> post update to backend
-    if (!onboardingState && user && !isLoggingOut) {
-      const currentOnboardingState = async () =>
-        PreferencesService.getOnboardingState().then((response) => {
-          return response.data;
-        });
-
-      currentOnboardingState().then((response) => {
-        setOnboardingState(response);
-      });
-    } else if (user && onboardingState && !onboardingStateInit) {
-      setOnboardingStateInit(true);
-    } else if (user && onboardingStateInit) {
-      PreferencesService.setOnboardingState(onboardingState);
-    }
-    // eslint-disable-next-line
-  }, [onboardingState, user]);
 
   useEffect(() => {
     //This will set step after state is fetched from backend

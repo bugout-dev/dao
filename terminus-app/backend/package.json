@@ -6,8 +6,10 @@
   "scripts": {
     "build": "./node_modules/.bin/tsc",
     "server": "./node_modules/.bin/tsc && node build/index.js",
+    "dev": "nodemon --watch 'src/**/*' -e ts,tsx --exec ts-node ./src/index.ts",
     "test": "echo \"Error: no test specified\" && exit 1",
-    "tsc": "node_modules/.bin/tsc"
+    "tsc": "node_modules/.bin/tsc",
+    "generate_classes": "typechain --target=web3-v1 --out-dir types/contracts '../../build/contracts/*.json'"
   },
   "repository": {
     "type": "git",
@@ -25,18 +27,25 @@
   },
   "homepage": "https://github.com/bugout-dev/dao#readme",
   "devDependencies": {
+    "@typechain/web3-v1": "^5.0.0",
+    "@types/uuid": "^8.3.4",
     "@types/web3": "^1.2.2",
+    "nodemon": "^2.0.15",
     "prettier": "^2.5.1",
+    "ts-node": "^10.7.0",
+    "typechain": "^7.0.1",
     "typescript": "^4.5.5"
   },
   "dependencies": {
-    "@bugout/bugout-js": "^0.0.13",
+    "@bugout/bugout-js": "^0.0.16",
     "@koa/cors": "^3.1.0",
+    "@koa/multer": "^3.0.0",
     "@koa/router": "^10.1.1",
     "@types/koa__cors": "^3.1.1",
     "@types/koa__router": "^8.0.11",
     "axios": "^0.26.0",
     "koa": "^2.13.4",
+    "uuid": "^8.3.2",
     "web3": "^1.7.0"
   }
 }

@@ -15,7 +15,11 @@ import {
   setTerminusPaymentToken,
 } from "../contracts/terminus.contracts";
 import { getTokenState, setAllowance } from "../contracts/ERC20.contracts";
-
+import {
+  getTerminus,
+  getweb3Auth,
+  postweb3Auth,
+} from "../services/terminus.service";
 export interface useBottlerReturns {
   balanceCache: UseQueryResult<number, any>;
   allowanceCache: UseQueryResult<string, any>;
@@ -29,6 +33,7 @@ export interface useBottlerReturns {
   emptyBottlesCache: UseQueryResult<Array<number>, any>;
   fullBottlesPricesCache: UseQueryResult<Array<{ matic: number; bn: BN }>, any>;
 }
+import queryCacheProps from "./hookCommon";
 
 export interface useBottlerArgumentsType {
   diamondAddress: string;
@@ -61,6 +66,20 @@ const useTerminus = ({
       });
     }
   }, [contracts, diamondAddress, targetChain, dispatchContracts]);
+
+  const terminusFacetCacheW2 = useQuery(
+    ["terminusFacetW2", diamondAddress, targetChain.chainId],
+    () => getTerminus(diamondAddress, targetChain.chainId),
+    {
+      onSuccess: () => {},
+      ...queryCacheProps,
+      enabled:
+        web3Provider.web3?.utils.isAddress(web3Provider.account) &&
+        web3Provider.chainId === targetChain.chainId,
+    }
+  );
+
+
 
   const terminusFacetCache = useQuery(
     ["terminusFacet", diamondAddress, targetChain.chainId],
