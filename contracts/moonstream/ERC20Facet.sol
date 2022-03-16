@@ -24,4 +24,9 @@ contract ERC20Facet is ERC20WithCommonStorage {
         LibERC20.enforceIsController();
         _mint(account, amount);
     }
+
+    function batchMint(address[] calldata accounts, uint256 amount) external {
+        LibERC20.enforceIsController();
+        _batchMint(accounts, amount);
+    }
 }
