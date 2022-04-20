@@ -8,15 +8,6 @@ This checklist describes how to update the `TerminusFacet` on the Terminus diamo
 
 Make `safeBatchTransferFrom` respect non-transferable Terminus pools. (And add `setController`.)
 
-## Deployed addresses
-
-You will modify this section as you go through the checklist
-
-### `TerminusFacet` address
-
-```
-export TERMINUS_FACET_ADDRESS="0xaA91032E567fD3CF2e7102f65B1AaF21530583a0"
-```
 
 ## Environment variables
 
@@ -25,33 +16,8 @@ export TERMINUS_FACET_ADDRESS="0xaA91032E567fD3CF2e7102f65B1AaF21530583a0"
 - [x] `export DAO_OWNER_ADDRESS=$(jq -r .address $DAO_OWNER)`
 - [x] `export GAS_PRICE="80 gwei"`
 - [x] `export CONFIRMATIONS=5`
-- [x] `export TERMINUS_DIAMOND=0x062BEc5e84289Da2CD6147E0e4DA402B33B8f796`
-- [x] `export POLYGONSCAN_TOKEN=<redacted>`
-
-## Deploy `TerminusFacet`
-
-- [x] Check out relevant commit and `brownie compile`.
-
-- [x] Deploy `TerminusFacet` contract
-
-```bash
-dao terminus deploy \
-    --network $DAO_NETWORK \
-    --sender $DAO_OWNER \
-    --gas-price "$GAS_PRICE" \
-    --confirmations $CONFIRMATIONS
-```
-
-
-- [x] Export address of deployed contract as `export TERMINUS_FACET_ADDRESS=0xaA91032E567fD3CF2e7102f65B1AaF21530583a0`
-
-- [x] Store address of deployed contract under `Deployed addresses / TerminusFacet address` above
-
-- [x] Verify `TerminusFacet` contract
-
-```
-dao terminus verify-contract --network $DAO_NETWORK --address $TERMINUS_FACET_ADDRESS
-```
+- [x] `export TERMINUS_DIAMOND=0x99A558BDBdE247C2B2716f0D4cFb0E246DFB697D`
+- [x] `export TERMINUS_FACET_ADDRESS="0xaA91032E567fD3CF2e7102f65B1AaF21530583a0"`
 
 - [x] Build [Inspector Facet](https://github.com/bugout-dev/inpsector-facet) report for Diamond contract:
 
@@ -144,7 +110,7 @@ dao core facet-cut \
     --action replace
 ```
 
-- [x] Build [Inspector Facet](https://github.com/bugout-dev/inpsector-facet) report for Diamond contract:
+- [ ] Build [Inspector Facet](https://github.com/bugout-dev/inpsector-facet) report for Diamond contract:
 
 ```
 - - -
