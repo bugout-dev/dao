@@ -52,6 +52,8 @@ def facet_cut(
     initializer_address: str = ZERO_ADDRESS,
     ignore_methods: Optional[List[str]] = None,
     ignore_selectors: Optional[List[str]] = None,
+    methods: Optional[List[str]] = None,
+    selectors: Optional[List[str]] = None,
 ) -> Any:
     """
     Cuts the given facet onto the given Diamond contract.
@@ -70,6 +72,10 @@ def facet_cut(
         ignore_methods = []
     if ignore_selectors is None:
         ignore_selectors = []
+    if methods is None:
+        methods = []
+    if selectors is None:
+        selectors = []
 
     project_dir = os.path.abspath(os.path.dirname(os.path.dirname(__file__)))
     abis = abi.project_abis(project_dir)
@@ -86,15 +92,26 @@ def facet_cut(
 
     facet_function_selectors: List[str] = []
     facet_abi = abis.get(facet_name, [])
+
+    logical_operator = all
+    method_predicate = lambda method: method not in ignore_methods
+    selector_predicate = (
+        lambda selector: selector not in reserved_selectors
+        and selector not in ignore_selectors
+    )
+
+    if len(methods) > 0 or len(selectors) > 0:
+        logical_operator = any
+        method_predicate = lambda method: method in methods
+        selector_predicate = lambda selector: selector in selectors
+
     for item in facet_abi:
         if item["type"] == "function":
-            if item["name"] not in ignore_methods:
-                function_selector = abi.encode_function_signature(item)
-                if (
-                    function_selector not in reserved_selectors
-                    and function_selector not in ignore_selectors
-                ):
-                    facet_function_selectors.append(function_selector)
+            item_selector = abi.encode_function_signature(item)
+            if logical_operator(
+                [method_predicate(item["name"]), selector_predicate(item_selector)]
+            ):
+                facet_function_selectors.append(item_selector)
 
     target_address = facet_address
     if FACET_ACTIONS[action] == 2:
@@ -218,6 +235,8 @@ def handle_facet_cut(args: argparse.Namespace) -> None:
         initializer_address=args.initializer_address,
         ignore_methods=args.ignore_methods,
         ignore_selectors=args.ignore_selectors,
+        methods=args.methods,
+        selectors=args.selectors,
     )
 
 
@@ -276,6 +295,16 @@ def generate_cli() -> argparse.ArgumentParser:
         "--ignore-selectors",
         nargs="+",
         help="Method selectors to ignore when cutting a facet onto or off of the diamond",
+    )
+    facet_cut_parser.add_argument(
+        "--methods",
+        nargs="+",
+        help="Names of methods to add (if set, --ignore-methods and --ignore-selectors are not used)",
+    )
+    facet_cut_parser.add_argument(
+        "--selectors",
+        nargs="+",
+        help="Selectors to add (if set, --ignore-methods and --ignore-selectors are not used)",
     )
     facet_cut_parser.set_defaults(func=handle_facet_cut)
 
