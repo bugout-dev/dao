@@ -54,6 +54,7 @@ def facet_cut(
     ignore_selectors: Optional[List[str]] = None,
     methods: Optional[List[str]] = None,
     selectors: Optional[List[str]] = None,
+    initializer_params: Optional[List[Any]] = None,
 ) -> Any:
     """
     Cuts the given facet onto the given Diamond contract.
@@ -127,7 +128,7 @@ def facet_cut(
     if facet_name == "ERC20Facet":
         if initializer_address != ZERO_ADDRESS and action != "remove":
             erc20_initializer = ERC20Initializer.ERC20Initializer(initializer_address)
-            calldata = erc20_initializer.contract.init.encode_input()
+            calldata = erc20_initializer.contract.init.encode_input(initializer_params[0], initializer_params[1])
     elif facet_name == "TerminusFacet":
         if initializer_address != ZERO_ADDRESS and action != "remove":
             terminus_initializer = TerminusInitializer.TerminusInitializer(

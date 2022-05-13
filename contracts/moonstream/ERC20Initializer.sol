@@ -15,13 +15,13 @@ import "../diamond/libraries/LibDiamond.sol";
 import "./LibERC20.sol";
 
 contract ERC20Initializer {
-    function init() external {
+    function init(string memory name, string memory symbol) external {
         LibDiamond.DiamondStorage storage ds = LibDiamond.diamondStorage();
         ds.supportedInterfaces[type(IERC20).interfaceId] = true;
 
         LibERC20.ERC20Storage storage es = LibERC20.erc20Storage();
         es.controller = msg.sender;
-        es.name = "Moonstream DAO";
-        es.symbol = "MNSTR";
+        es.name = name;
+        es.symbol = symbol;
     }
 }

@@ -24,24 +24,6 @@ import "./LibERC20.sol";
 
 contract ERC20WithCommonStorage is Context, IERC20, IERC20Metadata {
     /**
-     * @dev Sets the values for {name} and {symbol}.
-     *
-     * The default value of {decimals} is 18. To select a different value for
-     * {decimals} you should overload it.
-     *
-     * All two of these values are immutable: they can only be set once during
-     * construction.
-     */
-    function setERC20Metadata(string memory name_, string memory symbol_)
-        external
-    {
-        LibERC20.enforceIsController();
-        LibERC20.ERC20Storage storage es = LibERC20.erc20Storage();
-        es.name = name_;
-        es.symbol = symbol_;
-    }
-
-    /**
      * @dev Returns the name of the token.
      */
     function name() public view virtual override returns (string memory) {

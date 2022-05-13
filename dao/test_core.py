@@ -39,6 +39,7 @@ class MoonstreamTokenTestCase(MoonstreamDAOSingleContractTestCase):
             "add",
             {"from": accounts[0]},
             initializer.address,
+            initializer_params = ["Moonstream DAO", "MNSTR"]
         )
 
         cls.erc20_initializer = initializer.address
