@@ -128,7 +128,9 @@ def facet_cut(
     if facet_name == "ERC20Facet":
         if initializer_address != ZERO_ADDRESS and action != "remove":
             erc20_initializer = ERC20Initializer.ERC20Initializer(initializer_address)
-            calldata = erc20_initializer.contract.init.encode_input(initializer_params[0], initializer_params[1])
+            calldata = erc20_initializer.contract.init.encode_input(
+                initializer_params[0], initializer_params[1]
+            )
     elif facet_name == "TerminusFacet":
         if initializer_address != ZERO_ADDRESS and action != "remove":
             terminus_initializer = TerminusInitializer.TerminusInitializer(

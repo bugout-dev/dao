@@ -24,7 +24,7 @@ class TestDeployment(MoonstreamDAOSingleContractTestCase):
             "add",
             {"from": accounts[0]},
             initializer.address,
-            initializer_params = ["Moonstream DAO", "MNSTR"]
+            initializer_params=["Moonstream DAO", "MNSTR"],
         )
 
         diamond_erc20 = ERC20Facet.ERC20Facet(diamond_address)
@@ -49,7 +49,7 @@ class TestDeployment(MoonstreamDAOSingleContractTestCase):
             "replace",
             {"from": accounts[0]},
             initializer.address,
-            initializer_params = ["ROFL", "LOL"]
+            initializer_params=["ROFL", "LOL"],
         )
 
         name = diamond_erc20.name()
@@ -77,7 +77,7 @@ class TestRemoveFacet(MoonstreamDAOSingleContractTestCase):
             "add",
             {"from": accounts[0]},
             initializer.address,
-            initializer_params = ["Moonstream DAO", "MNSTR"]
+            initializer_params=["Moonstream DAO", "MNSTR"],
         )
 
         diamond_erc20 = ERC20Facet.ERC20Facet(diamond_address)
