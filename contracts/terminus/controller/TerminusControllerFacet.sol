@@ -7,7 +7,7 @@
  * This contract stands as a proxy for the Terminus contract
  * with a ability to whitelist operators by using Terminus Pools
  */
-
+import "@openzeppelin-contracts/contracts/token/ERC20/IERC20.sol";
 import "../TerminusFacet.sol";
 import "../TerminusPermissions.sol";
 import "./LibTerminusController.sol";
@@ -187,11 +187,19 @@ contract TerminusControllerFacet is TerminusPermissions {
         return terminusContract().terminusPoolSupply(poolID);
     }
 
+    function _getPoolCreationPayments() internal {
+        IERC20 paymentToken = IERC20(terminusContract().paymentToken());
+        uint256 fee = terminusContract().poolBasePrice();
+        paymentToken.transferFrom(msg.sender, address(this), fee);
+        paymentToken.approve(getTerminusAddress(), fee);
+    }
+
     function createSimplePool(uint256 _capacity)
         external
         onlyMainAdmin
         returns (uint256)
     {
+        _getPoolCreationPayments();
         return terminusContract().createSimplePool(_capacity);
     }
 
@@ -200,6 +208,7 @@ contract TerminusControllerFacet is TerminusPermissions {
         bool _transferable,
         bool _burnable
     ) external onlyMainAdmin returns (uint256) {
+        _getPoolCreationPayments();
         return
             terminusContract().createPoolV1(
                 _capacity,
