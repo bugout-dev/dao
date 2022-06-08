@@ -7,6 +7,7 @@ from . import (
     TerminusFacet,
     TerminusInitializer,
     MoonstreamTokenFaucet,
+    TerminusControllerFacet,
 )
 
 
@@ -45,6 +46,11 @@ def main():
         "faucet",
         parents=[moonstream_token_faucet_parser],
         add_help=False,
+    )
+
+    terminus_controller_parser = TerminusControllerFacet.generate_cli()
+    dao_subparsers.add_parser(
+        "terminus-controller", parents=[terminus_controller_parser], add_help=False
     )
 
     args = parser.parse_args()
