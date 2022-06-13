@@ -10,6 +10,7 @@ from typing import Any, Dict, List, Optional, Set
 
 from brownie import network
 
+
 from . import (
     abi,
     Diamond,
@@ -20,6 +21,7 @@ from . import (
     OwnershipFacet,
     TerminusFacet,
     TerminusInitializer,
+    TerminusControllerFacet,
 )
 
 FACETS: Dict[str, Any] = {
@@ -28,6 +30,7 @@ FACETS: Dict[str, Any] = {
     "ERC20Facet": ERC20Facet,
     "OwnershipFacet": OwnershipFacet,
     "TerminusFacet": TerminusFacet,
+    "TerminusControllerFacet": TerminusControllerFacet,
 }
 
 FACET_PRECEDENCE: List[str] = [
@@ -35,7 +38,6 @@ FACET_PRECEDENCE: List[str] = [
     "OwnershipFacet",
     "DiamondLoupeFacet",
     "ERC20Facet",
-    "TerminusFacet",
 ]
 
 FACET_ACTIONS: Dict[str, int] = {"add": 0, "replace": 1, "remove": 2}
