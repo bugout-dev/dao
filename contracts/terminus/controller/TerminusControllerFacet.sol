@@ -11,6 +11,7 @@ import "@openzeppelin-contracts/contracts/token/ERC20/IERC20.sol";
 import "../TerminusFacet.sol";
 import "../TerminusPermissions.sol";
 import "./LibTerminusController.sol";
+import "../TokenDrainerFacet.sol";
 
 pragma solidity ^0.8.9;
 
@@ -19,7 +20,7 @@ pragma solidity ^0.8.9;
 // - Holder of _TERMINUS_MAIN_ADMIN_POOL_ID can change poolControllerPoolID, create pool (+ pool operations?)
 // - PoolController can: mint/burn + setURI
 
-contract TerminusControllerFacet is TerminusPermissions {
+contract TerminusControllerFacet is TerminusPermissions, TokenDrainerFacet {
     /**
      * @dev Checks if the caller holds the Admin Pool token or PoolController of pool with poolID
      * @param poolId The poolID to check
@@ -106,7 +107,8 @@ contract TerminusControllerFacet is TerminusPermissions {
     }
 
     /**
-
+     * @dev Gives permission to the holder of the  (poolControllerPoolId,terminusAddress)
+     * to mint/burn/setURI for the pool with poolId
      */
     function setPoolControlPermissions(
         uint256 poolId,
@@ -120,8 +122,11 @@ contract TerminusControllerFacet is TerminusPermissions {
 
     // PROXY FUNCTIONS:
 
-    // onlyOwner?
+    /**
+     * @dev Sets the controller of the terminus contract
+     */
     function setController(address newController) external {
+        LibDiamond.enforceIsContractOwner();
         terminusContract().setController(newController);
     }
 
@@ -187,10 +192,14 @@ contract TerminusControllerFacet is TerminusPermissions {
         return terminusContract().terminusPoolSupply(poolID);
     }
 
-    function _getPoolCreationPayments() internal {
+    function _approvePoolCreationPayments() internal {
         IERC20 paymentToken = IERC20(terminusContract().paymentToken());
         uint256 fee = terminusContract().poolBasePrice();
-        paymentToken.transferFrom(msg.sender, address(this), fee);
+        uint256 contractBalance = paymentToken.balanceOf(address(this));
+        require(
+            contractBalance >= fee,
+            "TerminusControllerFacet._getPoolCreationPayments: Not enough funds, pls transfet payment tokens to terminusController contract"
+        );
         paymentToken.approve(getTerminusAddress(), fee);
     }
 
@@ -199,7 +208,7 @@ contract TerminusControllerFacet is TerminusPermissions {
         onlyMainAdmin
         returns (uint256)
     {
-        _getPoolCreationPayments();
+        _approvePoolCreationPayments();
         return terminusContract().createSimplePool(_capacity);
     }
 
@@ -208,7 +217,7 @@ contract TerminusControllerFacet is TerminusPermissions {
         bool _transferable,
         bool _burnable
     ) external onlyMainAdmin returns (uint256) {
-        _getPoolCreationPayments();
+        _approvePoolCreationPayments();
         return
             terminusContract().createPoolV1(
                 _capacity,
@@ -226,13 +235,12 @@ contract TerminusControllerFacet is TerminusPermissions {
         terminusContract().mint(to, poolID, amount, data);
     }
 
-    //check in loop? only main admin?
     function mintBatch(
         address to,
         uint256[] memory poolIDs,
         uint256[] memory amounts,
         bytes memory data
-    ) external {
+    ) external onlyMainAdmin {
         terminusContract().mintBatch(to, poolIDs, amounts, data);
     }
 
