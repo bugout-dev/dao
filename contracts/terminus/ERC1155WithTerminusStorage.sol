@@ -15,39 +15,16 @@
 
 pragma solidity ^0.8.9;
 
-import "@openzeppelin-contracts/contracts/token/ERC1155/IERC1155.sol";
 import "@openzeppelin-contracts/contracts/token/ERC1155/IERC1155Receiver.sol";
-import "@openzeppelin-contracts/contracts/token/ERC1155/extensions/IERC1155MetadataURI.sol";
 import "@openzeppelin-contracts/contracts/utils/Address.sol";
 import "@openzeppelin-contracts/contracts/utils/Context.sol";
-import "@openzeppelin-contracts/contracts/utils/introspection/ERC165.sol";
 import "./LibTerminus.sol";
+import "../interfaces/IERC1155WithTerminusStorage.sol";
 
-contract ERC1155WithTerminusStorage is
-    Context,
-    ERC165,
-    IERC1155,
-    IERC1155MetadataURI
-{
+contract ERC1155WithTerminusStorage is Context, IERC1155WithTerminusStorage {
     using Address for address;
 
     constructor() {}
-
-    /**
-     * @dev See {IERC165-supportsInterface}.
-     */
-    function supportsInterface(bytes4 interfaceId)
-        public
-        view
-        virtual
-        override(ERC165, IERC165)
-        returns (bool)
-    {
-        return
-            interfaceId == type(IERC1155).interfaceId ||
-            interfaceId == type(IERC1155MetadataURI).interfaceId ||
-            super.supportsInterface(interfaceId);
-    }
 
     function uri(uint256 poolID)
         public
@@ -138,6 +115,7 @@ contract ERC1155WithTerminusStorage is
     function isApprovedForPool(uint256 poolID, address operator)
         public
         view
+        override
         returns (bool)
     {
         return LibTerminus._isApprovedForPool(poolID, operator);

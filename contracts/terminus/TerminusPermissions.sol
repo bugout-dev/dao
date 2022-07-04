@@ -7,7 +7,7 @@
  */
 
 import "@openzeppelin-contracts/contracts/access/Ownable.sol";
-import "./TerminusFacet.sol";
+import "../interfaces/ITerminus.sol";
 
 pragma solidity ^0.8.9;
 
@@ -17,7 +17,7 @@ abstract contract TerminusPermissions {
         uint256 poolId,
         uint256 _amount
     ) internal view returns (bool) {
-        TerminusFacet terminus = TerminusFacet(terminusAddress);
+        ITerminus terminus = ITerminus(terminusAddress);
         return terminus.balanceOf(msg.sender, poolId) >= _amount;
     }
 
@@ -34,7 +34,7 @@ abstract contract TerminusPermissions {
             _holdsPoolToken(terminusAddress, poolId, 1),
             "TerminusPermissions.spendsPoolToken: Sender doens't hold  pool tokens"
         );
-        TerminusFacet terminusContract = TerminusFacet(terminusAddress);
+        ITerminus terminusContract = ITerminus(terminusAddress);
         terminusContract.burn(msg.sender, poolId, 1);
         _;
     }
