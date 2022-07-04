@@ -185,11 +185,13 @@ contract TerminusFacet is ERC1155WithTerminusStorage {
     }
 
     function setPoolTransferable(uint256 poolID, bool transferable) external {
+        LibTerminus.enforcePoolIsController(poolID, msg.sender);
         LibTerminus.TerminusStorage storage ts = LibTerminus.terminusStorage();
         ts.poolNotTransferable[poolID] = !transferable;
     }
 
     function setPoolBurnable(uint256 poolID, bool burnable) external {
+        LibTerminus.enforcePoolIsController(poolID, msg.sender);
         LibTerminus.TerminusStorage storage ts = LibTerminus.terminusStorage();
         ts.poolBurnable[poolID] = burnable;
     }
