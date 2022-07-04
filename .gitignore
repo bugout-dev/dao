@@ -132,3 +132,6 @@ dmypy.json
 .dao/
 .secrets/
 .vscode/
+
+# MacOS
+.DS_Store
