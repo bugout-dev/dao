@@ -26,6 +26,22 @@ contract ERC1155WithTerminusStorage is Context, IERC1155WithTerminusStorage {
 
     constructor() {}
 
+    /**
+     * @dev See {IERC165-supportsInterface}.
+     */
+    function supportsInterface(bytes4 interfaceId)
+        public
+        view
+        virtual
+        override
+        returns (bool)
+    {
+        return
+            interfaceId == type(IERC1155).interfaceId ||
+            interfaceId == type(IERC1155MetadataURI).interfaceId ||
+            interfaceId == type(IERC1155WithTerminusStorage).interfaceId;
+    }
+
     function uri(uint256 poolID)
         public
         view

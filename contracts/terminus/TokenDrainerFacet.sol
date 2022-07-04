@@ -10,7 +10,7 @@ pragma solidity ^0.8.9;
 import "@openzeppelin-contracts/contracts/token/ERC1155/IERC1155Receiver.sol";
 import "@openzeppelin-contracts/contracts/token/ERC721/IERC721Receiver.sol";
 import "@openzeppelin-contracts/contracts/token/ERC20/IERC20.sol";
-import "../interfaces/IERC1155.sol";
+import "@openzeppelin-contracts/contracts/token/ERC1155/IERC1155.sol";
 
 import "../diamond/libraries/LibDiamond.sol";
 
