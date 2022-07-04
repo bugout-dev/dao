@@ -9,4 +9,6 @@ interface IERC1155WithTerminusStorage is IERC1155, IERC1155MetadataURI {
         external
         view
         returns (bool);
+
+    function approveForPool(uint256 poolID, address operator) external;
 }

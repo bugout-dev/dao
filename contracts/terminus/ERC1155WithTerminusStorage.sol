@@ -137,7 +137,10 @@ contract ERC1155WithTerminusStorage is Context, IERC1155WithTerminusStorage {
         return LibTerminus._isApprovedForPool(poolID, operator);
     }
 
-    function approveForPool(uint256 poolID, address operator) external {
+    function approveForPool(uint256 poolID, address operator)
+        external
+        override
+    {
         LibTerminus.enforcePoolIsController(poolID, _msgSender());
         LibTerminus._approveForPool(poolID, operator);
     }
