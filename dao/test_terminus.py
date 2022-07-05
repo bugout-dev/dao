@@ -658,6 +658,98 @@ class TestCreatePoolV1(TestPoolOperations):
         self.assertEqual(final_sender_balance, initial_sender_balance)
         self.assertEqual(final_receiver_balance, initial_receiver_balance)
 
+    def test_pool_state_view_methods(self):
+        self.diamond_terminus.create_pool_v1(10, False, False, {"from": accounts[1]})
+        nontransferable_nonburnable_pool_id = self.diamond_terminus.total_pools()
+        self.assertFalse(
+            self.diamond_terminus.pool_is_transferable(
+                nontransferable_nonburnable_pool_id
+            )
+        )
+        self.assertFalse(
+            self.diamond_terminus.pool_is_burnable(nontransferable_nonburnable_pool_id)
+        )
+
+        self.diamond_terminus.create_pool_v1(10, True, False, {"from": accounts[1]})
+        transferable_nonburnable_pool_id = self.diamond_terminus.total_pools()
+        self.assertTrue(
+            self.diamond_terminus.pool_is_transferable(transferable_nonburnable_pool_id)
+        )
+        self.assertFalse(
+            self.diamond_terminus.pool_is_burnable(transferable_nonburnable_pool_id)
+        )
+
+        self.diamond_terminus.create_pool_v1(10, True, True, {"from": accounts[1]})
+        transferable_burnable_pool_id = self.diamond_terminus.total_pools()
+        self.assertTrue(
+            self.diamond_terminus.pool_is_transferable(transferable_burnable_pool_id)
+        )
+        self.assertTrue(
+            self.diamond_terminus.pool_is_burnable(transferable_burnable_pool_id)
+        )
+
+        self.diamond_terminus.create_pool_v1(10, False, True, {"from": accounts[1]})
+        nontransferable_burnable_pool_id = self.diamond_terminus.total_pools()
+        self.assertFalse(
+            self.diamond_terminus.pool_is_transferable(nontransferable_burnable_pool_id)
+        )
+        self.assertTrue(
+            self.diamond_terminus.pool_is_burnable(nontransferable_burnable_pool_id)
+        )
+
+    def test_pool_state_setters(self):
+        self.diamond_terminus.create_pool_v1(10, False, False, {"from": accounts[1]})
+        pool_id = self.diamond_terminus.total_pools()
+        self.assertEqual(
+            self.diamond_terminus.terminus_pool_controller(pool_id), accounts[1].address
+        )
+
+        self.assertFalse(self.diamond_terminus.pool_is_transferable(pool_id))
+        self.assertFalse(self.diamond_terminus.pool_is_burnable(pool_id))
+
+        self.diamond_terminus.set_pool_transferable(
+            pool_id, True, {"from": accounts[1]}
+        )
+        self.assertTrue(self.diamond_terminus.pool_is_transferable(pool_id))
+        self.assertFalse(self.diamond_terminus.pool_is_burnable(pool_id))
+
+        self.diamond_terminus.set_pool_burnable(pool_id, True, {"from": accounts[1]})
+        self.assertTrue(self.diamond_terminus.pool_is_transferable(pool_id))
+        self.assertTrue(self.diamond_terminus.pool_is_burnable(pool_id))
+
+        self.diamond_terminus.set_pool_transferable(
+            pool_id, False, {"from": accounts[1]}
+        )
+        self.assertFalse(self.diamond_terminus.pool_is_transferable(pool_id))
+        self.assertTrue(self.diamond_terminus.pool_is_burnable(pool_id))
+
+        self.diamond_terminus.set_pool_burnable(pool_id, False, {"from": accounts[1]})
+        self.assertFalse(self.diamond_terminus.pool_is_transferable(pool_id))
+        self.assertFalse(self.diamond_terminus.pool_is_burnable(pool_id))
+
+    def test_pool_state_setters_do_not_allow_noncontroller_to_set_parameters(self):
+        self.diamond_terminus.create_pool_v1(10, False, False, {"from": accounts[1]})
+        pool_id = self.diamond_terminus.total_pools()
+        self.assertEqual(
+            self.diamond_terminus.terminus_pool_controller(pool_id), accounts[1].address
+        )
+
+        self.assertFalse(self.diamond_terminus.pool_is_transferable(pool_id))
+        self.assertFalse(self.diamond_terminus.pool_is_burnable(pool_id))
+
+        with self.assertRaises(VirtualMachineError):
+            self.diamond_terminus.set_pool_transferable(
+                pool_id, True, {"from": accounts[2]}
+            )
+
+        with self.assertRaises(VirtualMachineError):
+            self.diamond_terminus.set_pool_burnable(
+                pool_id, True, {"from": accounts[2]}
+            )
+
+        self.assertFalse(self.diamond_terminus.pool_is_transferable(pool_id))
+        self.assertFalse(self.diamond_terminus.pool_is_burnable(pool_id))
+
     def test_burnable_pool_burn_as_token_owner(self):
         self.diamond_terminus.create_pool_v1(10, True, True, {"from": accounts[1]})
         pool_id = self.diamond_terminus.total_pools()
