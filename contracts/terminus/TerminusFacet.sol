@@ -24,22 +24,15 @@ import "@openzeppelin-contracts/contracts/token/ERC20/IERC20.sol";
 import "./ERC1155WithTerminusStorage.sol";
 import "./LibTerminus.sol";
 import "../diamond/libraries/LibDiamond.sol";
+import "../interfaces/ITerminus.sol";
 
-contract TerminusFacet is ERC1155WithTerminusStorage {
+contract TerminusFacet is ITerminus, ERC1155WithTerminusStorage {
     constructor() {
         LibTerminus.TerminusStorage storage ts = LibTerminus.terminusStorage();
         ts.controller = msg.sender;
     }
 
-    event PoolMintBatch(
-        uint256 indexed id,
-        address indexed operator,
-        address from,
-        address[] toAddresses,
-        uint256[] amounts
-    );
-
-    function setController(address newController) external {
+    function setController(address newController) external override {
         LibTerminus.enforceIsController();
         LibTerminus.setController(newController);
     }

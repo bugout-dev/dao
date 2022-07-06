@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: Apache-2.0
-
+pragma solidity ^0.8.9;
 /**
  * Authors: Moonstream Engineering (engineering@moonstream.to)
  * GitHub: https://github.com/bugout-dev/dao
@@ -8,12 +8,10 @@
  * with a ability to whitelist operators by using Terminus Pools
  */
 import "@openzeppelin-contracts/contracts/token/ERC20/IERC20.sol";
-import "../TerminusFacet.sol";
+import "../../interfaces/ITerminus.sol";
 import "../TerminusPermissions.sol";
 import "./LibTerminusController.sol";
 import "../TokenDrainerFacet.sol";
-
-pragma solidity ^0.8.9;
 
 // Permissions:
 // - Contract owner can change _TERMINUS_MAIN_ADMIN_POOL_ID (+ all other operations?)
@@ -70,9 +68,9 @@ contract TerminusControllerFacet is TerminusPermissions, TokenDrainerFacet {
         ts.terminusAddress = terminusAddress;
     }
 
-    function terminusContract() internal view returns (TerminusFacet) {
+    function terminusContract() internal view returns (ITerminus) {
         return
-            TerminusFacet(
+            ITerminus(
                 LibTerminusController
                     .terminusControllerStorage()
                     .terminusAddress
