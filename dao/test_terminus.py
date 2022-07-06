@@ -350,6 +350,32 @@ class TestPoolOperations(TerminusTestCase):
             final_balance = self.diamond_terminus.balance_of(account.address, pool_id)
             self.assertEqual(final_balance, initial_balances[i])
 
+    def test_pool_mint_with_pool_approval(self):
+        self.diamond_terminus.create_pool_v1(10, False, False, {"from": accounts[1]})
+        pool_id = self.diamond_terminus.total_pools()
+
+        self.assertFalse(
+            self.diamond_terminus.is_approved_for_pool(pool_id, accounts[2].address)
+        )
+        with self.assertRaises(Exception):
+            self.diamond_terminus.mint(
+                accounts[2].address, pool_id, 1, b"", {"from": accounts[2]}
+            )
+
+        self.diamond_terminus.approve_for_pool(
+            pool_id, accounts[2].address, {"from": accounts[1]}
+        )
+        supply_0 = self.diamond_terminus.terminus_pool_supply(pool_id)
+        balance_0 = self.diamond_terminus.balance_of(accounts[2].address, pool_id)
+        self.diamond_terminus.mint(
+            accounts[2].address, pool_id, 1, b"", {"from": accounts[1]}
+        )
+        balance_1 = self.diamond_terminus.balance_of(accounts[2].address, pool_id)
+        supply_1 = self.diamond_terminus.terminus_pool_supply(pool_id)
+
+        self.assertEqual(balance_1, balance_0 + 1)
+        self.assertEqual(supply_0 + 1, supply_1)
+
     def test_transfer(self):
         pool_id = self.diamond_terminus.total_pools()
         self.diamond_terminus.mint(accounts[2], pool_id, 1, b"", {"from": accounts[1]})
