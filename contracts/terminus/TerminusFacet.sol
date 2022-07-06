@@ -49,11 +49,14 @@ contract TerminusFacet is ERC1155WithTerminusStorage {
         address[] memory toAddresses,
         uint256[] memory amounts
     ) public {
-        address operator = _msgSender();
-        LibTerminus.enforcePoolIsController(id, operator);
         require(
             toAddresses.length == amounts.length,
             "TerminusFacet: _poolMintBatch -- toAddresses and amounts length mismatch"
+        );
+        address operator = _msgSender();
+        require(
+            isApprovedForPool(id, operator),
+            "TerminusFacet: poolMintBatch -- caller is neither owner nor approved"
         );
 
         LibTerminus.TerminusStorage storage ts = LibTerminus.terminusStorage();
