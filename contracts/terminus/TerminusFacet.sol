@@ -49,11 +49,14 @@ contract TerminusFacet is ERC1155WithTerminusStorage {
         address[] memory toAddresses,
         uint256[] memory amounts
     ) public {
-        address operator = _msgSender();
-        LibTerminus.enforcePoolIsController(id, operator);
         require(
             toAddresses.length == amounts.length,
             "TerminusFacet: _poolMintBatch -- toAddresses and amounts length mismatch"
+        );
+        address operator = _msgSender();
+        require(
+            isApprovedForPool(id, operator),
+            "TerminusFacet: poolMintBatch -- caller is neither owner nor approved"
         );
 
         LibTerminus.TerminusStorage storage ts = LibTerminus.terminusStorage();
@@ -250,7 +253,10 @@ contract TerminusFacet is ERC1155WithTerminusStorage {
         uint256 amount,
         bytes memory data
     ) external {
-        LibTerminus.enforcePoolIsController(poolID, msg.sender);
+        require(
+            isApprovedForPool(poolID, msg.sender),
+            "TerminusFacet: mint -- caller is neither owner nor approved"
+        );
         _mint(to, poolID, amount, data);
     }
 
@@ -261,7 +267,10 @@ contract TerminusFacet is ERC1155WithTerminusStorage {
         bytes memory data
     ) external {
         for (uint256 i = 0; i < poolIDs.length; i++) {
-            LibTerminus.enforcePoolIsController(poolIDs[i], _msgSender());
+            require(
+                isApprovedForPool(poolIDs[i], msg.sender),
+                "TerminusFacet: mintBatch -- caller is neither owner nor approved"
+            );
         }
         _mintBatch(to, poolIDs, amounts, data);
     }

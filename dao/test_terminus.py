@@ -273,6 +273,64 @@ class TestPoolOperations(TerminusTestCase):
         supply = self.diamond_terminus.terminus_pool_supply(pool_id)
         self.assertEqual(supply, 1)
 
+    def test_mint_batch_with_approval(self):
+        pool_id = self.diamond_terminus.total_pools()
+
+        self.assertFalse(
+            self.diamond_terminus.is_approved_for_pool(pool_id, accounts[3])
+        )
+        self.assertFalse(
+            self.diamond_terminus.is_approved_for_pool(pool_id - 1, accounts[3])
+        )
+        balances_before = [
+            self.diamond_terminus.balance_of(accounts[2].address, pool_id),
+            self.diamond_terminus.balance_of(accounts[2].address, pool_id - 1),
+        ]
+        supply_before = [
+            self.diamond_terminus.terminus_pool_supply(pool_id),
+            self.diamond_terminus.terminus_pool_supply(pool_id - 1),
+        ]
+        self.diamond_terminus.approve_for_pool(
+            pool_id, accounts[3], {"from": accounts[1]}
+        )
+        with self.assertRaises(Exception):
+            self.diamond_terminus.mint_batch(
+                accounts[2].address,
+                pool_i_ds=[pool_id, pool_id - 1],
+                amounts=[1, 1],
+                data=b"",
+                transaction_config={"from": accounts[3]},
+            )
+
+        self.diamond_terminus.approve_for_pool(
+            pool_id - 1, accounts[3], {"from": accounts[1]}
+        )
+
+        self.diamond_terminus.mint_batch(
+            accounts[2].address,
+            pool_i_ds=[pool_id, pool_id - 1],
+            amounts=[1, 1],
+            data=b"",
+            transaction_config={"from": accounts[3]},
+        )
+
+        self.assertEqual(
+            self.diamond_terminus.balance_of(accounts[2].address, pool_id),
+            balances_before[0] + 1,
+        )
+        self.assertEqual(
+            self.diamond_terminus.balance_of(accounts[2].address, pool_id - 1),
+            balances_before[1] + 1,
+        )
+
+        self.assertEqual(
+            self.diamond_terminus.terminus_pool_supply(pool_id), supply_before[0] + 1
+        )
+        self.assertEqual(
+            self.diamond_terminus.terminus_pool_supply(pool_id - 1),
+            supply_before[1] + 1,
+        )
+
     def test_mint_batch_fails_if_it_exceeds_capacity(self):
         pool_id = self.diamond_terminus.total_pools()
         with self.assertRaises(Exception):
@@ -349,6 +407,64 @@ class TestPoolOperations(TerminusTestCase):
         for i, account in enumerate(accounts[:5]):
             final_balance = self.diamond_terminus.balance_of(account.address, pool_id)
             self.assertEqual(final_balance, initial_balances[i])
+
+    def test_pool_mint_with_pool_approval(self):
+        self.diamond_terminus.create_pool_v1(10, False, False, {"from": accounts[1]})
+        pool_id = self.diamond_terminus.total_pools()
+
+        self.assertFalse(
+            self.diamond_terminus.is_approved_for_pool(pool_id, accounts[2].address)
+        )
+        with self.assertRaises(Exception):
+            self.diamond_terminus.mint(
+                accounts[2].address, pool_id, 1, b"", {"from": accounts[2]}
+            )
+
+        self.diamond_terminus.approve_for_pool(
+            pool_id, accounts[2].address, {"from": accounts[1]}
+        )
+        supply_0 = self.diamond_terminus.terminus_pool_supply(pool_id)
+        balance_0 = self.diamond_terminus.balance_of(accounts[2].address, pool_id)
+        self.diamond_terminus.mint(
+            accounts[2].address, pool_id, 1, b"", {"from": accounts[1]}
+        )
+        balance_1 = self.diamond_terminus.balance_of(accounts[2].address, pool_id)
+        supply_1 = self.diamond_terminus.terminus_pool_supply(pool_id)
+
+        self.assertEqual(balance_1, balance_0 + 1)
+        self.assertEqual(supply_0 + 1, supply_1)
+
+    def test_pool_mint_batch_with_approval(self):
+        pool_id = self.diamond_terminus.total_pools()
+        target_accounts = [account.address for account in accounts[:5]]
+        target_amounts = [1 for _ in accounts[:5]]
+        num_accounts = len(accounts[:5])
+        initial_pool_supply = self.diamond_terminus.terminus_pool_supply(pool_id)
+        initial_balances: List[int] = []
+        for account in accounts[:5]:
+            initial_balances.append(
+                self.diamond_terminus.balance_of(account.address, pool_id)
+            )
+
+        self.assertFalse(
+            self.diamond_terminus.is_approved_for_pool(pool_id, accounts[2].address)
+        )
+        with self.assertRaises(Exception):
+            self.diamond_terminus.pool_mint_batch(
+                pool_id, target_accounts, target_amounts, {"from": accounts[2]}
+            )
+        self.diamond_terminus.approve_for_pool(
+            pool_id, accounts[2].address, {"from": accounts[1]}
+        )
+        self.diamond_terminus.pool_mint_batch(
+            pool_id, target_accounts, target_amounts, {"from": accounts[2]}
+        )
+
+        final_pool_supply = self.diamond_terminus.terminus_pool_supply(pool_id)
+        self.assertEqual(final_pool_supply, initial_pool_supply + num_accounts)
+        for i, account in enumerate(accounts[:5]):
+            final_balance = self.diamond_terminus.balance_of(account.address, pool_id)
+            self.assertEqual(final_balance, initial_balances[i] + 1)
 
     def test_transfer(self):
         pool_id = self.diamond_terminus.total_pools()
