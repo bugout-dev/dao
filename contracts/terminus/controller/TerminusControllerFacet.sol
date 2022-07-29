@@ -202,14 +202,14 @@ contract TerminusControllerFacet is TerminusPermissions, TokenDrainerFacet {
 
     function approveForPool(uint256 poolID, address operator)
         external
-        onlyMainAdmin
+        onlyPoolController(poolID)
     {
         terminusContract().approveForPool(poolID, operator);
     }
 
     function unapproveForPool(uint256 poolID, address operator)
         external
-        onlyMainAdmin
+        onlyPoolController(poolID)
     {
         terminusContract().unapproveForPool(poolID, operator);
     }
