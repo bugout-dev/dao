@@ -192,6 +192,14 @@ contract TerminusControllerFacet is TerminusPermissions, TokenDrainerFacet {
         return terminusContract().terminusPoolSupply(poolID);
     }
 
+    function isApprovedForPool(uint256 poolID, address operator)
+        public
+        view
+        returns (bool)
+    {
+        return terminusContract().isApprovedForPool(poolID, operator);
+    }
+
     function approveForPool(uint256 poolID, address operator)
         external
         onlyMainAdmin
