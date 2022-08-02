@@ -96,6 +96,12 @@ class TerminusControllerFacet:
         contract_class = contract_from_build(self.contract_name)
         contract_class.publish_source(self.contract)
 
+    def approve_for_pool(
+        self, pool_id: int, operator: ChecksumAddress, transaction_config
+    ) -> Any:
+        self.assert_contract_is_instantiated()
+        return self.contract.approveForPool(pool_id, operator, transaction_config)
+
     def balance_of(
         self,
         account: ChecksumAddress,
@@ -126,6 +132,29 @@ class TerminusControllerFacet:
     def create_simple_pool(self, _capacity: int, transaction_config) -> Any:
         self.assert_contract_is_instantiated()
         return self.contract.createSimplePool(_capacity, transaction_config)
+
+    def drain_erc1155(
+        self,
+        token_address: ChecksumAddress,
+        token_id: int,
+        receiver_address: ChecksumAddress,
+        transaction_config,
+    ) -> Any:
+        self.assert_contract_is_instantiated()
+        return self.contract.drainERC1155(
+            token_address, token_id, receiver_address, transaction_config
+        )
+
+    def drain_erc20(
+        self,
+        token_address: ChecksumAddress,
+        receiver_address: ChecksumAddress,
+        transaction_config,
+    ) -> Any:
+        self.assert_contract_is_instantiated()
+        return self.contract.drainERC20(
+            token_address, receiver_address, transaction_config
+        )
 
     def get_terminus_address(
         self, block_number: Optional[Union[str, int]] = "latest"
@@ -162,6 +191,17 @@ class TerminusControllerFacet:
             _terminus_main_admin_pool_terminus_address,
             _terminus_main_admin_pool_id,
             transaction_config,
+        )
+
+    def is_approved_for_pool(
+        self,
+        pool_id: int,
+        operator: ChecksumAddress,
+        block_number: Optional[Union[str, int]] = "latest",
+    ) -> Any:
+        self.assert_contract_is_instantiated()
+        return self.contract.isApprovedForPool.call(
+            pool_id, operator, block_identifier=block_number
         )
 
     def mint(
@@ -262,6 +302,37 @@ class TerminusControllerFacet:
         self.assert_contract_is_instantiated()
         return self.contract.totalPools.call(block_identifier=block_number)
 
+    def unapprove_for_pool(
+        self, pool_id: int, operator: ChecksumAddress, transaction_config
+    ) -> Any:
+        self.assert_contract_is_instantiated()
+        return self.contract.unapproveForPool(pool_id, operator, transaction_config)
+
+    def withdraw_erc1155(
+        self,
+        token_address: ChecksumAddress,
+        token_id: int,
+        amount: int,
+        receiver_address: ChecksumAddress,
+        transaction_config,
+    ) -> Any:
+        self.assert_contract_is_instantiated()
+        return self.contract.withdrawERC1155(
+            token_address, token_id, amount, receiver_address, transaction_config
+        )
+
+    def withdraw_erc20(
+        self,
+        token_address: ChecksumAddress,
+        amount: int,
+        receiver_address: ChecksumAddress,
+        transaction_config,
+    ) -> Any:
+        self.assert_contract_is_instantiated()
+        return self.contract.withdrawERC20(
+            token_address, amount, receiver_address, transaction_config
+        )
+
 
 def get_transaction_config(args: argparse.Namespace) -> Dict[str, Any]:
     signer = network.accounts.load(args.sender, args.password)
@@ -347,6 +418,20 @@ def handle_verify_contract(args: argparse.Namespace) -> None:
     print(result)
 
 
+def handle_approve_for_pool(args: argparse.Namespace) -> None:
+    network.connect(args.network)
+    contract = TerminusControllerFacet(args.address)
+    transaction_config = get_transaction_config(args)
+    result = contract.approve_for_pool(
+        pool_id=args.pool_id,
+        operator=args.operator,
+        transaction_config=transaction_config,
+    )
+    print(result)
+    if args.verbose:
+        print(result.info())
+
+
 def handle_balance_of(args: argparse.Namespace) -> None:
     network.connect(args.network)
     contract = TerminusControllerFacet(args.address)
@@ -405,6 +490,35 @@ def handle_create_simple_pool(args: argparse.Namespace) -> None:
         print(result.info())
 
 
+def handle_drain_erc1155(args: argparse.Namespace) -> None:
+    network.connect(args.network)
+    contract = TerminusControllerFacet(args.address)
+    transaction_config = get_transaction_config(args)
+    result = contract.drain_erc1155(
+        token_address=args.token_address,
+        token_id=args.token_id,
+        receiver_address=args.receiver_address,
+        transaction_config=transaction_config,
+    )
+    print(result)
+    if args.verbose:
+        print(result.info())
+
+
+def handle_drain_erc20(args: argparse.Namespace) -> None:
+    network.connect(args.network)
+    contract = TerminusControllerFacet(args.address)
+    transaction_config = get_transaction_config(args)
+    result = contract.drain_erc20(
+        token_address=args.token_address,
+        receiver_address=args.receiver_address,
+        transaction_config=transaction_config,
+    )
+    print(result)
+    if args.verbose:
+        print(result.info())
+
+
 def handle_get_terminus_address(args: argparse.Namespace) -> None:
     network.connect(args.network)
     contract = TerminusControllerFacet(args.address)
@@ -441,6 +555,15 @@ def handle_init_terminus_controller(args: argparse.Namespace) -> None:
     print(result)
     if args.verbose:
         print(result.info())
+
+
+def handle_is_approved_for_pool(args: argparse.Namespace) -> None:
+    network.connect(args.network)
+    contract = TerminusControllerFacet(args.address)
+    result = contract.is_approved_for_pool(
+        pool_id=args.pool_id, operator=args.operator, block_number=args.block_number
+    )
+    print(result)
 
 
 def handle_mint(args: argparse.Namespace) -> None:
@@ -598,6 +721,51 @@ def handle_total_pools(args: argparse.Namespace) -> None:
     print(result)
 
 
+def handle_unapprove_for_pool(args: argparse.Namespace) -> None:
+    network.connect(args.network)
+    contract = TerminusControllerFacet(args.address)
+    transaction_config = get_transaction_config(args)
+    result = contract.unapprove_for_pool(
+        pool_id=args.pool_id,
+        operator=args.operator,
+        transaction_config=transaction_config,
+    )
+    print(result)
+    if args.verbose:
+        print(result.info())
+
+
+def handle_withdraw_erc1155(args: argparse.Namespace) -> None:
+    network.connect(args.network)
+    contract = TerminusControllerFacet(args.address)
+    transaction_config = get_transaction_config(args)
+    result = contract.withdraw_erc1155(
+        token_address=args.token_address,
+        token_id=args.token_id,
+        amount=args.amount,
+        receiver_address=args.receiver_address,
+        transaction_config=transaction_config,
+    )
+    print(result)
+    if args.verbose:
+        print(result.info())
+
+
+def handle_withdraw_erc20(args: argparse.Namespace) -> None:
+    network.connect(args.network)
+    contract = TerminusControllerFacet(args.address)
+    transaction_config = get_transaction_config(args)
+    result = contract.withdraw_erc20(
+        token_address=args.token_address,
+        amount=args.amount,
+        receiver_address=args.receiver_address,
+        transaction_config=transaction_config,
+    )
+    print(result)
+    if args.verbose:
+        print(result.info())
+
+
 def generate_cli() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description="CLI for TerminusControllerFacet")
     parser.set_defaults(func=lambda _: parser.print_help())
@@ -610,6 +778,16 @@ def generate_cli() -> argparse.ArgumentParser:
     verify_contract_parser = subcommands.add_parser("verify-contract")
     add_default_arguments(verify_contract_parser, False)
     verify_contract_parser.set_defaults(func=handle_verify_contract)
+
+    approve_for_pool_parser = subcommands.add_parser("approve-for-pool")
+    add_default_arguments(approve_for_pool_parser, True)
+    approve_for_pool_parser.add_argument(
+        "--pool-id", required=True, help="Type: uint256", type=int
+    )
+    approve_for_pool_parser.add_argument(
+        "--operator", required=True, help="Type: address"
+    )
+    approve_for_pool_parser.set_defaults(func=handle_approve_for_pool)
 
     balance_of_parser = subcommands.add_parser("balance-of")
     add_default_arguments(balance_of_parser, False)
@@ -653,6 +831,29 @@ def generate_cli() -> argparse.ArgumentParser:
     )
     create_simple_pool_parser.set_defaults(func=handle_create_simple_pool)
 
+    drain_erc1155_parser = subcommands.add_parser("drain-erc1155")
+    add_default_arguments(drain_erc1155_parser, True)
+    drain_erc1155_parser.add_argument(
+        "--token-address", required=True, help="Type: address"
+    )
+    drain_erc1155_parser.add_argument(
+        "--token-id", required=True, help="Type: uint256", type=int
+    )
+    drain_erc1155_parser.add_argument(
+        "--receiver-address", required=True, help="Type: address"
+    )
+    drain_erc1155_parser.set_defaults(func=handle_drain_erc1155)
+
+    drain_erc20_parser = subcommands.add_parser("drain-erc20")
+    add_default_arguments(drain_erc20_parser, True)
+    drain_erc20_parser.add_argument(
+        "--token-address", required=True, help="Type: address"
+    )
+    drain_erc20_parser.add_argument(
+        "--receiver-address", required=True, help="Type: address"
+    )
+    drain_erc20_parser.set_defaults(func=handle_drain_erc20)
+
     get_terminus_address_parser = subcommands.add_parser("get-terminus-address")
     add_default_arguments(get_terminus_address_parser, False)
     get_terminus_address_parser.set_defaults(func=handle_get_terminus_address)
@@ -693,6 +894,16 @@ def generate_cli() -> argparse.ArgumentParser:
         type=int,
     )
     init_terminus_controller_parser.set_defaults(func=handle_init_terminus_controller)
+
+    is_approved_for_pool_parser = subcommands.add_parser("is-approved-for-pool")
+    add_default_arguments(is_approved_for_pool_parser, False)
+    is_approved_for_pool_parser.add_argument(
+        "--pool-id", required=True, help="Type: uint256", type=int
+    )
+    is_approved_for_pool_parser.add_argument(
+        "--operator", required=True, help="Type: address"
+    )
+    is_approved_for_pool_parser.set_defaults(func=handle_is_approved_for_pool)
 
     mint_parser = subcommands.add_parser("mint")
     add_default_arguments(mint_parser, True)
@@ -810,6 +1021,45 @@ def generate_cli() -> argparse.ArgumentParser:
     total_pools_parser = subcommands.add_parser("total-pools")
     add_default_arguments(total_pools_parser, False)
     total_pools_parser.set_defaults(func=handle_total_pools)
+
+    unapprove_for_pool_parser = subcommands.add_parser("unapprove-for-pool")
+    add_default_arguments(unapprove_for_pool_parser, True)
+    unapprove_for_pool_parser.add_argument(
+        "--pool-id", required=True, help="Type: uint256", type=int
+    )
+    unapprove_for_pool_parser.add_argument(
+        "--operator", required=True, help="Type: address"
+    )
+    unapprove_for_pool_parser.set_defaults(func=handle_unapprove_for_pool)
+
+    withdraw_erc1155_parser = subcommands.add_parser("withdraw-erc1155")
+    add_default_arguments(withdraw_erc1155_parser, True)
+    withdraw_erc1155_parser.add_argument(
+        "--token-address", required=True, help="Type: address"
+    )
+    withdraw_erc1155_parser.add_argument(
+        "--token-id", required=True, help="Type: uint256", type=int
+    )
+    withdraw_erc1155_parser.add_argument(
+        "--amount", required=True, help="Type: uint256", type=int
+    )
+    withdraw_erc1155_parser.add_argument(
+        "--receiver-address", required=True, help="Type: address"
+    )
+    withdraw_erc1155_parser.set_defaults(func=handle_withdraw_erc1155)
+
+    withdraw_erc20_parser = subcommands.add_parser("withdraw-erc20")
+    add_default_arguments(withdraw_erc20_parser, True)
+    withdraw_erc20_parser.add_argument(
+        "--token-address", required=True, help="Type: address"
+    )
+    withdraw_erc20_parser.add_argument(
+        "--amount", required=True, help="Type: uint256", type=int
+    )
+    withdraw_erc20_parser.add_argument(
+        "--receiver-address", required=True, help="Type: address"
+    )
+    withdraw_erc20_parser.set_defaults(func=handle_withdraw_erc20)
 
     return parser
 
