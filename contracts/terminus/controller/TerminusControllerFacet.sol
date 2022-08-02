@@ -192,6 +192,28 @@ contract TerminusControllerFacet is TerminusPermissions, TokenDrainerFacet {
         return terminusContract().terminusPoolSupply(poolID);
     }
 
+    function isApprovedForPool(uint256 poolID, address operator)
+        public
+        view
+        returns (bool)
+    {
+        return terminusContract().isApprovedForPool(poolID, operator);
+    }
+
+    function approveForPool(uint256 poolID, address operator)
+        external
+        onlyPoolController(poolID)
+    {
+        terminusContract().approveForPool(poolID, operator);
+    }
+
+    function unapproveForPool(uint256 poolID, address operator)
+        external
+        onlyPoolController(poolID)
+    {
+        terminusContract().unapproveForPool(poolID, operator);
+    }
+
     function _approvePoolCreationPayments() internal {
         IERC20 paymentToken = IERC20(terminusContract().paymentToken());
         uint256 fee = terminusContract().poolBasePrice();

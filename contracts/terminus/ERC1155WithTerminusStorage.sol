@@ -148,6 +148,11 @@ contract ERC1155WithTerminusStorage is
         LibTerminus._approveForPool(poolID, operator);
     }
 
+    function unapproveForPool(uint256 poolID, address operator) external {
+        LibTerminus.enforcePoolIsController(poolID, _msgSender());
+        LibTerminus._unapproveForPool(poolID, operator);
+    }
+
     /**
      * @dev See {IERC1155-safeTransferFrom}.
      */

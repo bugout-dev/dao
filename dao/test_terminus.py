@@ -1,3 +1,4 @@
+from re import I
 from typing import List
 import unittest
 
@@ -736,6 +737,182 @@ class TestPoolOperations(TerminusTestCase):
         )
         self.assertEqual(final_pool_supply, initial_pool_supply)
         self.assertEqual(final_owner_balance, initial_owner_balance)
+
+    def test_pool_approval(self):
+        controller = accounts[1]
+        operator = accounts[2]
+        user = accounts[3]
+
+        # TODO(zomglings): We should test the Terminus controller permissions on the same contract.
+        # Currently, controller is both pool controller AND Terminus controller. In a more proper test,
+        # these would be different accounts.
+
+        # TODO(zomglings): Tested manually that changing burnable below from True to False results in
+        # the right reversion when we try to burn these tokens on-chain. This should be a separate
+        # test case that runs *automatically*.
+        self.diamond_terminus.create_pool_v1(100, True, True, {"from": controller})
+        pool_id = self.diamond_terminus.total_pools()
+        self.diamond_terminus.mint(
+            controller.address, pool_id, 5, "", {"from": controller}
+        )
+        self.diamond_terminus.mint(
+            operator.address, pool_id, 5, "", {"from": controller}
+        )
+        self.diamond_terminus.mint(user.address, pool_id, 5, "", {"from": controller})
+
+        controller_balance_0 = self.diamond_terminus.balance_of(
+            controller.address, pool_id
+        )
+        operator_balance_0 = self.diamond_terminus.balance_of(operator.address, pool_id)
+        user_balance_0 = self.diamond_terminus.balance_of(user.address, pool_id)
+
+        self.assertFalse(
+            self.diamond_terminus.is_approved_for_pool(pool_id, operator.address)
+        )
+
+        with self.assertRaises(VirtualMachineError):
+            self.diamond_terminus.mint(
+                controller.address, pool_id, 1, "", {"from": operator}
+            )
+
+        with self.assertRaises(VirtualMachineError):
+            self.diamond_terminus.mint(
+                operator.address, pool_id, 1, "", {"from": operator}
+            )
+
+        with self.assertRaises(VirtualMachineError):
+            self.diamond_terminus.mint(user.address, pool_id, 1, "", {"from": operator})
+
+        controller_balance_1 = self.diamond_terminus.balance_of(
+            controller.address, pool_id
+        )
+        operator_balance_1 = self.diamond_terminus.balance_of(operator.address, pool_id)
+        user_balance_1 = self.diamond_terminus.balance_of(user.address, pool_id)
+
+        self.assertEqual(controller_balance_1, controller_balance_0)
+        self.assertEqual(operator_balance_1, operator_balance_0)
+        self.assertEqual(user_balance_1, user_balance_0)
+
+        with self.assertRaises(VirtualMachineError):
+            self.diamond_terminus.burn(
+                controller.address, pool_id, 1, {"from": operator}
+            )
+
+        self.diamond_terminus.burn(operator.address, pool_id, 1, {"from": operator})
+
+        with self.assertRaises(VirtualMachineError):
+            self.diamond_terminus.burn(user.address, pool_id, 1, {"from": operator})
+
+        controller_balance_2 = self.diamond_terminus.balance_of(
+            controller.address, pool_id
+        )
+        operator_balance_2 = self.diamond_terminus.balance_of(operator.address, pool_id)
+        user_balance_2 = self.diamond_terminus.balance_of(user.address, pool_id)
+
+        self.assertEqual(controller_balance_2, controller_balance_1)
+        self.assertEqual(operator_balance_2, operator_balance_1 - 1)
+        self.assertEqual(user_balance_2, user_balance_1)
+
+        with self.assertRaises(VirtualMachineError):
+            self.diamond_terminus.approve_for_pool(
+                pool_id, operator, {"from": operator}
+            )
+
+        self.diamond_terminus.approve_for_pool(pool_id, operator, {"from": accounts[1]})
+
+        self.assertTrue(
+            self.diamond_terminus.is_approved_for_pool(pool_id, operator.address)
+        )
+
+        self.diamond_terminus.mint(
+            controller.address, pool_id, 1, "", {"from": operator}
+        )
+        self.diamond_terminus.mint(operator.address, pool_id, 1, "", {"from": operator})
+        self.diamond_terminus.mint(user.address, pool_id, 1, "", {"from": operator})
+
+        controller_balance_3 = self.diamond_terminus.balance_of(
+            controller.address, pool_id
+        )
+        operator_balance_3 = self.diamond_terminus.balance_of(operator.address, pool_id)
+        user_balance_3 = self.diamond_terminus.balance_of(user.address, pool_id)
+
+        self.assertEqual(controller_balance_3, controller_balance_2 + 1)
+        self.assertEqual(operator_balance_3, operator_balance_2 + 1)
+        self.assertEqual(user_balance_3, user_balance_2 + 1)
+
+        self.diamond_terminus.burn(controller.address, pool_id, 1, {"from": operator})
+        self.diamond_terminus.burn(operator.address, pool_id, 1, {"from": operator})
+        self.diamond_terminus.burn(user.address, pool_id, 1, {"from": operator})
+
+        controller_balance_4 = self.diamond_terminus.balance_of(
+            controller.address, pool_id
+        )
+        operator_balance_4 = self.diamond_terminus.balance_of(operator.address, pool_id)
+        user_balance_4 = self.diamond_terminus.balance_of(user.address, pool_id)
+
+        self.assertEqual(controller_balance_4, controller_balance_3 - 1)
+        self.assertEqual(operator_balance_4, operator_balance_3 - 1)
+        self.assertEqual(user_balance_4, user_balance_3 - 1)
+
+        with self.assertRaises(VirtualMachineError):
+            self.diamond_terminus.unapprove_for_pool(
+                pool_id, operator, {"from": operator}
+            )
+
+        self.assertTrue(
+            self.diamond_terminus.is_approved_for_pool(pool_id, operator.address)
+        )
+
+        self.diamond_terminus.unapprove_for_pool(
+            pool_id, operator, {"from": controller}
+        )
+
+        self.assertFalse(
+            self.diamond_terminus.is_approved_for_pool(pool_id, operator.address)
+        )
+
+        with self.assertRaises(VirtualMachineError):
+            self.diamond_terminus.mint(
+                controller.address, pool_id, 1, "", {"from": operator}
+            )
+
+        with self.assertRaises(VirtualMachineError):
+            self.diamond_terminus.mint(
+                operator.address, pool_id, 1, "", {"from": operator}
+            )
+
+        with self.assertRaises(VirtualMachineError):
+            self.diamond_terminus.mint(user.address, pool_id, 1, "", {"from": operator})
+
+        controller_balance_5 = self.diamond_terminus.balance_of(
+            controller.address, pool_id
+        )
+        operator_balance_5 = self.diamond_terminus.balance_of(operator.address, pool_id)
+        user_balance_5 = self.diamond_terminus.balance_of(user.address, pool_id)
+
+        self.assertEqual(controller_balance_5, controller_balance_4)
+        self.assertEqual(operator_balance_5, operator_balance_4)
+        self.assertEqual(user_balance_5, user_balance_4)
+
+        with self.assertRaises(VirtualMachineError):
+            self.diamond_terminus.burn(
+                controller.address, pool_id, 1, {"from": operator}
+            )
+
+        self.diamond_terminus.burn(operator.address, pool_id, 1, {"from": operator})
+
+        with self.assertRaises(VirtualMachineError):
+            self.diamond_terminus.burn(user.address, pool_id, 1, {"from": operator})
+
+        controller_balance_6 = self.diamond_terminus.balance_of(
+            controller.address, pool_id
+        )
+        operator_balance_6 = self.diamond_terminus.balance_of(operator.address, pool_id)
+        user_balance_6 = self.diamond_terminus.balance_of(user.address, pool_id)
+
+        self.assertEqual(controller_balance_6, controller_balance_5)
+        self.assertEqual(operator_balance_6, operator_balance_5 - 1)
+        self.assertEqual(user_balance_6, user_balance_5)
 
 
 class TestCreatePoolV1(TestPoolOperations):

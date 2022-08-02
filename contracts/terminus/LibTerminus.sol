@@ -123,4 +123,9 @@ library LibTerminus {
         LibTerminus.TerminusStorage storage ts = LibTerminus.terminusStorage();
         ts.globalPoolOperatorApprovals[poolID][operator] = true;
     }
+
+    function _unapproveForPool(uint256 poolID, address operator) internal {
+        LibTerminus.TerminusStorage storage ts = LibTerminus.terminusStorage();
+        ts.globalPoolOperatorApprovals[poolID][operator] = false;
+    }
 }

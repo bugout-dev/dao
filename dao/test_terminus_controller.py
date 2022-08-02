@@ -167,6 +167,30 @@ class TestTerminusController(unittest.TestCase):
         )
         self.assertEqual(self.terminus.balance_of(accounts[4], new_pool_id), 1)
 
+    def test_pool_approval(self):
+        controller = accounts[0]
+        operator = accounts[2]
+
+        self.assertFalse(
+            self.terminus.is_approved_for_pool(self.main_pool_id, operator.address)
+        )
+
+        self.terminus_controller.approve_for_pool(
+            self.main_pool_id, operator.address, {"from": controller}
+        )
+
+        self.assertTrue(
+            self.terminus.is_approved_for_pool(self.main_pool_id, operator.address)
+        )
+
+        self.terminus_controller.unapprove_for_pool(
+            self.main_pool_id, operator.address, {"from": controller}
+        )
+
+        self.assertFalse(
+            self.terminus.is_approved_for_pool(self.main_pool_id, operator.address)
+        )
+
 
 if __name__ == "__main__":
     unittest.main()
