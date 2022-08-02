@@ -766,7 +766,9 @@ class TestPoolOperations(TerminusTestCase):
         operator_balance_0 = self.diamond_terminus.balance_of(operator.address, pool_id)
         user_balance_0 = self.diamond_terminus.balance_of(user.address, pool_id)
 
-        self.assertFalse(self.diamond_terminus.is_approved_for_pool(pool_id, operator.address))
+        self.assertFalse(
+            self.diamond_terminus.is_approved_for_pool(pool_id, operator.address)
+        )
 
         with self.assertRaises(VirtualMachineError):
             self.diamond_terminus.mint(
@@ -818,7 +820,9 @@ class TestPoolOperations(TerminusTestCase):
 
         self.diamond_terminus.approve_for_pool(pool_id, operator, {"from": accounts[1]})
 
-        self.assertTrue(self.diamond_terminus.is_approved_for_pool(pool_id, operator.address))
+        self.assertTrue(
+            self.diamond_terminus.is_approved_for_pool(pool_id, operator.address)
+        )
 
         self.diamond_terminus.mint(
             controller.address, pool_id, 1, "", {"from": operator}
@@ -855,13 +859,17 @@ class TestPoolOperations(TerminusTestCase):
                 pool_id, operator, {"from": operator}
             )
 
-        self.assertTrue(self.diamond_terminus.is_approved_for_pool(pool_id, operator.address))
+        self.assertTrue(
+            self.diamond_terminus.is_approved_for_pool(pool_id, operator.address)
+        )
 
         self.diamond_terminus.unapprove_for_pool(
             pool_id, operator, {"from": controller}
         )
 
-        self.assertFalse(self.diamond_terminus.is_approved_for_pool(pool_id, operator.address))
+        self.assertFalse(
+            self.diamond_terminus.is_approved_for_pool(pool_id, operator.address)
+        )
 
         with self.assertRaises(VirtualMachineError):
             self.diamond_terminus.mint(
