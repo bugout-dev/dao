@@ -342,6 +342,12 @@ class TerminusFacet:
         self.assert_contract_is_instantiated()
         return self.contract.totalPools.call(block_identifier=block_number)
 
+    def unapprove_for_pool(
+        self, pool_id: int, operator: ChecksumAddress, transaction_config
+    ) -> Any:
+        self.assert_contract_is_instantiated()
+        return self.contract.unapproveForPool(pool_id, operator, transaction_config)
+
     def uri(
         self, pool_id: int, block_number: Optional[Union[str, int]] = "latest"
     ) -> Any:
@@ -819,6 +825,20 @@ def handle_total_pools(args: argparse.Namespace) -> None:
     print(result)
 
 
+def handle_unapprove_for_pool(args: argparse.Namespace) -> None:
+    network.connect(args.network)
+    contract = TerminusFacet(args.address)
+    transaction_config = get_transaction_config(args)
+    result = contract.unapprove_for_pool(
+        pool_id=args.pool_id,
+        operator=args.operator,
+        transaction_config=transaction_config,
+    )
+    print(result)
+    if args.verbose:
+        print(result.info())
+
+
 def handle_uri(args: argparse.Namespace) -> None:
     network.connect(args.network)
     contract = TerminusFacet(args.address)
@@ -1143,6 +1163,16 @@ def generate_cli() -> argparse.ArgumentParser:
     total_pools_parser = subcommands.add_parser("total-pools")
     add_default_arguments(total_pools_parser, False)
     total_pools_parser.set_defaults(func=handle_total_pools)
+
+    unapprove_for_pool_parser = subcommands.add_parser("unapprove-for-pool")
+    add_default_arguments(unapprove_for_pool_parser, True)
+    unapprove_for_pool_parser.add_argument(
+        "--pool-id", required=True, help="Type: uint256", type=int
+    )
+    unapprove_for_pool_parser.add_argument(
+        "--operator", required=True, help="Type: address"
+    )
+    unapprove_for_pool_parser.set_defaults(func=handle_unapprove_for_pool)
 
     uri_parser = subcommands.add_parser("uri")
     add_default_arguments(uri_parser, False)
