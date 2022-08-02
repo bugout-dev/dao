@@ -743,6 +743,13 @@ class TestPoolOperations(TerminusTestCase):
         operator = accounts[2]
         user = accounts[3]
 
+        # TODO(zomglings): We should test the Terminus controller permissions on the same contract.
+        # Currently, controller is both pool controller AND Terminus controller. In a more proper test,
+        # these would be different accounts.
+
+        # TODO(zomglings): Tested manually that changing burnable below from True to False results in
+        # the right reversion when we try to burn these tokens on-chain. This should be a separate
+        # test case that runs *automatically*.
         self.diamond_terminus.create_pool_v1(100, True, True, {"from": controller})
         pool_id = self.diamond_terminus.total_pools()
         self.diamond_terminus.mint(
@@ -759,7 +766,7 @@ class TestPoolOperations(TerminusTestCase):
         operator_balance_0 = self.diamond_terminus.balance_of(operator.address, pool_id)
         user_balance_0 = self.diamond_terminus.balance_of(user.address, pool_id)
 
-        self.assertFalse(self.diamond_terminus.is_approved_for_pool(pool_id, operator))
+        self.assertFalse(self.diamond_terminus.is_approved_for_pool(pool_id, operator.address))
 
         with self.assertRaises(VirtualMachineError):
             self.diamond_terminus.mint(
@@ -811,7 +818,7 @@ class TestPoolOperations(TerminusTestCase):
 
         self.diamond_terminus.approve_for_pool(pool_id, operator, {"from": accounts[1]})
 
-        self.assertTrue(self.diamond_terminus.is_approved_for_pool(pool_id, operator))
+        self.assertTrue(self.diamond_terminus.is_approved_for_pool(pool_id, operator.address))
 
         self.diamond_terminus.mint(
             controller.address, pool_id, 1, "", {"from": operator}
@@ -848,13 +855,13 @@ class TestPoolOperations(TerminusTestCase):
                 pool_id, operator, {"from": operator}
             )
 
-        self.assertTrue(self.diamond_terminus.is_approved_for_pool(pool_id, operator))
+        self.assertTrue(self.diamond_terminus.is_approved_for_pool(pool_id, operator.address))
 
         self.diamond_terminus.unapprove_for_pool(
             pool_id, operator, {"from": controller}
         )
 
-        self.assertFalse(self.diamond_terminus.is_approved_for_pool(pool_id, operator))
+        self.assertFalse(self.diamond_terminus.is_approved_for_pool(pool_id, operator.address))
 
         with self.assertRaises(VirtualMachineError):
             self.diamond_terminus.mint(
