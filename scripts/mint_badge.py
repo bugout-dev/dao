@@ -70,4 +70,8 @@ if not args.yes:
 
 amounts = [1 for _ in valid_recipients]
 transaction_config = TerminusFacet.get_transaction_config(args)
-terminus.pool_mint_batch(args.pool_id, valid_recipients, amounts, transaction_config)
+transaction_info = terminus.pool_mint_batch(
+    args.pool_id, valid_recipients, amounts, transaction_config
+)
+
+print(transaction_info)
