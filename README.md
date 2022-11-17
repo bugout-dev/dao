@@ -1,4 +1,5 @@
 # dao
+
 Moonstream DAO
 
 ## Decentralizing Moonstream
@@ -10,11 +11,12 @@ We run our own blockchain nodes (currently Ethereum and Polygon), and perform al
 through these nodes.
 
 The coming years will bring an explosion of decentralized applications with a presence on multiple
-blockchains. We aim to bring the value of Moonstream to *every* major blockchain, and to do so in a
+blockchains. We aim to bring the value of Moonstream to _every_ major blockchain, and to do so in a
 truly decentralized manner. No other approach will scale to tens and eventually hundreds of supported
 blockchains.
 
 Moonstream DAO represents this decentralization. The DAO will reward participants who contribute:
+
 1. Blockchain node time
 2. Crawler time
 3. Crawler code
@@ -111,10 +113,18 @@ moonworm generate-brownie -p . -o dao -n TerminusFacet
 
 ### Tests
 
+Make sure you have `ganache-cli`:
+
+```
+npm install -g ganache-cli
+```
+
 To run unit tests, run: `./test.sh`
 
 Before you do this, you must make sure that a Python environment is available in your shell and that
 you have installed the development dependencies in this environment.
+
+For specific test case use commands like: `./test.sh dao.test_terminus.TestPoolOperations`
 
 ### VSCode setup
 
@@ -122,8 +132,8 @@ If you are using the Solidity extension in VSCode, merge the following snippet i
 
 ```json
 {
-    "solidity.remappings": [
-        "@openzeppelin-contracts/=<path to your home directory>/.brownie/packages/OpenZeppelin/openzeppelin-contracts@4.3.2"
-    ]
+	"solidity.remappings": [
+		"@openzeppelin-contracts/=<path to your home directory>/.brownie/packages/OpenZeppelin/openzeppelin-contracts@4.3.2"
+	]
 }
 ```

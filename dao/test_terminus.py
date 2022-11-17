@@ -349,6 +349,23 @@ class TestPoolOperations(TerminusTestCase):
         supply = self.diamond_terminus.terminus_pool_supply(pool_id)
         self.assertEqual(supply, 0)
 
+    def test_mint_batch_fails_if_it_exceeds_capacity_not_unique(self):
+        pool_id = self.diamond_terminus.total_pools()
+        with self.assertRaises(Exception):
+            self.diamond_terminus.mint_batch(
+                accounts[2].address,
+                pool_i_ds=[pool_id for _ in range(0, 11)],
+                amounts=[1 for _ in range(0, 11)],
+                data=b"",
+                transaction_config={"from": accounts[1]},
+            )
+
+        balance = self.diamond_terminus.balance_of(accounts[2].address, pool_id)
+        self.assertEqual(balance, 0)
+
+        supply = self.diamond_terminus.terminus_pool_supply(pool_id)
+        self.assertEqual(supply, 0)
+
     def test_pool_mint_batch(self):
         pool_id = self.diamond_terminus.total_pools()
         target_accounts = [account.address for account in accounts[:5]]
