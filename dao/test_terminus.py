@@ -552,7 +552,111 @@ class TestPoolOperations(TerminusTestCase):
         self.assertEqual(final_sender_balance, initial_sender_balance - 1)
         self.assertEqual(final_receiver_balance, initial_receiver_balance + 1)
 
+    def test_transfer_fails_as_controller_of_another_pool_with_no_approval(self):
+        """
+        Hacken.io auditors claimed that an address that controlled *some* pool could effect transfers
+        on *any* pool.
+
+        This test shows that this is not true.
+
+        Exercises:
+        - safeTransferFrom
+        """
+        # Ensure that accounts[1] is pool controller of *some* pool.
+        self.diamond_terminus.create_pool_v1(100, True, True, {"from": accounts[1]})
+        controlled_pool_id = self.diamond_terminus.total_pools()
+        self.assertEqual(
+            self.diamond_terminus.terminus_pool_controller(controlled_pool_id),
+            accounts[1].address,
+        )
+
+        self.diamond_terminus.create_pool_v1(100, True, True, {"from": accounts[1]})
+        pool_id = self.diamond_terminus.total_pools()
+        self.diamond_terminus.mint(accounts[2], pool_id, 1, b"", {"from": accounts[1]})
+
+        # Remove pool control from accounts[1]
+        self.diamond_terminus.set_pool_controller(
+            pool_id, accounts[4].address, {"from": accounts[1]}
+        )
+
+        initial_sender_balance = self.diamond_terminus.balance_of(
+            accounts[2].address, pool_id
+        )
+        initial_receiver_balance = self.diamond_terminus.balance_of(
+            accounts[3].address, pool_id
+        )
+
+        with self.assertRaises(VirtualMachineError):
+            self.diamond_terminus.safe_transfer_from(
+                accounts[2].address,
+                accounts[3].address,
+                pool_id,
+                1,
+                b"",
+                {"from": accounts[1]},
+            )
+
+        final_sender_balance = self.diamond_terminus.balance_of(
+            accounts[2].address, pool_id
+        )
+        final_receiver_balance = self.diamond_terminus.balance_of(
+            accounts[3].address, pool_id
+        )
+
+        self.assertEqual(final_sender_balance, initial_sender_balance)
+        self.assertEqual(final_receiver_balance, initial_receiver_balance)
+
+    def test_transfer_fails_as_terminus_controller_with_no_approval(self):
+        """
+        Tests that neither Terminus controller *nor* pool controller can transfer a token on behalf of
+        another address without explicit approval (using safeTransferFrom).
+
+        Exercises:
+        - safeTransferFrom
+        """
+        self.assertEqual(
+            self.diamond_terminus.terminus_controller(), accounts[1].address
+        )
+        self.diamond_terminus.create_pool_v1(100, True, True, {"from": accounts[1]})
+        pool_id = self.diamond_terminus.total_pools()
+        self.diamond_terminus.mint(accounts[2], pool_id, 1, b"", {"from": accounts[1]})
+
+        # Remove pool control from accounts[1]
+        self.diamond_terminus.set_pool_controller(
+            pool_id, accounts[4].address, {"from": accounts[1]}
+        )
+
+        initial_sender_balance = self.diamond_terminus.balance_of(
+            accounts[2].address, pool_id
+        )
+        initial_receiver_balance = self.diamond_terminus.balance_of(
+            accounts[3].address, pool_id
+        )
+
+        with self.assertRaises(VirtualMachineError):
+            self.diamond_terminus.safe_transfer_from(
+                accounts[2].address,
+                accounts[3].address,
+                pool_id,
+                1,
+                b"",
+                {"from": accounts[1]},
+            )
+
+        final_sender_balance = self.diamond_terminus.balance_of(
+            accounts[2].address, pool_id
+        )
+        final_receiver_balance = self.diamond_terminus.balance_of(
+            accounts[3].address, pool_id
+        )
+
+        self.assertEqual(final_sender_balance, initial_sender_balance)
+        self.assertEqual(final_receiver_balance, initial_receiver_balance)
+
     def test_transfer_as_unauthorized_recipient(self):
+        self.diamond_terminus.create_pool_v1(
+            2**256 - 1, True, True, {"from": accounts[1]}
+        )
         pool_id = self.diamond_terminus.total_pools()
         self.diamond_terminus.mint(accounts[2], pool_id, 1, b"", {"from": accounts[1]})
 
@@ -615,6 +719,51 @@ class TestPoolOperations(TerminusTestCase):
 
         self.assertEqual(final_sender_balance, initial_sender_balance - 1)
         self.assertEqual(final_receiver_balance, initial_receiver_balance + 1)
+
+    def test_transfer_as_approved_operator(self):
+        pool_id = self.diamond_terminus.total_pools()
+        self.diamond_terminus.mint(accounts[2], pool_id, 1, b"", {"from": accounts[1]})
+
+        initial_sender_balance = self.diamond_terminus.balance_of(
+            accounts[2].address, pool_id
+        )
+        initial_receiver_balance = self.diamond_terminus.balance_of(
+            accounts[3].address, pool_id
+        )
+
+        # It is very important to revoke this approval from accounts[3] as accounts[3] tries to initiate
+        # transfers from accounts[2] in other tests.
+        self.diamond_terminus.set_approval_for_all(
+            accounts[3].address, True, {"from": accounts[2]}
+        )
+
+        try:
+            self.diamond_terminus.safe_transfer_from(
+                accounts[2].address,
+                accounts[3].address,
+                pool_id,
+                1,
+                b"",
+                {"from": accounts[3]},
+            )
+        finally:
+            self.diamond_terminus.set_approval_for_all(
+                accounts[3].address, False, {"from": accounts[2]}
+            )
+
+        final_sender_balance = self.diamond_terminus.balance_of(
+            accounts[2].address, pool_id
+        )
+        final_receiver_balance = self.diamond_terminus.balance_of(
+            accounts[3].address, pool_id
+        )
+
+        self.assertEqual(final_sender_balance, initial_sender_balance - 1)
+        self.assertEqual(final_receiver_balance, initial_receiver_balance + 1)
+
+        # Check that accounts[3] is no longer approved for all pools by accounts[2] (for other tests to)
+        # run correctly.
+        self.assertFalse(self.diamond_terminus.is_approved_for_all(accounts[2].address, accounts[3].address))
 
     def test_transfer_as_unauthorized_unrelated_party(self):
         pool_id = self.diamond_terminus.total_pools()
