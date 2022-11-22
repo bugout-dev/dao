@@ -763,7 +763,11 @@ class TestPoolOperations(TerminusTestCase):
 
         # Check that accounts[3] is no longer approved for all pools by accounts[2] (for other tests to)
         # run correctly.
-        self.assertFalse(self.diamond_terminus.is_approved_for_all(accounts[2].address, accounts[3].address))
+        self.assertFalse(
+            self.diamond_terminus.is_approved_for_all(
+                accounts[2].address, accounts[3].address
+            )
+        )
 
     def test_transfer_as_unauthorized_unrelated_party(self):
         pool_id = self.diamond_terminus.total_pools()
