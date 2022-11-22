@@ -386,18 +386,15 @@ contract ERC1155WithTerminusStorage is
 
         LibTerminus.TerminusStorage storage ts = LibTerminus.terminusStorage();
 
-        for (uint256 i = 0; i < ids.length; i++) {
-            require(
-                ts.poolSupply[ids[i]] + amounts[i] <= ts.poolCapacity[ids[i]],
-                "ERC1155WithTerminusStorage: _mintBatch -- Minted tokens would exceed pool capacity"
-            );
-        }
-
         address operator = _msgSender();
 
         _beforeTokenTransfer(operator, address(0), to, ids, amounts, data);
 
         for (uint256 i = 0; i < ids.length; i++) {
+            require(
+                ts.poolSupply[ids[i]] + amounts[i] <= ts.poolCapacity[ids[i]],
+                "ERC1155WithTerminusStorage: _mintBatch -- Minted tokens would exceed pool capacity"
+            );
             ts.poolSupply[ids[i]] += amounts[i];
             ts.poolBalances[ids[i]][to] += amounts[i];
         }

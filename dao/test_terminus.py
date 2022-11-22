@@ -333,12 +333,37 @@ class TestPoolOperations(TerminusTestCase):
         )
 
     def test_mint_batch_fails_if_it_exceeds_capacity(self):
+        capacity = 10
+        self.diamond_terminus.create_pool_v1(
+            capacity, True, True, {"from": accounts[1]}
+        )
         pool_id = self.diamond_terminus.total_pools()
         with self.assertRaises(Exception):
             self.diamond_terminus.mint_batch(
                 accounts[2].address,
-                pool_i_ds=[pool_id],
-                amounts=[11],
+                pool_i_ds=[pool_id, pool_id],
+                amounts=[int(capacity / 2) + 1, int(capacity / 2) + 1],
+                data=b"",
+                transaction_config={"from": accounts[1]},
+            )
+
+        balance = self.diamond_terminus.balance_of(accounts[2].address, pool_id)
+        self.assertEqual(balance, 0)
+
+        supply = self.diamond_terminus.terminus_pool_supply(pool_id)
+        self.assertEqual(supply, 0)
+
+    def test_mint_batch_fails_if_it_exceeds_capacity_one_at_a_time(self):
+        capacity = 10
+        self.diamond_terminus.create_pool_v1(
+            capacity, True, True, {"from": accounts[1]}
+        )
+        pool_id = self.diamond_terminus.total_pools()
+        with self.assertRaises(Exception):
+            self.diamond_terminus.mint_batch(
+                accounts[2].address,
+                pool_i_ds=[pool_id for _ in range(capacity + 1)],
+                amounts=[1 for _ in range(capacity + 1)],
                 data=b"",
                 transaction_config={"from": accounts[1]},
             )
