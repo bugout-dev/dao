@@ -13,8 +13,9 @@ have the badge in question. It mints a single badge to all addresses that do *no
 """
 
 import argparse
+import sys
 
-from brownie import network
+from brownie import network, web3
 from dao import TerminusFacet
 
 parser = argparse.ArgumentParser(description="Mint Terminus badges to addresses")
@@ -58,7 +59,19 @@ if args.batch_size > 200:
 
 network.connect(args.network)
 
-recipients = list(set(args.recipients))
+recipients_raw = args.recipients
+if not recipients_raw:
+    recipients_raw = []
+
+with args.recipients_file as ifp:
+    for line in ifp:
+        try:
+            parsed_line = web3.toChecksumAddress(line.strip())
+            recipients_raw.append(parsed_line)
+        except Exception:
+            print(f"Not a valid web3 address: {line.strip()}")
+
+recipients = list(set(recipients_raw))
 
 batches = []
 for i in range(0, len(recipients), args.batch_size):
@@ -74,15 +87,15 @@ print(
 for i, batch in enumerate(batches):
     balances = zip(
         batch,
-        terminus.balance_of_batch(recipients, [args.pool_id for _ in recipients]),
+        terminus.balance_of_batch(batch, [args.pool_id for _ in batch]),
     )
 
     valid_recipients = [recipient for recipient, balance in balances if balance == 0]
-    if not valid_recipients:
-        print("No valid recipients in this batch")
+    if len(valid_recipients) == 0:
+        print("No valid recipients in this batch", file=sys.stderr)
         continue
 
-    print("\n- ".join([f"Batch {i} -- intended recipients:"] + valid_recipients))
+    print("\n- ".join([f"Intended recipients in batch {i+1}:"] + valid_recipients))
 
     if not args.yes:
         permission_check = input("Proceed? (y/N)")
