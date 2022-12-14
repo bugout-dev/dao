@@ -32,6 +32,7 @@ parser.add_argument(
 parser.add_argument(
     "--recipients-file",
     type=argparse.FileType("r"),
+    default=None,
     help="(Optional) File containing addresses to mint badges to, one address per line. The addresses in this file are added to the addresses passed with the --recipients argument.",
 )
 parser.add_argument(
@@ -63,13 +64,14 @@ recipients_raw = args.recipients
 if not recipients_raw:
     recipients_raw = []
 
-with args.recipients_file as ifp:
-    for line in ifp:
-        try:
-            parsed_line = web3.toChecksumAddress(line.strip())
-            recipients_raw.append(parsed_line)
-        except Exception:
-            print(f"Not a valid web3 address: {line.strip()}")
+if args.recipients_file:
+    with args.recipients_file as ifp:
+        for line in ifp:
+            try:
+                parsed_line = web3.toChecksumAddress(line.strip())
+                recipients_raw.append(parsed_line)
+            except Exception:
+                print(f"Not a valid web3 address: {line.strip()}")
 
 recipients = list(set(recipients_raw))
 
