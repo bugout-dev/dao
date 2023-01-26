@@ -59,6 +59,7 @@ if args.batch_size > 200:
     raise ValueError("This script can process at most 200 recipients per batch.")
 
 network.connect(args.network)
+transaction_config = TerminusFacet.get_transaction_config(args)
 
 recipients_raw = args.recipients
 if not recipients_raw:
@@ -105,7 +106,6 @@ for i, batch in enumerate(batches):
             raise Exception("You did not wish to proceed")
 
     amounts = [1 for _ in valid_recipients]
-    transaction_config = TerminusFacet.get_transaction_config(args)
     transaction_info = terminus.pool_mint_batch(
         args.pool_id, valid_recipients, amounts, transaction_config
     )
