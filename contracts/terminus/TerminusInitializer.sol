@@ -16,6 +16,7 @@ import "./LibTerminus.sol";
 
 contract TerminusInitializer {
     function init() external {
+        LibDiamond.enforceIsContractOwner();
         LibDiamond.DiamondStorage storage ds = LibDiamond.diamondStorage();
         ds.supportedInterfaces[type(IERC1155).interfaceId] = true;
         ds.supportedInterfaces[type(IERC1155MetadataURI).interfaceId] = true;
