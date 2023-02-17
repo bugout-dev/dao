@@ -1093,7 +1093,7 @@ class TestPoolOperations(TerminusTestCase):
         self.assertEqual(user_balance_6, user_balance_5)
 
 
-class TestCreatePoolV1(TestPoolOperations):
+class TestPoolCreation(TestPoolOperations):
     def setUp(self):
         self.diamond_terminus.create_pool_v1(10, True, False, {"from": accounts[1]})
 
@@ -1130,7 +1130,14 @@ class TestCreatePoolV1(TestPoolOperations):
         self.assertEqual(final_receiver_balance, initial_receiver_balance)
 
     def test_pool_state_view_methods(self):
-        self.diamond_terminus.create_pool_v1(10, False, False, {"from": accounts[1]})
+        nontransferable_nonburnable_pool_uri = "https://example.com/ff.json"
+        self.diamond_terminus.create_pool_v2(
+            10,
+            False,
+            False,
+            nontransferable_nonburnable_pool_uri,
+            {"from": accounts[1]},
+        )
         nontransferable_nonburnable_pool_id = self.diamond_terminus.total_pools()
         self.assertFalse(
             self.diamond_terminus.pool_is_transferable(
@@ -1140,8 +1147,15 @@ class TestCreatePoolV1(TestPoolOperations):
         self.assertFalse(
             self.diamond_terminus.pool_is_burnable(nontransferable_nonburnable_pool_id)
         )
+        self.assertEqual(
+            self.diamond_terminus.uri(nontransferable_nonburnable_pool_id),
+            nontransferable_nonburnable_pool_uri,
+        )
 
-        self.diamond_terminus.create_pool_v1(10, True, False, {"from": accounts[1]})
+        transferable_nonburnable_pool_uri = "https://example.com/tf.json"
+        self.diamond_terminus.create_pool_v2(
+            10, True, False, transferable_nonburnable_pool_uri, {"from": accounts[1]}
+        )
         transferable_nonburnable_pool_id = self.diamond_terminus.total_pools()
         self.assertTrue(
             self.diamond_terminus.pool_is_transferable(transferable_nonburnable_pool_id)
@@ -1149,8 +1163,15 @@ class TestCreatePoolV1(TestPoolOperations):
         self.assertFalse(
             self.diamond_terminus.pool_is_burnable(transferable_nonburnable_pool_id)
         )
+        self.assertEqual(
+            self.diamond_terminus.uri(transferable_nonburnable_pool_id),
+            transferable_nonburnable_pool_uri,
+        )
 
-        self.diamond_terminus.create_pool_v1(10, True, True, {"from": accounts[1]})
+        transferable_burnable_pool_uri = "https://example.com/tt.json"
+        self.diamond_terminus.create_pool_v2(
+            10, True, True, transferable_burnable_pool_uri, {"from": accounts[1]}
+        )
         transferable_burnable_pool_id = self.diamond_terminus.total_pools()
         self.assertTrue(
             self.diamond_terminus.pool_is_transferable(transferable_burnable_pool_id)
@@ -1158,14 +1179,25 @@ class TestCreatePoolV1(TestPoolOperations):
         self.assertTrue(
             self.diamond_terminus.pool_is_burnable(transferable_burnable_pool_id)
         )
+        self.assertEqual(
+            self.diamond_terminus.uri(transferable_burnable_pool_id),
+            transferable_burnable_pool_uri,
+        )
 
-        self.diamond_terminus.create_pool_v1(10, False, True, {"from": accounts[1]})
+        nontransferable_burnable_pool_uri = "https://example.com/ft.json"
+        self.diamond_terminus.create_pool_v2(
+            10, False, True, nontransferable_burnable_pool_uri, {"from": accounts[1]}
+        )
         nontransferable_burnable_pool_id = self.diamond_terminus.total_pools()
         self.assertFalse(
             self.diamond_terminus.pool_is_transferable(nontransferable_burnable_pool_id)
         )
         self.assertTrue(
             self.diamond_terminus.pool_is_burnable(nontransferable_burnable_pool_id)
+        )
+        self.assertEqual(
+            self.diamond_terminus.uri(nontransferable_burnable_pool_id),
+            nontransferable_burnable_pool_uri,
         )
 
     def test_pool_state_setters(self):

@@ -6,13 +6,13 @@ with open("README.md") as ifp:
 
 setup(
     name="moonstream-dao",
-    version="0.0.7",
+    version="0.0.8",
     packages=find_packages(),
     install_requires=["eth-brownie", "tqdm"],
     extras_require={
         "dev": [
             "black",
-            "moonworm >= 0.1.9",
+            "moonworm >= 0.6.0",
         ],
         "distribute": ["setuptools", "twine", "wheel"],
     },
