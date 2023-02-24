@@ -1,0 +1,1 @@
+{"DiamondCutFacet": "0x12e5f5dCb0F6c3771aF05a1f57c6a899665efdf1", "Diamond": "0x677441c2e95c8Cf3176dF05F45a515c2570C62a4", "DiamondLoupeFacet": "0x9EbBE32339eCA1201d14cF2487F2256966372170", "OwnershipFacet": "0x852420E735Da8d87728596585E9A67e1424B1FDE", "attached": ["DiamondLoupeFacet", "OwnershipFacet"]}
