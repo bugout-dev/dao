@@ -203,17 +203,23 @@ contract TerminusFacet is ERC1155WithTerminusStorage {
         LibTerminus.enforceIsController();
         LibTerminus.TerminusStorage storage ts = LibTerminus.terminusStorage();
         uint256 requiredPayment = ts.poolBasePrice;
-        IERC20 paymentTokenContract = _paymentTokenContract();
-        require(
-            paymentTokenContract.allowance(_msgSender(), address(this)) >=
-                requiredPayment,
-            "TerminusFacet: createSimplePool -- Insufficient allowance on payment token"
-        );
-        paymentTokenContract.transferFrom(
-            msg.sender,
-            address(this),
-            requiredPayment
-        );
+
+        if (requiredPayment > 0) {
+            IERC20 paymentTokenContract = _paymentTokenContract();
+            require(
+                paymentTokenContract.allowance(_msgSender(), address(this)) >=
+                    requiredPayment,
+                "TerminusFacet: createSimplePool -- Insufficient allowance on payment token"
+            );
+            require(
+                paymentTokenContract.transferFrom(
+                    msg.sender,
+                    address(this),
+                    requiredPayment
+                ),
+                "TerminusFacet: createSimplePool -- Transfer of payment token was unsuccessful"
+            );
+        }
         return LibTerminus.createSimplePool(_capacity);
     }
 
@@ -224,19 +230,23 @@ contract TerminusFacet is ERC1155WithTerminusStorage {
     ) external returns (uint256) {
         LibTerminus.enforceIsController();
         LibTerminus.TerminusStorage storage ts = LibTerminus.terminusStorage();
-        // TODO(zomglings): Implement requiredPayment update based on pool features.
         uint256 requiredPayment = ts.poolBasePrice;
-        IERC20 paymentTokenContract = _paymentTokenContract();
-        require(
-            paymentTokenContract.allowance(_msgSender(), address(this)) >=
-                requiredPayment,
-            "TerminusFacet: createPoolV1 -- Insufficient allowance on payment token"
-        );
-        paymentTokenContract.transferFrom(
-            msg.sender,
-            address(this),
-            requiredPayment
-        );
+        if (requiredPayment > 0) {
+            IERC20 paymentTokenContract = _paymentTokenContract();
+            require(
+                paymentTokenContract.allowance(_msgSender(), address(this)) >=
+                    requiredPayment,
+                "TerminusFacet: createPoolV1 -- Insufficient allowance on payment token"
+            );
+            require(
+                paymentTokenContract.transferFrom(
+                    msg.sender,
+                    address(this),
+                    requiredPayment
+                ),
+                "TerminusFacet: createPoolV1 -- Transfer of payment token was unsuccessful"
+            );
+        }
         uint256 poolID = LibTerminus.createSimplePool(_capacity);
         if (!_transferable) {
             ts.poolNotTransferable[poolID] = true;
@@ -244,6 +254,42 @@ contract TerminusFacet is ERC1155WithTerminusStorage {
         if (_burnable) {
             ts.poolBurnable[poolID] = true;
         }
+        return poolID;
+    }
+
+    function createPoolV2(
+        uint256 _capacity,
+        bool _transferable,
+        bool _burnable,
+        string memory poolURI
+    ) external returns (uint256) {
+        LibTerminus.enforceIsController();
+        LibTerminus.TerminusStorage storage ts = LibTerminus.terminusStorage();
+        uint256 requiredPayment = ts.poolBasePrice;
+        if (requiredPayment > 0) {
+            IERC20 paymentTokenContract = _paymentTokenContract();
+            require(
+                paymentTokenContract.allowance(_msgSender(), address(this)) >=
+                    requiredPayment,
+                "TerminusFacet: createPoolV2 -- Insufficient allowance on payment token"
+            );
+            require(
+                paymentTokenContract.transferFrom(
+                    msg.sender,
+                    address(this),
+                    requiredPayment
+                ),
+                "TerminusFacet: createPoolV2 -- Transfer of payment token was unsuccessful"
+            );
+        }
+        uint256 poolID = LibTerminus.createSimplePool(_capacity);
+        if (!_transferable) {
+            ts.poolNotTransferable[poolID] = true;
+        }
+        if (_burnable) {
+            ts.poolBurnable[poolID] = true;
+        }
+        ts.poolURI[poolID] = poolURI;
         return poolID;
     }
 
