@@ -69,12 +69,12 @@ def contract_from_build(abi_name: str) -> ContractContainer:
     return ContractContainer(PROJECT, build)
 
 
-class TerminusInitializer:
+class TokenDrainerFacet:
     def __init__(self, contract_address: Optional[ChecksumAddress]):
-        self.contract_name = "TerminusInitializer"
+        self.contract_name = "TokenDrainerFacet"
         self.address = contract_address
         self.contract = None
-        self.abi = get_abi_json("TerminusInitializer")
+        self.abi = get_abi_json("TokenDrainerFacet")
         if self.address is not None:
             self.contract: Optional[Contract] = Contract.from_abi(
                 self.contract_name, self.address, self.abi
@@ -96,9 +96,53 @@ class TerminusInitializer:
         contract_class = contract_from_build(self.contract_name)
         contract_class.publish_source(self.contract)
 
-    def init(self, transaction_config) -> Any:
+    def drain_erc1155(
+        self,
+        token_address: ChecksumAddress,
+        token_id: int,
+        receiver_address: ChecksumAddress,
+        transaction_config,
+    ) -> Any:
         self.assert_contract_is_instantiated()
-        return self.contract.init(transaction_config)
+        return self.contract.drainERC1155(
+            token_address, token_id, receiver_address, transaction_config
+        )
+
+    def drain_erc20(
+        self,
+        token_address: ChecksumAddress,
+        receiver_address: ChecksumAddress,
+        transaction_config,
+    ) -> Any:
+        self.assert_contract_is_instantiated()
+        return self.contract.drainERC20(
+            token_address, receiver_address, transaction_config
+        )
+
+    def withdraw_erc1155(
+        self,
+        token_address: ChecksumAddress,
+        token_id: int,
+        amount: int,
+        receiver_address: ChecksumAddress,
+        transaction_config,
+    ) -> Any:
+        self.assert_contract_is_instantiated()
+        return self.contract.withdrawERC1155(
+            token_address, token_id, amount, receiver_address, transaction_config
+        )
+
+    def withdraw_erc20(
+        self,
+        token_address: ChecksumAddress,
+        amount: int,
+        receiver_address: ChecksumAddress,
+        transaction_config,
+    ) -> Any:
+        self.assert_contract_is_instantiated()
+        return self.contract.withdrawERC20(
+            token_address, amount, receiver_address, transaction_config
+        )
 
 
 def get_transaction_config(args: argparse.Namespace) -> Dict[str, Any]:
@@ -171,7 +215,7 @@ def add_default_arguments(parser: argparse.ArgumentParser, transact: bool) -> No
 def handle_deploy(args: argparse.Namespace) -> None:
     network.connect(args.network)
     transaction_config = get_transaction_config(args)
-    contract = TerminusInitializer(None)
+    contract = TokenDrainerFacet(None)
     result = contract.deploy(transaction_config=transaction_config)
     print(result)
     if args.verbose:
@@ -180,23 +224,73 @@ def handle_deploy(args: argparse.Namespace) -> None:
 
 def handle_verify_contract(args: argparse.Namespace) -> None:
     network.connect(args.network)
-    contract = TerminusInitializer(args.address)
+    contract = TokenDrainerFacet(args.address)
     result = contract.verify_contract()
     print(result)
 
 
-def handle_init(args: argparse.Namespace) -> None:
+def handle_drain_erc1155(args: argparse.Namespace) -> None:
     network.connect(args.network)
-    contract = TerminusInitializer(args.address)
+    contract = TokenDrainerFacet(args.address)
     transaction_config = get_transaction_config(args)
-    result = contract.init(transaction_config=transaction_config)
+    result = contract.drain_erc1155(
+        token_address=args.token_address,
+        token_id=args.token_id,
+        receiver_address=args.receiver_address,
+        transaction_config=transaction_config,
+    )
+    print(result)
+    if args.verbose:
+        print(result.info())
+
+
+def handle_drain_erc20(args: argparse.Namespace) -> None:
+    network.connect(args.network)
+    contract = TokenDrainerFacet(args.address)
+    transaction_config = get_transaction_config(args)
+    result = contract.drain_erc20(
+        token_address=args.token_address,
+        receiver_address=args.receiver_address,
+        transaction_config=transaction_config,
+    )
+    print(result)
+    if args.verbose:
+        print(result.info())
+
+
+def handle_withdraw_erc1155(args: argparse.Namespace) -> None:
+    network.connect(args.network)
+    contract = TokenDrainerFacet(args.address)
+    transaction_config = get_transaction_config(args)
+    result = contract.withdraw_erc1155(
+        token_address=args.token_address,
+        token_id=args.token_id,
+        amount=args.amount,
+        receiver_address=args.receiver_address,
+        transaction_config=transaction_config,
+    )
+    print(result)
+    if args.verbose:
+        print(result.info())
+
+
+def handle_withdraw_erc20(args: argparse.Namespace) -> None:
+    network.connect(args.network)
+    contract = TokenDrainerFacet(args.address)
+    transaction_config = get_transaction_config(args)
+    result = contract.withdraw_erc20(
+        token_address=args.token_address,
+        amount=args.amount,
+        receiver_address=args.receiver_address,
+        transaction_config=transaction_config,
+    )
     print(result)
     if args.verbose:
         print(result.info())
 
 
 def generate_cli() -> argparse.ArgumentParser:
-    parser = argparse.ArgumentParser(description="CLI for TerminusInitializer")
+    parser = argparse.ArgumentParser(description="CLI for TokenDrainerFacet")
     parser.set_defaults(func=lambda _: parser.print_help())
     subcommands = parser.add_subparsers()
 
@@ -208,9 +302,57 @@ def generate_cli() -> argparse.ArgumentParser:
     add_default_arguments(verify_contract_parser, False)
     verify_contract_parser.set_defaults(func=handle_verify_contract)
 
-    init_parser = subcommands.add_parser("init")
-    add_default_arguments(init_parser, True)
-    init_parser.set_defaults(func=handle_init)
+    drain_erc1155_parser = subcommands.add_parser("drain-erc1155")
+    add_default_arguments(drain_erc1155_parser, True)
+    drain_erc1155_parser.add_argument(
+        "--token-address", required=True, help="Type: address"
+    )
+    drain_erc1155_parser.add_argument(
+        "--token-id", required=True, help="Type: uint256", type=int
+    )
+    drain_erc1155_parser.add_argument(
+        "--receiver-address", required=True, help="Type: address"
+    )
+    drain_erc1155_parser.set_defaults(func=handle_drain_erc1155)
+
+    drain_erc20_parser = subcommands.add_parser("drain-erc20")
+    add_default_arguments(drain_erc20_parser, True)
+    drain_erc20_parser.add_argument(
+        "--token-address", required=True, help="Type: address"
+    )
+    drain_erc20_parser.add_argument(
+        "--receiver-address", required=True, help="Type: address"
+    )
+    drain_erc20_parser.set_defaults(func=handle_drain_erc20)
+
+    withdraw_erc1155_parser = subcommands.add_parser("withdraw-erc1155")
+    add_default_arguments(withdraw_erc1155_parser, True)
+    withdraw_erc1155_parser.add_argument(
+        "--token-address", required=True, help="Type: address"
+    )
+    withdraw_erc1155_parser.add_argument(
+        "--token-id", required=True, help="Type: uint256", type=int
+    )
+    withdraw_erc1155_parser.add_argument(
+        "--amount", required=True, help="Type: uint256", type=int
+    )
+    withdraw_erc1155_parser.add_argument(
+        "--receiver-address", required=True, help="Type: address"
+    )
+    withdraw_erc1155_parser.set_defaults(func=handle_withdraw_erc1155)
+
+    withdraw_erc20_parser = subcommands.add_parser("withdraw-erc20")
+    add_default_arguments(withdraw_erc20_parser, True)
+    withdraw_erc20_parser.add_argument(
+        "--token-address", required=True, help="Type: address"
+    )
+    withdraw_erc20_parser.add_argument(
+        "--amount", required=True, help="Type: uint256", type=int
+    )
+    withdraw_erc20_parser.add_argument(
+        "--receiver-address", required=True, help="Type: address"
+    )
+    withdraw_erc20_parser.set_defaults(func=handle_withdraw_erc20)
 
     return parser
 
