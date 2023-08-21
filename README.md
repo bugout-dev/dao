@@ -1,6 +1,8 @@
 # dao
 Moonstream DAO
 
+**NOTE: All important code in this repository has been moved to https://github.com/moonstream-to/web3**
+
 ## Decentralizing Moonstream
 
 [Moonstream](https://moonstream.to) makes tools which help people build, manage, and maintain their blockchain economies.
