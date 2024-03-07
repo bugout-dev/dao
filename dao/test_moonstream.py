@@ -123,6 +123,21 @@ class TestERC20(MoonstreamTokenTestCase):
         final_balance = diamond.balance_of(accounts[1].address)
         self.assertEqual(final_balance, initial_balance + 1000)
 
+    def test_mint_batch_to_another_addresses(self):
+        diamond_address = self.contracts["Diamond"]
+        diamond = ERC20Facet.ERC20Facet(diamond_address)
+        initials = []
+        for account in accounts[1:]:
+            initials.append(diamond.balance_of(account.address))
+
+        diamond.batch_mint(accounts[1:], 1000, {"from": accounts[0]})
+        for index, account in enumerate(accounts[1:]):
+            initial_balance = initials[index]
+            final_balance = diamond.balance_of(account.address)
+            self.assertEqual(
+                final_balance, initial_balance + accounts[1:].count(account) * 1000
+            )
+
     def test_transfer(self):
         diamond_address = self.contracts["Diamond"]
         diamond = ERC20Facet.ERC20Facet(diamond_address)

@@ -286,6 +286,15 @@ contract ERC20WithCommonStorage is Context, IERC20, IERC20Metadata {
         _afterTokenTransfer(address(0), account, amount);
     }
 
+    function _batchMint(address[] calldata accounts, uint256 amount)
+        internal
+        virtual
+    {
+        for (uint256 i = 0; i < accounts.length; i++) {
+            _mint(accounts[i], amount);
+        }
+    }
+
     /**
      * @dev Destroys `amount` tokens from `account`, reducing the
      * total supply.
